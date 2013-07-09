@@ -2,7 +2,6 @@
 /**
  * PHP File Manager
  * Author: Alex Yashkin <alex.yashkin@gmail.com>
- * Version: 0.1.2
  * Date: 2013-07-09
  */
 
