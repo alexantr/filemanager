@@ -28,6 +28,9 @@ define('ABS_PATH', $_SERVER['DOCUMENT_ROOT']);
 
 define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
 
+$language = array();
+$language['ru'] = array();
+
 // require files
 
 //--------------------------------------------------------- files.php
