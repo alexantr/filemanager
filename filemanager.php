@@ -3,6 +3,7 @@
  * PHP File Manager
  * Author: Alex Yashkin <alex.yashkin@gmail.com>
  * Date: 2013-07-09
+ * TODO: translate all
  */
 
 error_reporting(E_ALL);
@@ -22,7 +23,7 @@ session_start();
 
 define('DS', '/');
 
-// абсолютный путь для корня сайта
+// abs path for site
 define('ABS_PATH', $_SERVER['DOCUMENT_ROOT']);
 
 define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
@@ -32,7 +33,7 @@ define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
 //--------------------------------------------------------- files.php
 
 /*
- * Удалить папку (рекурсивно) или файл
+ * Delete folder (recursively) or file
  */
 function rdelete($path)
 {
@@ -57,7 +58,7 @@ function rdelete($path)
 }
 
 /*
- * Изменение прав на папки и файлы рекурсивно
+ * Recursive chmod
  */
 function rchmod($path, $filemode, $dirmode)
 {
@@ -85,7 +86,7 @@ function rchmod($path, $filemode, $dirmode)
 }
 
 /*
- * Переименование файлов и папок
+ * Save rename
  */
 function save_rename($old, $new)
 {
@@ -93,9 +94,9 @@ function save_rename($old, $new)
 }
 
 /*
- * Скопировать файл или папку рекурсивно.
- * $upd - обновлять файлы или нет
- * $force - создавать директории вместо файлов с таким же именем или нет
+ * Copy file or folder recursively.
+ * $upd - update files
+ * $force - create folder with same names instead file
  */
 function rcopy($path, $dest, $upd = true, $force = true)
 {
@@ -121,7 +122,7 @@ function rcopy($path, $dest, $upd = true, $force = true)
 }
 
 /*
- * Создать папку безопасно
+ * Safely create folder
  */
 function mkdir_safe($dir, $force)
 {
@@ -134,7 +135,7 @@ function mkdir_safe($dir, $force)
 }
 
 /*
- * Скопировать файл безопасно
+ * Safely copy file
  */
 function copy_safe($f1, $f2, $upd)
 {
@@ -345,7 +346,7 @@ function get_file_icon($path)
 }
 
 /*
- * Класс для работа с архивами zip
+ * Class to work with zip files (using ZipArchive)
  */
 class Zipper
 {
@@ -357,7 +358,7 @@ class Zipper
 	}
 
 	/*
-	 * Создать архив с именем $filename и файлами $files (ПУТИ ОТНОСИТЕЛЬНЫЕ)
+	 * Create archive with name $filename and files $files (RELATIVE PATHS!)
 	 */
 	public function create($filename, $files)
 	{
@@ -383,7 +384,7 @@ class Zipper
 	}
 
 	/*
-	 * Распаковать архив с именем $filename в папку $path (ПУТИ АБСОЛЮТНЫЕ ИЛИ ОТНОСИТЕЛЬНЫЕ)
+	 * Extract archive $filename to folder $path (RELATIVE OR ABSOLUTE PATHS)
 	 */
 	public function unzip($filename, $path)
 	{
@@ -397,7 +398,7 @@ class Zipper
 	}
 
 	/*
-	 * Добавить файл или папку в архив
+	 * Add file/folder to archive
 	 */
 	private function addFileOrDir($filename)
 	{
@@ -411,7 +412,7 @@ class Zipper
 	}
 
 	/*
-	 * Добавить папку в архив рекурсивно
+	 * Add folder recursively
 	 */
 	private function addDir($path)
 	{
@@ -597,7 +598,7 @@ function show_footer()
 }
 
 /*
- * Вывод картинки
+ * Show Image
  */
 function show_image()
 {
@@ -639,7 +640,7 @@ function show_image()
 }
 
 /*
- * Массив картинок
+ * Encoded images
  */
 function get_images_array()
 {
@@ -1057,21 +1058,21 @@ RYjBpNe7pOcvAQYAXEPSkFWK3c0AAAAASUVORK5CYII=',
 }
 
 
-// Показать картинку, если чо
+// Show image here
 show_image();
 
-// чтобы всегда было ?p=
+// always use ?p=
 if (!isset($_GET['p'])) redirect(BASE_URL . '?p=');
 
-// получим путь из строки адреса
+// get path
 $p = isset($_GET['p']) ? $_GET['p'] : (isset($_POST['p']) ? $_POST['p'] : '');
 
-// обработаем по полной программе
+// clean path
 $p = clean_path($p);
 
 /*************************** ACTIONS ***************************/
 
-// Удаление файла и папки
+// Delete file / folder
 if (isset($_GET['del'])) {
 	$del = $_GET['del'];
 	$del = clean_path($del);
@@ -1094,7 +1095,7 @@ if (isset($_GET['del'])) {
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
 
-// создание папки
+// Create folder
 if (isset($_GET['new'])) {
 	$new = $_GET['new'];
 	$new = clean_path($new);
@@ -1118,25 +1119,25 @@ if (isset($_GET['new'])) {
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
 
-// копирование файла или папки
+// Copy folder / file
 if (isset($_GET['copy']) && isset($_GET['finish'])) {
-	// откуда
+	// from
 	$copy = $_GET['copy'];
 	$copy = clean_path($copy);
-	// если исходный путь пуст
+	// empty path
 	if ($copy == '') {
 		set_message('Не задан исходный путь', 'error');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
-	// абсолютный путь откуда
+	// abs path from
 	$from = ABS_PATH . DS . $copy;
-	// абсолютный путь куда
+	// abs path to
 	$dest = ABS_PATH;
 	if ($p != '') $dest .= DS . $p;
 	$dest .= DS . basename($from);
-	// переместить ли
+	// move?
 	$move = (isset($_GET['move'])) ? true : false;
-	// копируем
+	// copy/move
 	if ($from != $dest) {
 		if ($move) {
 			$rename = save_rename($from, $dest);
@@ -1165,12 +1166,12 @@ if (isset($_GET['copy']) && isset($_GET['finish'])) {
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
 
-// групповое копирование файлов и папок
+// Mass copy files/ folders
 if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])) {
-	// исходный путь
+	// from
 	$path = ABS_PATH;
 	if ($p != '') $path .= DS . $p;
-	// куда
+	// to
 	$copy_to_path = ABS_PATH;
 	$copy_to = clean_path($_POST['copy_to']);
 	if ($copy_to != '') $copy_to_path .= DS . $copy_to;
@@ -1184,19 +1185,19 @@ if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])
 			redirect(BASE_URL . '?p=' . urlencode($p));
 		}
 	}
-	// переместить ли
+	// move?
 	$move = (isset($_POST['move'])) ? true : false;
-	// копируем/перемещаем
+	// copy/move
 	$errors = 0;
 	$files = $_POST['file'];
 	if (is_array($files) && count($files)) {
 		foreach ($files as $f) {
 			if ($f != '') {
-				// абсолютный путь откуда
+				// abs path from
 				$from = $path . DS . $f;
-				// абсолютный путь куда
+				// abs path to
 				$dest = $copy_to_path . DS . $f;
-				// делаем
+				// do
 				if ($move) {
 					$rename = save_rename($from, $dest);
 					if ($rename === false) {
@@ -1223,20 +1224,20 @@ if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
 
-// переименование
+// Rename
 if (isset($_GET['ren']) && isset($_GET['to'])) {
-	// имя старого файла
+	// old name
 	$old = $_GET['ren'];
 	$old = clean_path($old);
 	$old = str_replace('/', '', $old);
-	// имя нового файла
+	// new name
 	$new = $_GET['to'];
 	$new = clean_path($new);
 	$new = str_replace('/', '', $new);
-	// путь
+	// path
 	$path = ABS_PATH;
 	if ($p != '') $path .= DS . $p;
-	// переименование
+	// rename
 	if ($old != '' && $new != '') {
 		if (save_rename($path . DS . $old, $path . DS . $new)) {
 			set_message('Переименовано из <b>' . $old . '</b> в <b>' . $new . '</b>');
@@ -1251,7 +1252,7 @@ if (isset($_GET['ren']) && isset($_GET['to'])) {
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
 
-// скачивание
+// Download
 if (isset($_GET['dl'])) {
 	$dl = $_GET['dl'];
 	$dl = clean_path($dl);
@@ -1277,7 +1278,7 @@ if (isset($_GET['dl'])) {
 	}
 }
 
-// загрузка
+// Upload
 if (isset($_POST['upl'])) {
 	$path = ABS_PATH;
 	if ($p != '') $path .= DS . $p;
@@ -1311,7 +1312,7 @@ if (isset($_POST['upl'])) {
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
 
-// групповое удаление
+// Mass deleting
 if (isset($_POST['group']) && isset($_POST['delete'])) {
 	$path = ABS_PATH;
 	if ($p != '') $path .= DS . $p;
@@ -1341,7 +1342,7 @@ if (isset($_POST['group']) && isset($_POST['delete'])) {
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
 
-// упаковка файлов
+// Pack files
 if (isset($_POST['group']) && isset($_POST['zip'])) {
 	$path = ABS_PATH;
 	if ($p != '') $path .= DS . $p;
@@ -1369,7 +1370,7 @@ if (isset($_POST['group']) && isset($_POST['zip'])) {
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
 
-// распаковка
+// Unpack
 if (isset($_GET['unzip'])) {
 	$unzip = $_GET['unzip'];
 	$unzip = clean_path($unzip);
@@ -1382,7 +1383,7 @@ if (isset($_GET['unzip'])) {
 
 		$zip_path = $path . DS . $unzip;
 
-		//в папку
+		//to folder
 		$tofolder = '';
 		if (isset($_GET['tofolder'])) {
 			$tofolder = pathinfo($zip_path, PATHINFO_FILENAME);
@@ -1410,16 +1411,16 @@ if (isset($_GET['unzip'])) {
 
 /*************************** /ACTIONS ***************************/
 
-// получаем текущий путь
+// get current path
 $path = ABS_PATH;
 if ($p != '') $path .= DS . $p;
 
-// проверка пути
+// check path
 if (!is_dir($path)) {
 	redirect(BASE_URL . '?p=');
 }
 
-// получаем родительский каталог
+// get parent folder
 $parent = get_parent_path($p);
 
 $objects = scandir($path);
@@ -1440,10 +1441,10 @@ if (is_array($objects)) {
 if (!empty($files)) natcasesort($files);
 if (!empty($folders)) natcasesort($folders);
 
-### форма загрузки
+### upload form
 if (isset($_GET['upload'])) {
 	show_header(); // HEADER
-	show_navigation_path($p); // Текущий путь
+	show_navigation_path($p); // current path
 	?>
 	<div class="path">
 		<p><b>Загрузка файлов</b></p>
@@ -1470,7 +1471,7 @@ if (isset($_GET['upload'])) {
 	exit;
 }
 
-### форма копирования POST
+### copy form POST
 if (isset($_POST['copy'])) {
 	$copy_files = $_POST['file'];
 	if (!is_array($copy_files) || empty($copy_files)) {
@@ -1479,7 +1480,7 @@ if (isset($_POST['copy'])) {
 	}
 
 	show_header(); // HEADER
-	show_navigation_path($p); // Текущий путь
+	show_navigation_path($p); // current path
 	?>
 	<div class="path">
 		<p><b>Копирование</b></p>
@@ -1515,7 +1516,7 @@ if (isset($_POST['copy'])) {
 	exit;
 }
 
-### форма копирования
+### copy form
 if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	$copy = $_GET['copy'];
 	$copy = clean_path($copy);
@@ -1525,7 +1526,7 @@ if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	}
 
 	show_header(); // HEADER
-	show_navigation_path($p); // Текущий путь
+	show_navigation_path($p); // current path
 	?>
 	<div class="path">
 		<p><b>Копирование</b></p>
@@ -1561,7 +1562,7 @@ if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	exit;
 }
 
-### информация zip
+### zip info
 if (isset($_GET['zip'])) {
 	$file = $_GET['zip'];
 	$file = clean_path($file);
@@ -1572,7 +1573,7 @@ if (isset($_GET['zip'])) {
 	}
 
 	show_header(); // HEADER
-	show_navigation_path($p); // Текущий путь
+	show_navigation_path($p); // current path
 
 	$file_url = 'http://' . getenv('HTTP_HOST') . '/' . $p . '/' . $file;
 	$file_path = $path . DS . $file;
@@ -1639,7 +1640,7 @@ if (isset($_GET['zip'])) {
 	exit;
 }
 
-### информация image
+### image info
 if (isset($_GET['showimg'])) {
 	$file = $_GET['showimg'];
 	$file = clean_path($file);
@@ -1650,7 +1651,7 @@ if (isset($_GET['showimg'])) {
 	}
 
 	show_header(); // HEADER
-	show_navigation_path($p); // Текущий путь
+	show_navigation_path($p); // current path
 
 	$file_url = 'http://' . getenv('HTTP_HOST') . '/' . $p . '/' . $file;
 	$file_path = $path . DS . $file;
@@ -1683,7 +1684,7 @@ if (isset($_GET['showimg'])) {
 	exit;
 }
 
-### информация txt
+### txt info
 if (isset($_GET['showtxt'])) {
 	$file = $_GET['showtxt'];
 	$file = clean_path($file);
@@ -1694,7 +1695,7 @@ if (isset($_GET['showtxt'])) {
 	}
 
 	show_header(); // HEADER
-	show_navigation_path($p); // Текущий путь
+	show_navigation_path($p); // current path
 
 	$file_url = 'http://' . getenv('HTTP_HOST') . '/' . $p . '/' . $file;
 	$file_path = $path . DS . $file;
@@ -1741,9 +1742,9 @@ if (isset($_GET['showtxt'])) {
 
 /// FILEMANAGER
 show_header(); // HEADER
-show_navigation_path($p); // Текущий путь
+show_navigation_path($p); // current path
 
-// Сообщения
+// messages
 show_message();
 
 ?>
@@ -1760,7 +1761,7 @@ show_message();
 			</tr>
 			<?php
 
-			// ссылка на родительский каталог
+			// link to parent folder
 			if ($parent !== false) {
 				?>
 				<tr>
