@@ -1,1 +1,5 @@
-.idea/
+.DS_Store
+.buildpath
+.project
+.settings
+.idea
