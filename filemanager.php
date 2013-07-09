@@ -2,8 +2,8 @@
 /**
  * PHP File Manager
  * Author: Alex Yashkin <alex.yashkin@gmail.com>
- * Version: 0.1.1
- * Date: 2013-07-02
+ * Version: 0.1.2
+ * Date: 2013-07-09
  */
 
 error_reporting(E_ALL);
@@ -37,7 +37,7 @@ define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
  */
 function rdelete($path)
 {
-  if (is_dir($path)) {
+	if (is_dir($path)) {
 		$objects = scandir($path);
 		$ok = true;
 		if (is_array($objects)) {
@@ -602,10 +602,12 @@ function show_footer()
  */
 function show_image()
 {
-	$images = get_images_array();
-
 	if (isset($_GET['img'])) {
-		$img = strval($_GET['img']);
+		$modified_time = gmdate('D, d M Y 00:00:00') . ' GMT';
+		$expires_time = gmdate('D, d M Y 00:00:00', strtotime('+1 day')) . ' GMT';
+
+		$images = get_images_array();
+		$img = trim($_GET['img']);
 		$image = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR42mL4//8/A0CAAQAI/AL+26JNFgAAAABJRU5ErkJggg==';
 		if (isset($images[$img])) {
 			$image = $images[$img];
@@ -616,16 +618,23 @@ function show_image()
 		} else {
 			$size = strlen($image);
 		}
+
 		ob_end_clean();
-		//header_remove('Cache-Control'); // PHP 5.3
-		//header_remove('Pragma'); // PHP 5.3
-		header('Cache-Control:');
-		header('Pragma:');
-		header('Expires: ' . gmdate('D, d M Y H:i:s', filemtime(__FILE__) + 259200) . ' GMT');
-		header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filemtime(__FILE__)) . ' GMT', true, 200);
+		if (function_exists('header_remove')) {
+			header_remove('Cache-Control');
+			header_remove('Pragma');
+		}
+		else {
+			header('Cache-Control:');
+			header('Pragma:');
+		}
+
+		header('Last-Modified: ' . $modified_time, true, 200);
+		header('Expires: ' . $expires_time);
 		header('Content-Length: ' . $size);
 		header('Content-Type: image/png');
 		echo $image;
+
 		exit;
 	}
 }
