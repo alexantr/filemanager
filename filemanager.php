@@ -3,7 +3,6 @@
  * PHP File Manager
  * Author: Alex Yashkin <alex.yashkin@gmail.com>
  * Date: 2013-07-09
- * TODO: translate all
  */
 
 error_reporting(E_ALL);
@@ -823,22 +822,6 @@ show_footer();
 //--- END
 
 // Functions
-
-/*
- * All words here
- */
-function words($lang)
-{
-	switch ($lang) {
-		case 'ru':
-			//ru
-			return array();
-			break;
-		default:
-			// en
-			return array();
-	}
-}
 
 //--- files
 
