@@ -1284,51 +1284,50 @@ function show_header()
 {
 	header("Content-Type: text/html; charset=utf-8");
 	?>
-	<!DOCTYPE html>
-	<html>
-	<head>
-		<meta charset="utf-8">
-		<title>File Manager</title>
-		<style>
-			html,body,div,span,h1,h2,h3,h4,h5,h6,p,pre,a,code,em, img,small,strong,sub,sup,ol,ul,li,fieldset,form,label,legend,table,caption,
-			tbody,tfoot,thead,tr,th,td{margin:0;padding:0;vertical-align:baseline;outline:none;font-size:100%;background:transparent;border:none;text-decoration:none}
-			html{overflow-y:scroll}
-			body{padding:0;font:13px/16px Arial,sans-serif;color:#333;background:#efefef}
-			a{color:#296ea3;text-decoration:none}
-			a:hover{color:#b00}
-			img{vertical-align:bottom;border:none}
-			a img{border:none}
-			span{color:#777}
-			small{font-size:11px;color:#999}
-			p{margin-bottom:10px}
-			ul{margin-left:2em;margin-bottom:10px}
-			ul{list-style-type:none;margin-left:0}
-			ul li{padding:3px 0}
-			table{border-collapse:collapse;border-spacing:0;margin-bottom:10px;width:100%}
-			th,td{padding:4px 7px;text-align:left;vertical-align:top;border:1px solid #ddd;background:#fff;white-space:nowrap }
-			th{background-color:#eee}
-			tr:hover td{background-color:#f5f5f5}
-			code,pre{display:block;margin-bottom:10px;font:13px/16px Consolas,'Courier New',Courier,monospace;border:1px dashed #ccc;padding:5px;overflow:auto}
-			code.maxheight,pre.maxheight{max-height:512px}
-			input[type="checkbox"]{margin:0;padding:0}
-			#wrapper{max-width:800px;min-width:400px;margin:10px auto}
-			.path{padding:4px 7px;border:1px solid #ddd;background-color:#fff;margin-bottom:10px}
-			.right{text-align:right}
-			.center{text-align:center}
-			.float-right{float:right}
-			.message{padding:4px 7px;border:1px solid #ddd;background-color:#fff}
-			.message.ok{border-color:green;color:green}
-			.message.error{border-color:red;color:red}
-			.message.alert{border-color:orange;color:orange}
-			.btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#296ea3;cursor:pointer}
-			.btn:hover{color:#b00}
-			.preview-img{max-width:100%;background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAKklEQVR42mL5//8/Azbw+PFjrOJMDCSCUQ3EABZc4S0rKzsaSvTTABBgAMyfCMsY4B9iAAAAAElFTkSuQmCC") repeat 0 0}
-		</style>
-		<link rel="icon" href="?img=favicon" type="image/png">
-		<link rel="shortcut icon" href="?img=favicon" type="image/png">
-	</head>
-	<body>
-	<div id="wrapper">
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>File Manager</title>
+	<style>
+		html,body,div,span,p,pre,a,code,em,img,small,strong,ol,ul,li,form,label,table,tr,th,td{margin:0;padding:0;vertical-align:baseline;outline:none;font-size:100%;background:transparent;border:none;text-decoration:none}
+		html{overflow-y:scroll}
+		body{padding:0;font:13px/16px Arial,sans-serif;color:#333;background:#efefef}
+		a{color:#296ea3;text-decoration:none}
+		a:hover{color:#b00}
+		img{vertical-align:bottom;border:none}
+		a img{border:none}
+		span{color:#777}
+		small{font-size:11px;color:#999}
+		p{margin-bottom:10px}
+		ul{margin-left:2em;margin-bottom:10px}
+		ul{list-style-type:none;margin-left:0}
+		ul li{padding:3px 0}
+		table{border-collapse:collapse;border-spacing:0;margin-bottom:10px;width:100%}
+		th,td{padding:4px 7px;text-align:left;vertical-align:top;border:1px solid #ddd;background:#fff;white-space:nowrap }
+		th{background-color:#eee}
+		tr:hover td{background-color:#f5f5f5}
+		code,pre{display:block;margin-bottom:10px;font:13px/16px Consolas,'Courier New',Courier,monospace;border:1px dashed #ccc;padding:5px;overflow:auto}
+		code.maxheight,pre.maxheight{max-height:512px}
+		input[type="checkbox"]{margin:0;padding:0}
+		#wrapper{max-width:800px;min-width:400px;margin:10px auto}
+		.path{padding:4px 7px;border:1px solid #ddd;background-color:#fff;margin-bottom:10px}
+		.right{text-align:right}
+		.center{text-align:center}
+		.float-right{float:right}
+		.message{padding:4px 7px;border:1px solid #ddd;background-color:#fff}
+		.message.ok{border-color:green;color:green}
+		.message.error{border-color:red;color:red}
+		.message.alert{border-color:orange;color:orange}
+		.btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#296ea3;cursor:pointer}
+		.btn:hover{color:#b00}
+		.preview-img{max-width:100%;background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAKklEQVR42mL5//8/Azbw+PFjrOJMDCSCUQ3EABZc4S0rKzsaSvTTABBgAMyfCMsY4B9iAAAAAElFTkSuQmCC") repeat 0 0}
+	</style>
+	<link rel="icon" href="?img=favicon" type="image/png">
+	<link rel="shortcut icon" href="?img=favicon" type="image/png">
+</head>
+<body>
+<div id="wrapper">
 <?php
 }
 
@@ -1339,52 +1338,52 @@ function show_footer()
 {
 	global $start_time;
 	?>
-	<p class="center"><small>PHP File Manager [<?php echo round((microtime(true) - $start_time), 4); ?>]</small></p>
-	</div>
+<p class="center"><small>PHP File Manager [<?php echo round((microtime(true) - $start_time), 4); ?>]</small></p>
+</div>
 
-	<script>
-		function newfolder(p) {
-			var name = prompt('Имя новой папки', 'folder');
-			if (name !== null && name !== '') {
-				window.location.search = 'p=' + encodeURIComponent(p) + '&new=' + encodeURIComponent(name);
+<script>
+	function newfolder(p) {
+		var name = prompt('Имя новой папки', 'folder');
+		if (name !== null && name !== '') {
+			window.location.search = 'p=' + encodeURIComponent(p) + '&new=' + encodeURIComponent(name);
+		}
+	}
+	function rename(p, f) {
+		var name = prompt('Новое имя', f);
+		if (name !== null && name !== '' && name != f) {
+			window.location.search = 'p=' + encodeURIComponent(p) + '&ren=' + encodeURIComponent(f) + '&to=' + encodeURIComponent(name);
+		}
+	}
+	function change_checkboxes(list, value) {
+		for (var i = list.length - 1; i >= 0; i--) {
+			list[i].checked = (typeof value === 'boolean') ? value : !list[i].checked;
+		}
+	}
+	function get_checkboxes() {
+		var inputs = document.getElementsByName('file[]');
+		var all_checkboxes = [];
+		for (var j = inputs.length - 1; j >= 0; j--) {
+			if (inputs[j].type = 'checkbox') {
+				all_checkboxes.push(inputs[j]);
 			}
 		}
-		function rename(p, f) {
-			var name = prompt('Новое имя', f);
-			if (name !== null && name !== '' && name != f) {
-				window.location.search = 'p=' + encodeURIComponent(p) + '&ren=' + encodeURIComponent(f) + '&to=' + encodeURIComponent(name);
-			}
-		}
-		function change_checkboxes(list, value) {
-			for (var i = list.length - 1; i >= 0; i--) {
-				list[i].checked = (typeof value === 'boolean') ? value : !list[i].checked;
-			}
-		}
-		function get_checkboxes() {
-			var inputs = document.getElementsByName('file[]');
-			var all_checkboxes = [];
-			for (var j = inputs.length - 1; j >= 0; j--) {
-				if (inputs[j].type = 'checkbox') {
-					all_checkboxes.push(inputs[j]);
-				}
-			}
-			return all_checkboxes;
-		}
-		function select_all() {
-			var list = get_checkboxes();
-			change_checkboxes(list, true);
-		}
-		function unselect_all() {
-			var list = get_checkboxes();
-			change_checkboxes(list, false);
-		}
-		function invert_all() {
-			var list = get_checkboxes();
-			change_checkboxes(list);
-		}
-	</script>
-	</body>
-	</html>
+		return all_checkboxes;
+	}
+	function select_all() {
+		var list = get_checkboxes();
+		change_checkboxes(list, true);
+	}
+	function unselect_all() {
+		var list = get_checkboxes();
+		change_checkboxes(list, false);
+	}
+	function invert_all() {
+		var list = get_checkboxes();
+		change_checkboxes(list);
+	}
+</script>
+</body>
+</html>
 <?php
 }
 
