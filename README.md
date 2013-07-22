@@ -5,7 +5,7 @@ A good solution for managing files and folders on site.
 
 Author: Alex Yashkin <alex.yashkin@gmail.com>
 
-Using Fugue icons by [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/)
+Fugue icons by [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/).
 
 How to use
 ----------
