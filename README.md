@@ -13,4 +13,4 @@ Copy filemanager.php to your website and open it on browser
 
 ## Bug tracker
 
-Have a bug? Please create an issue on [GitHub Issue tracker](https://github.com/alexantr/filemanager/issues)
+Have a bug? Please create an issue on [Issue tracker](https://github.com/alexantr/filemanager/issues)
