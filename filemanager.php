@@ -1409,7 +1409,6 @@ function show_image()
 			$size = strlen($image);
 		}
 
-		ob_end_clean();
 		if (function_exists('header_remove')) {
 			header_remove('Cache-Control');
 			header_remove('Pragma');
