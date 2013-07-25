@@ -1385,7 +1385,7 @@ function show_header()
 		ul{list-style-type:none;margin-left:0}
 		ul li{padding:3px 0}
 		table{border-collapse:collapse;border-spacing:0;margin-bottom:10px;width:100%}
-		th,td{padding:4px 7px;text-align:left;vertical-align:top;border:1px solid #ddd;background:#fff;white-space:nowrap }
+		th,td{padding:4px 7px;text-align:left;vertical-align:top;border:1px solid #ddd;background:#fff;white-space:nowrap}
 		th{background-color:#eee}
 		tr:hover td{background-color:#f5f5f5}
 		code,pre{display:block;margin-bottom:10px;font:13px/16px Consolas,'Courier New',Courier,monospace;border:1px dashed #ccc;padding:5px;overflow:auto}
@@ -1403,6 +1403,7 @@ function show_header()
 		.btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#296ea3;cursor:pointer}
 		.btn:hover{color:#b00}
 		.preview-img{max-width:100%;background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAKklEQVR42mL5//8/Azbw+PFjrOJMDCSCUQ3EABZc4S0rKzsaSvTTABBgAMyfCMsY4B9iAAAAAElFTkSuQmCC") repeat 0 0}
+		img[src*="?img="]{width:16px;height:16px}
 	</style>
 	<link rel="icon" href="?img=favicon" type="image/png">
 	<link rel="shortcut icon" href="?img=favicon" type="image/png">
