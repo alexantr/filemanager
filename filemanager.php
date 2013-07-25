@@ -529,7 +529,7 @@ if (isset($_POST['copy'])) {
 if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	$copy = $_GET['copy'];
 	$copy = clean_path($copy);
-	if ($copy == '' || !file_exists($path . DS . $copy)) {
+	if ($copy == '' || !file_exists(ABS_PATH . DS . $copy)) {
 		set_message('Файл не найден', 'error');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
