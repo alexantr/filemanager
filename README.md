@@ -2,14 +2,16 @@
 
 A good solution for managing files and folders on site.
 
-Author: Alex Yashkin <alex.yashkin@gmail.com>
+Author: Alex Yashkin <alex.yashkin@gmail.com>.
 
-Fugue icons by [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/).
+Icons by [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/).
 
 ## How to use
 
 Copy filemanager.php to your website and open it on browser
-(e.g. http://yoursite/any_path/filemanager.php)
+(e.g. http://yoursite/any_path/filemanager.php).
+
+To enable HTTP Authentication set $use_http_auth to true.
 
 ## Bug tracker
 
