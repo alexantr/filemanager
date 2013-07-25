@@ -1,0 +1,7 @@
+# You shouldn't use the "last" ("L") directive in the RewriteRule!
+# This will prevent all further rewrite rules to be skipped whenever a Basic or
+# Digest Auth is given, which is almost certainly not what you want.
+# So the following lines are sufficient for the .htaccess (or httpd.conf) file:
+
+RewriteEngine On
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
