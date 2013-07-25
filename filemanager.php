@@ -997,6 +997,11 @@ function get_mime_type($file_path)
 	elseif (function_exists('mime_content_type')) {
 		return mime_content_type($file_path);
 	}
+	elseif (!stristr(ini_get('disable_functions'), 'shell_exec')) {
+		$file = escapeshellarg($file_path);
+		$mime = shell_exec('file -bi ' . $file);
+		return $mime;
+	}
 	else {
 		return '--';
 	}
