@@ -12,8 +12,9 @@ Copy filemanager.php to your website and open it on browser
 (e.g. http://yoursite/any_path/filemanager.php).
 
 To enable HTTP Authentication set $use_http_auth to true.
+Set Login and Password in $users array.
 
-If you are using .htaccess on your site and have problems with HTTP Auth try to put rewrite rule from htaccess.txt to your .htaccess file
+If you are using .htaccess on your site and have problems with HTTP Auth try to put rewrite rule from htaccess.txt to your .htaccess file.
 
 ## Bug tracker
 
