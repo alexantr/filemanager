@@ -5,10 +5,25 @@
  * Date: 2013-07-09
  */
 
+# CONFIG
+
+// Use HTTP Auth (set true/false to enable/disable it)
+$use_http_auth = false;
+
+// Users for HTTP Auth (user => password)
+$users = array(
+	'admin' => 'pass123',
+);
+
+// Default timezone for date() and time()
+$default_timezone = 'Asia/Kuwait'; // UTC+3
+
+# END CONFIG
+
 error_reporting(E_ALL);
 set_time_limit(600);
 
-date_default_timezone_set('Asia/Kuwait'); // UTC+3
+date_default_timezone_set($default_timezone);
 
 ini_set('default_charset', 'UTF-8');
 mb_internal_encoding('UTF-8');
@@ -26,6 +41,32 @@ define('DS', '/');
 define('ABS_PATH', $_SERVER['DOCUMENT_ROOT']);
 
 define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+
+// HTTP Auth
+if ($use_http_auth) {
+	$realm = 'Restricted area';
+
+	if (empty($_SERVER['PHP_AUTH_DIGEST'])) {
+		header('HTTP/1.1 401 Unauthorized');
+		header('WWW-Authenticate: Digest realm="' . $realm . '",qop="auth",nonce="' . uniqid() . '",opaque="' . md5($realm) . '"');
+		exit('Restricted area!');
+	}
+
+	// analyze the PHP_AUTH_DIGEST variable
+	$data = http_digest_parse($_SERVER['PHP_AUTH_DIGEST']);
+	if (!$data || !isset($users[$data['username']])) {
+		die('Wrong Credentials!');
+	}
+
+	// generate the valid response
+	$A1 = md5($data['username'] . ':' . $realm . ':' . $users[$data['username']]);
+	$A2 = md5($_SERVER['REQUEST_METHOD'] . ':' . $data['uri']);
+	$valid_response = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
+
+	if ($data['response'] != $valid_response) {
+		die('Wrong Credentials!');
+	}
+}
 
 // Show image here
 show_image();
@@ -945,6 +986,24 @@ function copy_safe($f1, $f2, $upd)
 
 //--- functions
 
+// function to parse the http auth header
+function http_digest_parse($txt)
+{
+	// protect against missing data
+	$needed_parts = array('nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1);
+	$data = array();
+	$keys = implode('|', array_keys($needed_parts));
+
+	preg_match_all('@(' . $keys . ')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', $txt, $matches, PREG_SET_ORDER);
+
+	foreach ($matches as $m) {
+		$data[$m[1]] = $m[3] ? $m[3] : $m[4];
+		unset($needed_parts[$m[1]]);
+	}
+
+	return $needed_parts ? false : $data;
+}
+
 function redirect($url, $code = 302)
 {
 	header('Location: ' . $url, true, $code);
@@ -1267,6 +1326,7 @@ function show_navigation_path($path)
 <?php
 }
 
+// show session message
 function show_message()
 {
 	if (isset($_SESSION['message'])) {
