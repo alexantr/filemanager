@@ -1,6 +1,6 @@
 # PHP File Manager
 
-A good solution for managing files and folders on site.
+A good solution for managing files and folders on your site.
 
 Author: Alex Yashkin <alex.yashkin@gmail.com>.
 
