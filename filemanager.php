@@ -673,7 +673,7 @@ if (isset($_GET['showimg'])) {
 		<p>
 			Полный путь: <?php echo $file_path ?><br>
 			Размер файла: <?php echo get_filesize(filesize($file_path)) ?><br>
-			MIME-тип: <?php echo isset($image_size['mime']) ? $image_size['mime'] : ((function_exists('mime_content_type')) ? mime_content_type($file_path) : '--') ?><br>
+			MIME-тип: <?php echo isset($image_size['mime']) ? $image_size['mime'] : get_mime_type($file_path) ?><br>
 			Размеры изображения: <?php echo (isset($image_size[0])) ? $image_size[0] : '0' ?> x <?php echo (isset($image_size[1])) ? $image_size[1] : '0' ?>
 		</p>
 
@@ -733,7 +733,7 @@ if (isset($_GET['showtxt'])) {
 		<p>
 			Полный путь: <?php echo $file_path ?><br>
 			Размер файла: <?php echo get_filesize(filesize($file_path)) ?><br>
-			MIME-тип: <?php echo (function_exists('mime_content_type')) ? mime_content_type($file_path) : '--' ?><br>
+			MIME-тип: <?php echo get_mime_type($file_path) ?><br>
 			Кодировка: <?php echo ($is_utf8) ? 'utf-8' : 'windows-1251' ?>
 		</p>
 
@@ -984,6 +984,21 @@ function copy_safe($f1, $f2, $upd)
 
 
 //--- functions
+
+// get mime type
+function get_mime_type($file_path)
+{
+	if (function_exists('finfo_open')) {
+		$finfo = finfo_open(FILEINFO_MIME_TYPE);
+		return finfo_file($finfo, $file_path);
+	}
+	elseif (function_exists('mime_content_type')) {
+		return mime_content_type($file_path);
+	}
+	else {
+		return '--';
+	}
+}
 
 // function to parse the http auth header
 function http_digest_parse($txt)
