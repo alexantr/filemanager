@@ -2,7 +2,6 @@
 /**
  * PHP File Manager
  * Author: Alex Yashkin <alex.yashkin@gmail.com>
- * Date: 2013-07-09
  */
 
 # CONFIG
