@@ -1116,14 +1116,14 @@ function get_file_link($p, $f)
 				$link = '?p=' . urlencode($p) . '&amp;zip=' . urlencode($f); break;
 			case 'ico': case 'gif': case 'jpg': case 'jpeg': case 'jpc': case 'jp2': case 'jpx':
 			case 'xbm': case 'wbmp': case 'png': case 'bmp': case 'tif': case 'tiff': case 'psd':
-			$link = '?p=' . urlencode($p) . '&amp;showimg=' . urlencode($f); break;
+				$link = '?p=' . urlencode($p) . '&amp;showimg=' . urlencode($f); break;
 			case 'txt': case 'css': case 'ini': case 'conf': case 'log': case 'htaccess':
 			case 'passwd': case 'ftpquota': case 'sql': case 'js': case 'json': case 'sh':
 			case 'config': case 'php': case 'php4': case 'php5': case 'phps': case 'phtml':
 			case 'htm': case 'html': case 'shtml': case 'xhtml': case 'xml': case 'xsl':
 			case 'm3u': case 'm3u8': case 'pls': case 'cue': case 'eml': case 'msg':
-			case 'csv': case 'bat':
-			$link = '?p=' . urlencode($p) . '&amp;showtxt=' . urlencode($f); break;
+			case 'csv': case 'bat': case 'twig': case 'tpl':
+				$link = '?p=' . urlencode($p) . '&amp;showtxt=' . urlencode($f); break;
 			default:
 				$link = '';
 		}
@@ -1144,7 +1144,7 @@ function get_file_icon($path)
 			$img = '?img=file_image'; break;
 		case 'txt': case 'css': case 'ini': case 'conf': case 'log': case 'htaccess':
 		case 'passwd': case 'ftpquota': case 'sql': case 'js': case 'json': case 'sh':
-		case 'config':
+		case 'config': case 'twig': case 'tpl':
 			$img = '?img=file_text'; break;
 		case 'zip': case 'rar': case 'gz': case 'tar': case '7z':
 		$img = '?img=file_zip'; break;
