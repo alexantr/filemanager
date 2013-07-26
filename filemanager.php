@@ -523,7 +523,8 @@ if (isset($_POST['copy'])) {
 			<p><?php _e('Files:') ?> <b><?php echo implode('</b>, <b>', $copy_files) ?></b> </p>
 
 			<p><?php _e('Source folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $p ?><br>
-				<?php _e('Destination folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<input type="text" name="copy_to" value="<?php echo encode_html($p) ?>">
+				<label for="inp_copy_to"><?php _e('Destination folder:') ?></label>
+				<?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<input type="text" name="copy_to" id="inp_copy_to" value="<?php echo encode_html($p) ?>">
 			</p>
 
 			<p><label><input type="checkbox" name="move" value="1"> <?php _e('Move') ?></label></p>
@@ -779,6 +780,10 @@ show_navigation_path($p); // current path
 // messages
 show_message();
 
+$num_files = count($files);
+$num_folders = count($folders);
+$all_files_size = 0;
+
 ?>
 	<form action="" method="post">
 		<input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
@@ -810,7 +815,7 @@ show_message();
 				?>
 				<tr>
 					<td>
-						<input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>">
+						<label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label>
 					</td>
 					<td>
 						<a href="?p=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><img src="?img=folder" alt="">
@@ -831,19 +836,21 @@ show_message();
 			foreach ($files as $f) {
 				$img = get_file_icon($path . DS . $f);
 				$modif = date("d.m.y H:i", filemtime($path . DS . $f));
-				$filesize = get_filesize(filesize($path . DS . $f));
+				$filesize_raw = filesize($path . DS . $f);
+				$filesize = get_filesize($filesize_raw);
 				$filelink = get_file_link($p, $f);
+				$all_files_size += $filesize_raw;
 				?>
 				<tr>
 					<td>
-						<input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>">
+						<label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label>
 					</td>
 					<td>
 						<?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="' . __('File info') . '">' ?>
 							<img src="<?php echo $img ?>" alt=""> <?php echo $f ?>
 						<?php if (!empty($filelink)) echo '</a>' ?>
 					</td>
-					<td><span title="<?php printf(__('%s byte'), filesize($path . DS . $f)) ?>"><?php echo $filesize ?></span></td>
+					<td><span title="<?php printf(__('%s byte'), $filesize_raw) ?>"><?php echo $filesize ?></span></td>
 					<td><?php echo $modif ?></td>
 					<td>
 						<a title="<?php _e('Delete') ?>" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php _e('Delete file?') ?>');"><img src="?img=cross" alt=""></a>
@@ -864,7 +871,18 @@ show_message();
 				</tr>
 			<?php
 			}
-
+			else {
+				?>
+				<tr>
+					<td class="gray"></td>
+					<td class="gray" colspan="4">
+						<?php _e('Full size:') ?> <span title="<?php printf(__('%s byte'), $all_files_size) ?>"><?php echo get_filesize($all_files_size) ?></span>,
+						<?php _e('files:') ?> <?php echo $num_files ?>,
+						<?php _e('folders:') ?> <?php echo $num_folders ?>
+					</td>
+				</tr>
+			<?php
+			}
 			?>
 		</table>
 		<p class="path">
@@ -1153,6 +1171,7 @@ function __($str)
 
 	$strings = get_strings($lang);
 	if (!$strings) return $str;
+	$strings = (array)$strings;
 
 	if (array_key_exists($str, $strings)) {
 		return $strings[$str];
@@ -1420,7 +1439,7 @@ function show_header()
 	<style>
 		html,body,div,span,p,pre,a,code,em,img,small,strong,ol,ul,li,form,label,table,tr,th,td{margin:0;padding:0;vertical-align:baseline;outline:none;font-size:100%;background:transparent;border:none;text-decoration:none}
 		html{overflow-y:scroll}
-		body{padding:0;font:13px/16px Arial,sans-serif;color:#333;background:#efefef}
+		body{padding:0;font:13px/16px Arial,sans-serif;color:#222;background:#efefef}
 		a{color:#296ea3;text-decoration:none}
 		a:hover{color:#b00}
 		img{vertical-align:bottom;border:none}
@@ -1433,7 +1452,8 @@ function show_header()
 		ul li{padding:3px 0}
 		table{border-collapse:collapse;border-spacing:0;margin-bottom:10px;width:100%}
 		th,td{padding:4px 7px;text-align:left;vertical-align:top;border:1px solid #ddd;background:#fff;white-space:nowrap}
-		th{background-color:#eee}
+		th,td.gray{background-color:#eee}
+		td.gray span{color:#222}
 		tr:hover td{background-color:#f5f5f5}
 		code,pre{display:block;margin-bottom:10px;font:13px/16px Consolas,'Courier New',Courier,monospace;border:1px dashed #ccc;padding:5px;overflow:auto}
 		code.maxheight,pre.maxheight{max-height:512px}
@@ -2068,6 +2088,9 @@ function get_strings($lang)
 		'New folder name'                                  => 'Имя новой папки',
 		'New name'                                         => 'Новое имя',
 		'Operations with archives are not available'       => 'Операции с архивами недоступны',
+		'Full size:'                                       => 'Общий размер:',
+		'files:'                                           => 'файлов:',
+		'folders:'                                         => 'папок:',
 	);
 	if (isset($strings[$lang])) {
 		return $strings[$lang];
