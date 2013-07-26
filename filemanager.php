@@ -790,11 +790,12 @@ $all_files_size = 0;
 		<input type="hidden" name="group" value="1">
 		<table>
 			<tr>
-				<th style="width: 3%"></th>
-				<th style="width: 60%"><?php _e('Name') ?></th>
-				<th style="width: 11%"><?php _e('Size') ?></th>
-				<th style="width: 14%"><?php _e('Modified') ?></th>
-				<th style="width: 12%"></th>
+				<th style="width:3%"></th>
+				<th style="width:58%"><?php _e('Name') ?></th>
+				<th style="width:10%"><?php _e('Size') ?></th>
+				<th style="width:12%"><?php _e('Modified') ?></th>
+				<th style="width:6%"><?php _e('Perms') ?></th>
+				<th style="width:11%"></th>
 			</tr>
 			<?php
 
@@ -803,7 +804,7 @@ $all_files_size = 0;
 				?>
 				<tr>
 					<td></td>
-					<td colspan="4">
+					<td colspan="5">
 						<a href="?p=<?php echo urlencode($parent) ?>"><img src="?img=arrow_up" alt=""> ..</a>
 					</td>
 				</tr>
@@ -812,6 +813,7 @@ $all_files_size = 0;
 
 			foreach ($folders as $f) {
 				$modif = date("d.m.y H:i", filemtime($path . DS . $f));
+				$perms = substr(sprintf('%o', fileperms($path . DS . $f)), -4);
 				?>
 				<tr>
 					<td>
@@ -823,6 +825,7 @@ $all_files_size = 0;
 					</td>
 					<td><?php _e('Folder') ?></td>
 					<td><?php echo $modif ?></td>
+					<td><?php echo $perms ?></td>
 					<td>
 						<a title="<?php _e('Delete') ?>" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php _e('Delete folder?') ?>');"><img src="?img=cross" alt=""></a>
 						<a title="<?php _e('Rename') ?>" href="#" onclick="rename('<?php echo encode_html($p) ?>', '<?php echo encode_html($f) ?>');return false;"><img src="?img=rename" alt=""></a>
@@ -840,6 +843,7 @@ $all_files_size = 0;
 				$filesize = get_filesize($filesize_raw);
 				$filelink = get_file_link($p, $f);
 				$all_files_size += $filesize_raw;
+				$perms = substr(sprintf('%o', fileperms($path . DS . $f)), -4);
 				?>
 				<tr>
 					<td>
@@ -852,6 +856,7 @@ $all_files_size = 0;
 					</td>
 					<td><span title="<?php printf(__('%s byte'), $filesize_raw) ?>"><?php echo $filesize ?></span></td>
 					<td><?php echo $modif ?></td>
+					<td><?php echo $perms ?></td>
 					<td>
 						<a title="<?php _e('Delete') ?>" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php _e('Delete file?') ?>');"><img src="?img=cross" alt=""></a>
 						<a title="<?php _e('Rename') ?>" href="#" onclick="rename('<?php echo encode_html($p) ?>', '<?php echo encode_html($f) ?>');return false;"><img src="?img=rename" alt=""></a>
@@ -867,7 +872,7 @@ $all_files_size = 0;
 				?>
 				<tr>
 					<td></td>
-					<td colspan="4"><em><?php _e('Folder is empty') ?></em></td>
+					<td colspan="5"><em><?php _e('Folder is empty') ?></em></td>
 				</tr>
 			<?php
 			}
@@ -875,7 +880,7 @@ $all_files_size = 0;
 				?>
 				<tr>
 					<td class="gray"></td>
-					<td class="gray" colspan="4">
+					<td class="gray" colspan="5">
 						<?php _e('Full size:') ?> <span title="<?php printf(__('%s byte'), $all_files_size) ?>"><?php echo get_filesize($all_files_size) ?></span>,
 						<?php _e('files:') ?> <?php echo $num_files ?>,
 						<?php _e('folders:') ?> <?php echo $num_folders ?>
@@ -1458,7 +1463,7 @@ function show_header()
 		code,pre{display:block;margin-bottom:10px;font:13px/16px Consolas,'Courier New',Courier,monospace;border:1px dashed #ccc;padding:5px;overflow:auto}
 		code.maxheight,pre.maxheight{max-height:512px}
 		input[type="checkbox"]{margin:0;padding:0}
-		#wrapper{max-width:800px;min-width:400px;margin:10px auto}
+		#wrapper{max-width:900px;min-width:400px;margin:10px auto}
 		.path{padding:4px 7px;border:1px solid #ddd;background-color:#fff;margin-bottom:10px}
 		.right{text-align:right}
 		.center{text-align:center}
@@ -2091,6 +2096,7 @@ function get_strings($lang)
 		'Full size:'                                       => 'Общий размер:',
 		'files:'                                           => 'файлов:',
 		'folders:'                                         => 'папок:',
+		'Perms'                                            => 'Права',
 	);
 	if (isset($strings[$lang])) {
 		return $strings[$lang];
