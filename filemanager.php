@@ -316,7 +316,7 @@ if (isset($_POST['upl'])) {
 	}
 
 	if ($errors == 0 && $uploads > 0) {
-		set_message(sprintf(__('All files uploaded to <b>%s</b>'), $p));
+		set_message(sprintf(__('All files uploaded to <b>%s</b>'), $path));
 	}
 	elseif ($errors == 0 && $uploads == 0) {
 		set_message(__('Nothing uploaded'), 'alert');
