@@ -475,7 +475,7 @@ if (isset($_GET['upload'])) {
 	<div class="path">
 		<p><b><?php _e('Uploading files') ?></b></p>
 
-		<p><?php _e('Destination folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT']  . '/' .  $p; ?></p>
+		<p><?php _e('Destination folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT']  . '/' .  $p ?></p>
 
 		<form action="" method="post" enctype="multipart/form-data">
 			<input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
@@ -522,7 +522,7 @@ if (isset($_POST['copy'])) {
 
 			<p><?php _e('Files:') ?> <b><?php echo implode('</b>, <b>', $copy_files) ?></b> </p>
 
-			<p><?php _e('Source folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $p; ?><br>
+			<p><?php _e('Source folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $p ?><br>
 				<?php _e('Destination folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<input type="text" name="copy_to" value="<?php echo encode_html($p) ?>">
 			</p>
 
@@ -557,8 +557,8 @@ if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	<div class="path">
 		<p><b><?php _e('Copying') ?></b></p>
 
-		<p><?php _e('Source path:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $copy; ?><br>
-			<?php _e('Destination folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $p; ?>
+		<p><?php _e('Source path:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $copy ?><br>
+			<?php _e('Destination folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $p ?>
 		</p>
 
 		<p>
@@ -605,7 +605,7 @@ if (isset($_GET['zip'])) {
 	$file_path = $path . DS . $file;
 	?>
 	<div class="path">
-		<p><b><?php _e('Archive') ?> <?php echo $file; ?></b></p>
+		<p><b><?php _e('Archive') ?> <?php echo $file ?></b></p>
 		<?php
 
 		$filenames = get_zif_info($file_path);
@@ -657,7 +657,13 @@ if (isset($_GET['zip'])) {
 		<?php
 		}
 		else {
-			echo '<p>' . __('Error while fetching archive info') . '</p>';
+			?>
+			<p><?php _e('Error while fetching archive info') ?></p>
+			<p>
+				<b><a href="<?php echo $file_url ?>" target="_blank"><img src="?img=folder_open" alt=""> <?php _e('Open') ?></a></b> &nbsp;
+				<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=goback" alt=""> <?php _e('Back') ?></a></b>
+			</p>
+		<?php
 		}
 		?>
 	</div>
@@ -685,7 +691,7 @@ if (isset($_GET['showimg'])) {
 	$image_size = getimagesize($file_path);
 	?>
 	<div class="path">
-		<p><b><?php _e('Image') ?> <?php echo $file; ?></b></p>
+		<p><b><?php _e('Image') ?> <?php echo $file ?></b></p>
 
 		<p>
 			<?php _e('Full path:') ?> <?php echo $file_path ?><br>
@@ -745,7 +751,7 @@ if (isset($_GET['showtxt'])) {
 
 	?>
 	<div class="path">
-		<p><b><?php _e('File') ?> <?php echo $file; ?></b></p>
+		<p><b><?php _e('File') ?> <?php echo $file ?></b></p>
 
 		<p>
 			<?php _e('Full path:') ?> <?php echo $file_path ?><br>
@@ -759,7 +765,7 @@ if (isset($_GET['showtxt'])) {
 			<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=goback" alt=""> <?php _e('Back') ?></a></b>
 		</p>
 
-		<?php echo $content; ?>
+		<?php echo $content ?>
 	</div>
 	<?php
 	show_footer();
@@ -780,9 +786,9 @@ show_message();
 		<table>
 			<tr>
 				<th style="width: 3%"></th>
-				<th style="width: 60%"><?php _e('Name'); ?></th>
-				<th style="width: 11%"><?php _e('Size'); ?></th>
-				<th style="width: 14%"><?php _e('Modified'); ?></th>
+				<th style="width: 60%"><?php _e('Name') ?></th>
+				<th style="width: 11%"><?php _e('Size') ?></th>
+				<th style="width: 14%"><?php _e('Modified') ?></th>
 				<th style="width: 12%"></th>
 			</tr>
 			<?php
@@ -833,9 +839,9 @@ show_message();
 						<input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>">
 					</td>
 					<td>
-						<?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="' . __('File info') . '">'; ?>
+						<?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="' . __('File info') . '">' ?>
 							<img src="<?php echo $img ?>" alt=""> <?php echo $f ?>
-						<?php if (!empty($filelink)) echo '</a>'; ?>
+						<?php if (!empty($filelink)) echo '</a>' ?>
 					</td>
 					<td><span title="<?php printf(__('%s byte'), filesize($path . DS . $f)) ?>"><?php echo $filesize ?></span></td>
 					<td><?php echo $modif ?></td>
@@ -1461,7 +1467,7 @@ function show_footer()
 {
 	global $start_time;
 	?>
-<p class="center"><small>PHP File Manager [<?php echo round((microtime(true) - $start_time), 4); ?>]</small></p>
+<p class="center"><small>PHP File Manager [<?php echo round((microtime(true) - $start_time), 4) ?>]</small></p>
 </div>
 
 <script>
