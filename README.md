@@ -16,6 +16,11 @@ Set Login and Password in $users array.
 
 If you are using .htaccess on your site and have problems with HTTP Auth try to put rewrite rule from htaccess.txt to your .htaccess file.
 
+## Languages
+
+* English
+* Russian
+
 ## Bug tracker
 
 Have a bug? Please create an issue on [Issue tracker](https://github.com/alexantr/filemanager/issues)
