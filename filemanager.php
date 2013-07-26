@@ -772,7 +772,7 @@ show_message();
 				<th style="width: 3%"></th>
 				<th style="width: 60%"><?php _e('Name'); ?></th>
 				<th style="width: 11%"><?php _e('Size'); ?></th>
-				<th style="width: 14%"><?php _e('Changed'); ?></th>
+				<th style="width: 14%"><?php _e('Modified'); ?></th>
 				<th style="width: 12%"></th>
 			</tr>
 			<?php
@@ -2025,7 +2025,7 @@ function get_strings($lang)
 		'Charset:'                                         => 'Кодировка:',
 		'Name'                                             => 'Имя',
 		'Size'                                             => 'Размер',
-		'Changed'                                          => 'Изменен',
+		'Modified'                                         => 'Изменен',
 		'Folder'                                           => 'Папка',
 		'Delete'                                           => 'Удалить',
 		'Delete folder?'                                   => 'Удалить папку?',
