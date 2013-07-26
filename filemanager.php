@@ -741,7 +741,7 @@ if (isset($_GET['showtxt'])) {
 			<?php _e('Full path:') ?> <?php echo $file_path ?><br>
 			<?php _e('File size:') ?> <?php echo get_filesize(filesize($file_path)) ?><br>
 			<?php _e('MIME-type:') ?> <?php echo get_mime_type($file_path) ?><br>
-			<?php _e('Encoding:') ?> <?php echo ($is_utf8) ? 'utf-8' : 'windows-1251' ?>
+			<?php _e('Charset:') ?> <?php echo ($is_utf8) ? 'utf-8' : 'windows-1251' ?>
 		</p>
 
 		<p>
@@ -2022,7 +2022,7 @@ function get_strings($lang)
 		'MIME-type:'                                       => 'MIME-тип:',
 		'Image sizes:'                                     => 'Размеры изображения:',
 		'File'                                             => 'Файл',
-		'Encoding:'                                        => 'Кодировка:',
+		'Charset:'                                         => 'Кодировка:',
 		'Name'                                             => 'Имя',
 		'Size'                                             => 'Размер',
 		'Changed'                                          => 'Изменен',
