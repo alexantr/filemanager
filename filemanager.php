@@ -28,8 +28,8 @@ set_time_limit(600);
 date_default_timezone_set($default_timezone);
 
 ini_set('default_charset', 'UTF-8');
-mb_internal_encoding('UTF-8');
-mb_regex_encoding('UTF-8');
+if (function_exists('mb_internal_encoding')) mb_internal_encoding('UTF-8');
+if (function_exists('mb_regex_encoding')) mb_regex_encoding('UTF-8');
 
 $start_time = microtime(true);
 
