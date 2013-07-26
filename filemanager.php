@@ -17,6 +17,9 @@ $users = array(
 // Default timezone for date() and time()
 $default_timezone = 'Asia/Kuwait'; // UTC+3
 
+// Language (en, ru)
+$lang = 'ru';
+
 # END CONFIG
 
 error_reporting(E_ALL);
@@ -54,7 +57,7 @@ if ($use_http_auth) {
 	// analyze the PHP_AUTH_DIGEST variable
 	$data = http_digest_parse($_SERVER['PHP_AUTH_DIGEST']);
 	if (!$data || !isset($users[$data['username']])) {
-		die('Wrong Credentials!');
+		exit('Wrong Credentials!');
 	}
 
 	// generate the valid response
@@ -63,7 +66,7 @@ if ($use_http_auth) {
 	$valid_response = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
 
 	if ($data['response'] != $valid_response) {
-		die('Wrong Credentials!');
+		exit('Wrong Credentials!');
 	}
 }
 
@@ -89,17 +92,18 @@ if (isset($_GET['del'])) {
 	if ($del != '' && $del != '..' && $del != '.') {
 		$path = ABS_PATH;
 		if ($p != '') $path .= DS . $p;
-		$what = (is_dir($path . DS . $del)) ? 'Папка' : 'Файл';
-		$what_del = (is_dir($path . DS . $del)) ? 'удалена' : 'удален';
+		$is_dir = (is_dir($path . DS . $del)) ? true : false;
 		if (rdelete($path . DS . $del)) {
-			set_message($what . ' <b>' . $del . '</b> ' . $what_del);
+			$msg = $is_dir ? __('Folder <b>%s</b> deleted') : __('File <b>%s</b> deleted');
+			set_message(sprintf($msg, $del));
 		}
 		else {
-			set_message($what . ' <b>' . $del . '</b> не ' . $what_del, 'error');
+			$msg = $is_dir ? __('Folder <b>%s</b> not deleted') : __('File <b>%s</b> not deleted');
+			set_message(sprintf($msg, $del), 'error');
 		}
 	}
 	else {
-		set_message('Имя папки или файла задано не верно', 'error');
+		set_message(__('Wrong file or folder name'), 'error');
 	}
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
@@ -113,17 +117,17 @@ if (isset($_GET['new'])) {
 		$path = ABS_PATH;
 		if ($p != '') $path .= DS . $p;
 		if (mkdir_safe($path . DS . $new, false) === true) {
-			set_message('Папка <b>' . $new . '</b> создана');
+			set_message(sprintf(__('Folder <b>%s</b> created'), $new));
 		}
 		elseif (mkdir_safe($path . DS . $new, false) === $path . DS . $new) {
-			set_message('Папка <b>' . $new . '</b> уже существует', 'alert');
+			set_message(sprintf(__('Folder <b>%s</b> already exists'), $new), 'alert');
 		}
 		else {
-			set_message('Папка <b>' . $new . '</b> не создана', 'error');
+			set_message(sprintf(__('Folder <b>%s</b> not created'), $new), 'error');
 		}
 	}
 	else {
-		set_message('Имя папки задано не верно', 'error');
+		set_message(__('Wrong folder name'), 'error');
 	}
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
@@ -135,7 +139,7 @@ if (isset($_GET['copy']) && isset($_GET['finish'])) {
 	$copy = clean_path($copy);
 	// empty path
 	if ($copy == '') {
-		set_message('Не задан исходный путь', 'error');
+		set_message(__('Source path not defined'), 'error');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
 	// abs path from
@@ -148,29 +152,30 @@ if (isset($_GET['copy']) && isset($_GET['finish'])) {
 	$move = (isset($_GET['move'])) ? true : false;
 	// copy/move
 	if ($from != $dest) {
+		$msg_from = trim($p . DS . basename($from), DS);
 		if ($move) {
 			$rename = rename_safe($from, $dest);
 			if ($rename) {
-				set_message('Перемещено из <b>' . $copy . '</b> в <b>' . trim($p . DS . basename($from), DS) . '</b>');
+				set_message(sprintf(__('Moved from <b>%s</b> to <b>%s</b>'), $copy, $msg_from));
 			}
 			elseif ($rename === null) {
-				set_message('Файл или папка уже есть по указанному пути', 'alert');
+				set_message(__('File or folder with this path already exists'), 'alert');
 			}
 			else {
-				set_message('Произошла ошибка при перемещении из <b>' . $copy . '</b> в <b>' . trim($p . DS . basename($from), DS) . '</b>', 'error');
+				set_message(sprintf(__('Error while moving from <b>%s</b> to <b>%s</b>'), $copy, $msg_from), 'error');
 			}
 		}
 		else {
 			if (rcopy($from, $dest)) {
-				set_message('Скопировано из <b>' . $copy . '</b> в <b>' . trim($p . DS . basename($from), DS) . '</b>');
+				set_message(sprintf(__('Copyied from <b>%s</b> to <b>%s</b>'), $copy, $msg_from));
 			}
 			else {
-				set_message('Произошла ошибка при копировании из <b>' . $copy . '</b> в <b>' . trim($p . DS . basename($from), DS) . '</b>', 'error');
+				set_message(sprintf(__('Error while copying from <b>%s</b> to <b>%s</b>'), $copy, $msg_from), 'error');
 			}
 		}
 	}
 	else {
-		set_message('Пути не должны совпадать', 'alert');
+		set_message(__('Paths must be not equal'), 'alert');
 	}
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
@@ -185,12 +190,12 @@ if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])
 	$copy_to = clean_path($_POST['copy_to']);
 	if ($copy_to != '') $copy_to_path .= DS . $copy_to;
 	if ($path == $copy_to_path) {
-		set_message('Пути не должны совпадать', 'alert');
+		set_message(__('Paths must be not equal'), 'alert');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
 	if (!is_dir($copy_to_path)) {
 		if (!mkdir_safe($copy_to_path, true)) {
-			set_message('Невозможно создать папку назначения', 'error');
+			set_message(__('Unable to create destination folder'), 'error');
 			redirect(BASE_URL . '?p=' . urlencode($p));
 		}
 	}
@@ -221,14 +226,16 @@ if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])
 			}
 		}
 		if ($errors == 0) {
-			set_message('Все отмеченные файлы и папки ' . ($move ? 'перемещены' : 'сопированы'));
+			$msg = $move ? __('Selected files and folders moved') : __('Selected files and folders copied');
+			set_message($msg);
 		}
 		else {
-			set_message('При ' . ($move ? 'перемещении' : 'копировании') . ' возникли ошибки', 'error');
+			$msg = $move ? __('Error while moving items') : __('Error while copying items');
+			set_message($msg, 'error');
 		}
 	}
 	else {
-		set_message('Ничего не выбрано', 'alert');
+		set_message(__('Nothing selected'), 'alert');
 	}
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
@@ -249,14 +256,14 @@ if (isset($_GET['ren']) && isset($_GET['to'])) {
 	// rename
 	if ($old != '' && $new != '') {
 		if (rename_safe($path . DS . $old, $path . DS . $new)) {
-			set_message('Переименовано из <b>' . $old . '</b> в <b>' . $new . '</b>');
+			set_message(sprintf(__('Renamed from <b>%s</b> to <b>%s</b>'), $old, $new));
 		}
 		else {
-			set_message('Произошла ошибка при переименовании из <b>' . $old . '</b> в <b>' . $new . '</b>', 'error');
+			set_message(sprintf(__('Error while renaming from <b>%s</b> to <b>%s</b>'), $old, $new), 'error');
 		}
 	}
 	else {
-		set_message('Не заданы имена', 'error');
+		set_message(__('Names not set'), 'error');
 	}
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
@@ -282,7 +289,7 @@ if (isset($_GET['dl'])) {
 		exit;
 	}
 	else {
-		set_message('Файл не найден', 'error');
+		set_message(__('File not found'), 'error');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
 }
@@ -309,13 +316,13 @@ if (isset($_POST['upl'])) {
 	}
 
 	if ($errors == 0 && $uploads > 0) {
-		set_message('Все файлы загружены в папку <b>' . $p . '</b>');
+		set_message(sprintf(__('All files uploaded to <b>%s</b>'), $p));
 	}
 	elseif ($errors == 0 && $uploads == 0) {
-		set_message('Ничего не загружено', 'alert');
+		set_message(__('Nothing uploaded'), 'alert');
 	}
 	else {
-		set_message('При загрузке файлов возникли ошибки. Загружено файлов: ' . $uploads, 'error');
+		set_message(sprintf(__('Error while uploading files. Uploaded files: %s'), $uploads), 'error');
 	}
 
 	redirect(BASE_URL . '?p=' . urlencode($p));
@@ -338,14 +345,14 @@ if (isset($_POST['group']) && isset($_POST['delete'])) {
 			}
 		}
 		if ($errors == 0) {
-			set_message('Все отмеченные файлы и папки удалены');
+			set_message(__('Selected files and folder deleted'));
 		}
 		else {
-			set_message('При удалении возникли ошибки', 'error');
+			set_message(__('Error while deleting items'), 'error');
 		}
 	}
 	else {
-		set_message('Ничего не выбрано', 'alert');
+		set_message(__('Nothing selected'), 'alert');
 	}
 
 	redirect(BASE_URL . '?p=' . urlencode($p));
@@ -366,14 +373,14 @@ if (isset($_POST['group']) && isset($_POST['zip'])) {
 		$res = $zipper->create($zipname, $files);
 
 		if ($res) {
-			set_message('Архив <b>' . $zipname . '</b> успешно создан');
+			set_message(sprintf(__('Archive <b>%s</b> created'), $zipname));
 		}
 		else {
-			set_message('Ошибка. Архив не создан', 'error');
+			set_message(__('Archive not created'), 'error');
 		}
 	}
 	else {
-		set_message('Ничего не выбрано', 'alert');
+		set_message(__('Nothing selected'), 'alert');
 	}
 
 	redirect(BASE_URL . '?p=' . urlencode($p));
@@ -405,15 +412,15 @@ if (isset($_GET['unzip'])) {
 		$res = $zipper->unzip($zip_path, $path);
 
 		if ($res) {
-			set_message('Архив распакован');
+			set_message(__('Archive unpacked'));
 		}
 		else {
-			set_message('Архив не распакован', 'error');
+			set_message(__('Archive not unpacked'), 'error');
 		}
 
 	}
 	else {
-		set_message('Файл не найден', 'error');
+		set_message(__('File not found'), 'error');
 	}
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
@@ -456,9 +463,9 @@ if (isset($_GET['upload'])) {
 	show_navigation_path($p); // current path
 	?>
 	<div class="path">
-		<p><b>Загрузка файлов</b></p>
+		<p><b><?php _e('Uploading files') ?></b></p>
 
-		<p>Папка назначения: <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $p; ?></p>
+		<p><?php _e('Destination folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT']  . '/' .  $p; ?></p>
 
 		<form action="" method="post" enctype="multipart/form-data">
 			<input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
@@ -470,8 +477,8 @@ if (isset($_GET['upload'])) {
 			<input type="file" name="upload[]"><br>
 			<br>
 			<p>
-				<button type="submit" class="btn"><img src="?img=apply" alt=""> Загрузить</button> &nbsp;
-				<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=cancel" alt=""> Отмена</a></b>
+				<button type="submit" class="btn"><img src="?img=apply" alt=""> <?php _e('Upload') ?></button> &nbsp;
+				<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=cancel" alt=""> <?php _e('Cancel') ?></a></b>
 			</p>
 		</form>
 	</div>
@@ -484,7 +491,7 @@ if (isset($_GET['upload'])) {
 if (isset($_POST['copy'])) {
 	$copy_files = $_POST['file'];
 	if (!is_array($copy_files) || empty($copy_files)) {
-		set_message('Ничего не выбрано', 'alert');
+		set_message(__('Nothing selected'), 'alert');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
 
@@ -492,7 +499,7 @@ if (isset($_POST['copy'])) {
 	show_navigation_path($p); // current path
 	?>
 	<div class="path">
-		<p><b>Копирование</b></p>
+		<p><b><?php _e('Copying') ?></b></p>
 
 		<form action="" method="post">
 			<input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
@@ -503,20 +510,20 @@ if (isset($_POST['copy'])) {
 			}
 			?>
 
-			<p>Файлы: <b><?php echo implode('</b>, <b>', $copy_files) ?></b> </p>
+			<p><?php _e('Files:') ?> <b><?php echo implode('</b>, <b>', $copy_files) ?></b> </p>
 
-			<p>Исходная папка: <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $p; ?><br>
-				Папка назначения: <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<input type="text" name="copy_to" value="<?php echo encode_html($p) ?>">
+			<p><?php _e('Source folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $p; ?><br>
+				<?php _e('Destination folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<input type="text" name="copy_to" value="<?php echo encode_html($p) ?>">
 			</p>
 
-			<p><label><input type="checkbox" name="move" value="1"> Переместить</label></p>
+			<p><label><input type="checkbox" name="move" value="1"> <?php _e('Move') ?></label></p>
 			<p>
-				<button type="submit" class="btn"><img src="?img=apply" alt=""> Скопировать</button> &nbsp;
-				<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=cancel" alt=""> Отмена</a></b>
+				<button type="submit" class="btn"><img src="?img=apply" alt=""> <?php _e('Copy') ?></button> &nbsp;
+				<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=cancel" alt=""> <?php _e('Cancel') ?></a></b>
 			</p>
 		</form>
 
-		<!--<p><i>Выбрать папку:</i></p>
+		<!--<p><i><?php /*_e('Select folder:')*/ ?></i></p>
 		<ul class="folders"></ul>-->
 
 	</div>
@@ -530,7 +537,7 @@ if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	$copy = $_GET['copy'];
 	$copy = clean_path($copy);
 	if ($copy == '' || !file_exists(ABS_PATH . DS . $copy)) {
-		set_message('Файл не найден', 'error');
+		set_message(__('File not found'), 'error');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
 
@@ -538,19 +545,19 @@ if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	show_navigation_path($p); // current path
 	?>
 	<div class="path">
-		<p><b>Копирование</b></p>
+		<p><b><?php _e('Copying') ?></b></p>
 
-		<p>Исходный путь: <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $copy; ?><br>
-			Папка назначения: <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $p; ?>
+		<p><?php _e('Source path:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $copy; ?><br>
+			<?php _e('Destination folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $p; ?>
 		</p>
 
 		<p>
-			<b><a href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1"><img src="?img=apply" alt=""> Скопировать</a></b> &nbsp;
-			<b><a href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1&amp;move=1"><img src="?img=apply" alt=""> Переместить</a></b> &nbsp;
-			<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=cancel" alt=""> Отмена</a></b>
+			<b><a href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1"><img src="?img=apply" alt=""> <?php _e('Copy') ?></a></b> &nbsp;
+			<b><a href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1&amp;move=1"><img src="?img=apply" alt=""> <?php _e('Move') ?></a></b> &nbsp;
+			<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=cancel" alt=""> <?php _e('Cancel') ?></a></b>
 		</p>
 
-		<p><i>Выбрать папку:</i></p>
+		<p><i><?php _e('Select folder:') ?></i></p>
 		<ul class="folders">
 			<?php
 			if ($parent !== false) {
@@ -577,7 +584,7 @@ if (isset($_GET['zip'])) {
 	$file = clean_path($file);
 	$file = str_replace('/', '', $file);
 	if ($file == '' || !is_file($path . DS . $file)) {
-		set_message('Файл не найден', 'error');
+		set_message(__('File not found'), 'error');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
 
@@ -588,7 +595,7 @@ if (isset($_GET['zip'])) {
 	$file_path = $path . DS . $file;
 	?>
 	<div class="path">
-		<p><b>Информация об архиве <?php echo $file; ?></b></p>
+		<p><b><?php _e('Archive') ?> <?php echo $file; ?></b></p>
 		<?php
 
 		$filenames = get_zif_info($file_path);
@@ -609,20 +616,20 @@ if (isset($_GET['zip'])) {
 			$zip_name = pathinfo($file_path, PATHINFO_FILENAME);
 			?>
 			<p>
-				Полный путь: <?php echo $file_path ?><br>
-				Размер файла: <?php echo get_filesize(filesize($file_path)) ?><br>
-				Файлов в архиве: <?php echo $total_files ?><br>
-				Общий размер: <?php echo get_filesize($total_uncomp) ?><br>
-				Размер в архиве: <?php echo get_filesize($total_comp) ?><br>
-				Степень сжатия: <?php echo round(($total_comp / $total_uncomp) * 100) ?>%
+				<?php _e('Full path:') ?> <?php echo $file_path ?><br>
+				<?php _e('File size:') ?> <?php echo get_filesize(filesize($file_path)) ?><br>
+				<?php _e('Files in archive:') ?> <?php echo $total_files ?><br>
+				<?php _e('Total size:') ?> <?php echo get_filesize($total_uncomp) ?><br>
+				<?php _e('Size in archive:') ?> <?php echo get_filesize($total_comp) ?><br>
+				<?php _e('Compression:') ?> <?php echo round(($total_comp / $total_uncomp) * 100) ?>%
 			</p>
 
 			<p>
-				<b><a href="<?php echo $file_url ?>" target="_blank"><img src="?img=folder_open" alt=""> Открыть</a></b> &nbsp;
-				<b><a href="?p=<?php echo urlencode($p) ?>&amp;unzip=<?php echo urlencode($file) ?>"><img src="?img=apply" alt=""> Распаковать</a></b> &nbsp;
-				<b><a href="?p=<?php echo urlencode($p) ?>&amp;unzip=<?php echo urlencode($file) ?>&amp;tofolder=1" title="Распаковать в <?php echo encode_html($zip_name) ?>"><img src="?img=apply" alt="">
-						Распаковать в папку</a></b> &nbsp;
-				<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=goback" alt=""> Назад</a></b>
+				<b><a href="<?php echo $file_url ?>" target="_blank"><img src="?img=folder_open" alt=""> <?php _e('Open') ?></a></b> &nbsp;
+				<b><a href="?p=<?php echo urlencode($p) ?>&amp;unzip=<?php echo urlencode($file) ?>"><img src="?img=apply" alt=""> <?php _e('Unpack') ?></a></b> &nbsp;
+				<b><a href="?p=<?php echo urlencode($p) ?>&amp;unzip=<?php echo urlencode($file) ?>&amp;tofolder=1" title="<?php _e('Unpack to') ?> <?php echo encode_html($zip_name) ?>"><img src="?img=apply" alt="">
+						<?php _e('Unpack to folder') ?></a></b> &nbsp;
+				<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=goback" alt=""> <?php _e('Back') ?></a></b>
 			</p>
 
 			<code class="maxheight">
@@ -640,7 +647,7 @@ if (isset($_GET['zip'])) {
 		<?php
 		}
 		else {
-			echo '<p>Ошибка получения информации об архиве</p>';
+			echo '<p>' . __('Error while fetching archive info') . '</p>';
 		}
 		?>
 	</div>
@@ -655,7 +662,7 @@ if (isset($_GET['showimg'])) {
 	$file = clean_path($file);
 	$file = str_replace('/', '', $file);
 	if ($file == '' || !is_file($path . DS . $file)) {
-		set_message('Файл не найден', 'error');
+		set_message(__('File not found'), 'error');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
 
@@ -668,18 +675,18 @@ if (isset($_GET['showimg'])) {
 	$image_size = getimagesize($file_path);
 	?>
 	<div class="path">
-		<p><b>Изображение <?php echo $file; ?></b></p>
+		<p><b><?php _e('Image') ?> <?php echo $file; ?></b></p>
 
 		<p>
-			Полный путь: <?php echo $file_path ?><br>
-			Размер файла: <?php echo get_filesize(filesize($file_path)) ?><br>
-			MIME-тип: <?php echo isset($image_size['mime']) ? $image_size['mime'] : get_mime_type($file_path) ?><br>
-			Размеры изображения: <?php echo (isset($image_size[0])) ? $image_size[0] : '0' ?> x <?php echo (isset($image_size[1])) ? $image_size[1] : '0' ?>
+			<?php _e('Full path:') ?> <?php echo $file_path ?><br>
+			<?php _e('File size:') ?> <?php echo get_filesize(filesize($file_path)) ?><br>
+			<?php _e('MIME-type:') ?> <?php echo isset($image_size['mime']) ? $image_size['mime'] : get_mime_type($file_path) ?><br>
+			<?php _e('Image sizes:') ?> <?php echo (isset($image_size[0])) ? $image_size[0] : '0' ?> x <?php echo (isset($image_size[1])) ? $image_size[1] : '0' ?>
 		</p>
 
 		<p>
-			<b><a href="<?php echo $file_url ?>" target="_blank"><img src="?img=folder_open" alt=""> Открыть</a></b> &nbsp;
-			<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=goback" alt=""> Назад</a></b>
+			<b><a href="<?php echo $file_url ?>" target="_blank"><img src="?img=folder_open" alt=""> <?php _e('Open') ?></a></b> &nbsp;
+			<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=goback" alt=""> <?php _e('Back') ?></a></b>
 		</p>
 		<?php
 		$ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
@@ -699,7 +706,7 @@ if (isset($_GET['showtxt'])) {
 	$file = clean_path($file);
 	$file = str_replace('/', '', $file);
 	if ($file == '' || !is_file($path . DS . $file)) {
-		set_message('Файл не найден', 'error');
+		set_message(__('File not found'), 'error');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
 
@@ -728,18 +735,18 @@ if (isset($_GET['showtxt'])) {
 
 	?>
 	<div class="path">
-		<p><b>Файл <?php echo $file; ?></b></p>
+		<p><b><?php _e('File') ?> <?php echo $file; ?></b></p>
 
 		<p>
-			Полный путь: <?php echo $file_path ?><br>
-			Размер файла: <?php echo get_filesize(filesize($file_path)) ?><br>
-			MIME-тип: <?php echo get_mime_type($file_path) ?><br>
-			Кодировка: <?php echo ($is_utf8) ? 'utf-8' : 'windows-1251' ?>
+			<?php _e('Full path:') ?> <?php echo $file_path ?><br>
+			<?php _e('File size:') ?> <?php echo get_filesize(filesize($file_path)) ?><br>
+			<?php _e('MIME-type:') ?> <?php echo get_mime_type($file_path) ?><br>
+			<?php _e('Encoding:') ?> <?php echo ($is_utf8) ? 'utf-8' : 'windows-1251' ?>
 		</p>
 
 		<p>
-			<b><a href="<?php echo $file_url ?>" target="_blank"><img src="?img=folder_open" alt=""> Открыть</a></b> &nbsp;
-			<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=goback" alt=""> Назад</a></b>
+			<b><a href="<?php echo $file_url ?>" target="_blank"><img src="?img=folder_open" alt=""> <?php _e('Open') ?></a></b> &nbsp;
+			<b><a href="?p=<?php echo urlencode($p) ?>"><img src="?img=goback" alt=""> <?php _e('Back') ?></a></b>
 		</p>
 
 		<?php echo $content; ?>
@@ -763,9 +770,9 @@ show_message();
 		<table>
 			<tr>
 				<th style="width: 3%"></th>
-				<th style="width: 60%">Имя</th>
-				<th style="width: 11%">Размер</th>
-				<th style="width: 14%">Изменен</th>
+				<th style="width: 60%"><?php _e('Name'); ?></th>
+				<th style="width: 11%"><?php _e('Size'); ?></th>
+				<th style="width: 14%"><?php _e('Changed'); ?></th>
 				<th style="width: 12%"></th>
 			</tr>
 			<?php
@@ -793,12 +800,12 @@ show_message();
 						<a href="?p=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><img src="?img=folder" alt="">
 							<?php echo $f ?></a>
 					</td>
-					<td>Папка</td>
+					<td><?php _e('Folder') ?></td>
 					<td><?php echo $modif ?></td>
 					<td>
-						<a title="Удалить" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('Удалить папку?');"><img src="?img=cross" alt=""></a>
-						<a title="Переименовать" href="#" onclick="rename('<?php echo encode_html($p) ?>', '<?php echo encode_html($f) ?>');return false;"><img src="?img=rename" alt=""></a>
-						<a title="Копировать в..." href="?p=&amp;copy=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><img src="?img=copy" alt=""></a>
+						<a title="<?php _e('Delete') ?>" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php _e('Delete folder?') ?>');"><img src="?img=cross" alt=""></a>
+						<a title="<?php _e('Rename') ?>" href="#" onclick="rename('<?php echo encode_html($p) ?>', '<?php echo encode_html($f) ?>');return false;"><img src="?img=rename" alt=""></a>
+						<a title="<?php _e('Copy to...') ?>" href="?p=&amp;copy=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><img src="?img=copy" alt=""></a>
 					</td>
 				</tr>
 			<?php
@@ -816,17 +823,17 @@ show_message();
 						<input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>">
 					</td>
 					<td>
-						<?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="Информация о файле">'; ?>
+						<?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="' . __('File info') . '">'; ?>
 							<img src="<?php echo $img ?>" alt=""> <?php echo $f ?>
 						<?php if (!empty($filelink)) echo '</a>'; ?>
 					</td>
-					<td><span title="<?php echo filesize($path . DS . $f) ?> байт"><?php echo $filesize ?></span></td>
+					<td><span title="<?php printf(__('%s byte'), filesize($path . DS . $f)) ?>"><?php echo $filesize ?></span></td>
 					<td><?php echo $modif ?></td>
 					<td>
-						<a title="Удалить" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('Удалить файл?');"><img src="?img=cross" alt=""></a>
-						<a title="Переименовать" href="#" onclick="rename('<?php echo encode_html($p) ?>', '<?php echo encode_html($f) ?>');return false;"><img src="?img=rename" alt=""></a>
-						<a title="Копировать в..." href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><img src="?img=copy" alt=""></a>
-						<a title="Скачать" href="?p=<?php echo urlencode($p) ?>&amp;dl=<?php echo urlencode($f) ?>"><img src="?img=download" alt=""></a>
+						<a title="<?php _e('Delete') ?>" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php _e('Delete file?') ?>');"><img src="?img=cross" alt=""></a>
+						<a title="<?php _e('Rename') ?>" href="#" onclick="rename('<?php echo encode_html($p) ?>', '<?php echo encode_html($f) ?>');return false;"><img src="?img=rename" alt=""></a>
+						<a title="<?php _e('Copy to...') ?>" href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><img src="?img=copy" alt=""></a>
+						<a title="<?php _e('Download') ?>" href="?p=<?php echo urlencode($p) ?>&amp;dl=<?php echo urlencode($f) ?>"><img src="?img=download" alt=""></a>
 					</td>
 				</tr>
 			<?php
@@ -837,7 +844,7 @@ show_message();
 				?>
 				<tr>
 					<td></td>
-					<td colspan="4"><em>Папка пуста</em></td>
+					<td colspan="4"><em><?php _e('Folder is empty') ?></em></td>
 				</tr>
 			<?php
 			}
@@ -845,14 +852,14 @@ show_message();
 			?>
 		</table>
 		<p class="path">
-			<a href="#" onclick="select_all();return false;"><img src="?img=checkbox" alt=""> Выделить все</a> &nbsp;
-			<a href="#" onclick="unselect_all();return false;"><img src="?img=checkbox_uncheck" alt=""> Снять выделение</a> &nbsp;
-			<a href="#" onclick="invert_all();return false;"><img src="?img=checkbox_invert" alt=""> Инвертировать</a>
+			<a href="#" onclick="select_all();return false;"><img src="?img=checkbox" alt=""> <?php _e('Select all') ?></a> &nbsp;
+			<a href="#" onclick="unselect_all();return false;"><img src="?img=checkbox_uncheck" alt=""> <?php _e('Unselect all') ?></a> &nbsp;
+			<a href="#" onclick="invert_all();return false;"><img src="?img=checkbox_invert" alt=""> <?php _e('Invert selection') ?></a>
 		</p>
 		<p>
-			<input type="submit" name="delete" value="Удалить" onclick="return confirm('Удалить выбранные файлы и папки?')">
-			<input type="submit" name="zip" value="Упаковать">
-			<input type="submit" name="copy" value="Копировать">
+			<input type="submit" name="delete" value="<?php _e('Delete') ?>" onclick="return confirm('<?php _e('Delete selected files and folders?') ?>')">
+			<input type="submit" name="zip" value="<?php _e('Pack') ?>">
+			<input type="submit" name="copy" value="<?php _e('Copy') ?>">
 		</p>
 	</form>
 
@@ -1056,10 +1063,10 @@ function get_parent_path($path)
 
 function get_filesize($size)
 {
-	if ($size < 1000) return $size . ' байт';
-	elseif (($size / 1024) < 1000) return round(($size / 1024), 1) . ' КБ';
-	elseif (($size / 1024 / 1024) < 1000) return round(($size / 1024 / 1024), 1) . ' МБ';
-	else return round(($size / 1024 / 1024 / 1024), 1) . ' ГБ';
+	if ($size < 1000) return sprintf(__('%s byte'), $size);
+	elseif (($size / 1024) < 1000) return sprintf(__('%s KB'), round(($size / 1024), 1));
+	elseif (($size / 1024 / 1024) < 1000) return sprintf(__('%s MB'), round(($size / 1024 / 1024), 1));
+	else return sprintf(__('%s GB'), round(($size / 1024 / 1024 / 1024), 1));
 }
 
 function get_zif_info($path)
@@ -1119,6 +1126,28 @@ function set_message($msg, $status = 'ok')
 function is_utf8($string)
 {
 	return preg_match('//u', $string);
+}
+
+// translation
+function __($str)
+{
+	global $lang;
+
+	if (!isset($lang)) return $str;
+
+	$strings = get_strings($lang);
+	if (!$strings) return $str;
+
+	if (array_key_exists($str, $strings)) {
+		return $strings[$str];
+	}
+	return $str;
+}
+
+// echo translation
+function _e($str)
+{
+	echo __($str);
 }
 
 function get_file_link($p, $f)
@@ -1322,8 +1351,8 @@ function show_navigation_path($path)
 	?>
 	<div class="path">
 		<div class='float-right'>
-			<a title="Загрузить файлы" href="?p=<?php echo urlencode($p) ?>&amp;upload"><img src="?img=upload" alt=""></a>
-			<a title="Новая папка" href="#" onclick="newfolder('<?php echo encode_html($p) ?>');return false;"><img src="?img=folder_add" alt=""></a>
+			<a title="<?php _e('Upload files') ?>" href="?p=<?php echo urlencode($p) ?>&amp;upload"><img src="?img=upload" alt=""></a>
+			<a title="<?php _e('New folder') ?>" href="#" onclick="newfolder('<?php echo encode_html($p) ?>');return false;"><img src="?img=folder_add" alt=""></a>
 		</div>
 		<?php
 		$path = clean_path($path);
@@ -1425,13 +1454,13 @@ function show_footer()
 
 <script>
 	function newfolder(p) {
-		var name = prompt('Имя новой папки', 'folder');
+		var name = prompt('<?php _e('New folder name') ?>', 'folder');
 		if (name !== null && name !== '') {
 			window.location.search = 'p=' + encodeURIComponent(p) + '&new=' + encodeURIComponent(name);
 		}
 	}
 	function rename(p, f) {
-		var name = prompt('Новое имя', f);
+		var name = prompt('<?php _e('New name') ?>', f);
 		if (name !== null && name !== '' && name != f) {
 			window.location.search = 'p=' + encodeURIComponent(p) + '&ren=' + encodeURIComponent(f) + '&to=' + encodeURIComponent(name);
 		}
@@ -1926,4 +1955,105 @@ uIISfjRyOhIucz2At/E4KJ8Jso1vpwpO8nkWTkMBNbwLNAVPrvycQ/H44dy2o+Cyj35fDcZiFvwy
 RYjBpNe7pOcvAQYAXEPSkFWK3c0AAAAASUVORK5CYII=',
 		//'file_3' => '',
 	);
+}
+
+function get_strings($lang)
+{
+	$strings['ru'] = array(
+		'Folder <b>%s</b> deleted'                         => 'Папка <b>%s</b> удалена',
+		'Folder <b>%s</b> not deleted'                     => 'Папка <b>%s</b> не удалена',
+		'File <b>%s</b> deleted'                           => 'Файл <b>%s</b> удален',
+		'File <b>%s</b> not deleted'                       => 'Файл <b>%s</b> не удален',
+		'Wrong file or folder name'                        => 'Имя папки или файла задано не верно',
+		'Folder <b>%s</b> created'                         => 'Папка <b>%s</b> создана',
+		'Folder <b>%s</b> already exists'                  => 'Папка <b>%s</b> уже существует',
+		'Folder <b>%s</b> not created'                     => 'Папка <b>%s</b> не создана',
+		'Wrong folder name'                                => 'Имя папки задано не верно',
+		'Source path not defined'                          => 'Не задан исходный путь',
+		'Moved from <b>%s</b> to <b>%s</b>'                => 'Перемещено из <b>%s</b> в <b>%s</b>',
+		'File or folder with this path already exists'     => 'Файл или папка уже есть по указанному пути',
+		'Error while moving from <b>%s</b> to <b>%s</b>'   => 'Произошла ошибка при перемещении из <b>%s</b> в <b>%s</b>',
+		'Copyied from <b>%s</b> to <b>%s</b>'              => 'Скопировано из <b>%s</b> в <b>%s</b>',
+		'Error while copying from <b>%s</b> to <b>%s</b>'  => 'Произошла ошибка при копировании из <b>%s</b> в <b>%s</b>',
+		'Paths must be not equal'                          => 'Пути не должны совпадать',
+		'Unable to create destination folder'              => 'Невозможно создать папку назначения',
+		'Selected files and folders moved'                 => 'Все отмеченные файлы и папки перемещены',
+		'Selected files and folders copied'                => 'Все отмеченные файлы и папки сопированы',
+		'Error while moving items'                         => 'При перемещении возникли ошибки',
+		'Error while copying items'                        => 'При копировании возникли ошибки',
+		'Nothing selected'                                 => 'Ничего не выбрано',
+		'Renamed from <b>%s</b> to <b>%s</b>'              => 'Переименовано из <b>%s</b> в <b>%s</b>',
+		'Error while renaming from <b>%s</b> to <b>%s</b>' => 'Произошла ошибка при переименовании из <b>%s</b> в <b>%s</b>',
+		'Names not set'                                    => 'Не заданы имена',
+		'File not found'                                   => 'Файл не найден',
+		'All files uploaded to <b>%s</b>'                  => 'Все файлы загружены в папку <b>%s</b>',
+		'Nothing uploaded'                                 => 'Ничего не загружено',
+		'Error while uploading files. Uploaded files: %s'  => 'При загрузке файлов возникли ошибки. Загружено файлов: %s',
+		'Selected files and folder deleted'                => 'Все отмеченные файлы и папки удалены',
+		'Error while deleting items'                       => 'При удалении возникли ошибки',
+		'Archive <b>%s</b> created'                        => 'Архив <b>%s</b> успешно создан',
+		'Archive not created'                              => 'Ошибка. Архив не создан',
+		'Archive unpacked'                                 => 'Архив распакован',
+		'Archive not unpacked'                             => 'Архив не распакован',
+		'Uploading files'                                  => 'Загрузка файлов',
+		'Destination folder:'                              => 'Папка назначения:',
+		'Upload'                                           => 'Загрузить',
+		'Cancel'                                           => 'Отмена',
+		'Copying'                                          => 'Копирование',
+		'Files:'                                           => 'Файлы:',
+		'Source folder:'                                   => 'Исходная папка:',
+		'Move'                                             => 'Переместить',
+		'Select folder:'                                   => 'Выбрать папку:',
+		'Source path:'                                     => 'Исходный путь:',
+		'Archive'                                          => 'Архив',
+		'Full path:'                                       => 'Полный путь:',
+		'File size:'                                       => 'Размер файла:',
+		'Files in archive:'                                => 'Файлов в архиве:',
+		'Total size:'                                      => 'Общий размер:',
+		'Size in archive:'                                 => 'Размер в архиве:',
+		'Compression:'                                     => 'Степень сжатия:',
+		'Open'                                             => 'Открыть',
+		'Unpack'                                           => 'Распаковать',
+		'Unpack to'                                        => 'Распаковать в',
+		'Unpack to folder'                                 => 'Распаковать в папку',
+		'Back'                                             => 'Назад',
+		'Error while fetching archive info'                => 'Ошибка получения информации об архиве',
+		'Image'                                            => 'Изображение',
+		'MIME-type:'                                       => 'MIME-тип:',
+		'Image sizes:'                                     => 'Размеры изображения:',
+		'File'                                             => 'Файл',
+		'Encoding:'                                        => 'Кодировка:',
+		'Name'                                             => 'Имя',
+		'Size'                                             => 'Размер',
+		'Changed'                                          => 'Изменен',
+		'Folder'                                           => 'Папка',
+		'Delete'                                           => 'Удалить',
+		'Delete folder?'                                   => 'Удалить папку?',
+		'Delete file?'                                     => 'Удалить файл?',
+		'Rename'                                           => 'Переименовать',
+		'Copy to...'                                       => 'Копировать в...',
+		'File info'                                        => 'Информация о файле',
+		'%s byte'                                          => '%s байт',
+		'%s KB'                                            => '%s КБ',
+		'%s MB'                                            => '%s МБ',
+		'%s GB'                                            => '%s ГБ',
+		'Download'                                         => 'Скачать',
+		'Folder is empty'                                  => 'Папка пуста',
+		'Select all'                                       => 'Выделить все',
+		'Unselect all'                                     => 'Снять выделение',
+		'Invert selection'                                 => 'Инвертировать',
+		'Delete selected files and folders?'               => 'Удалить выбранные файлы и папки?',
+		'Pack'                                             => 'Упаковать',
+		'Copy'                                             => 'Копировать',
+		'Upload files'                                     => 'Загрузить файлы',
+		'New folder'                                       => 'Новая папка',
+		'New folder name'                                  => 'Имя новой папки',
+		'New name'                                         => 'Новое имя',
+	);
+	if (isset($strings[$lang])) {
+		return $strings[$lang];
+	}
+	else {
+		return false;
+	}
 }
