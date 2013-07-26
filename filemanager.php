@@ -149,7 +149,7 @@ if (isset($_GET['copy']) && isset($_GET['finish'])) {
 	// copy/move
 	if ($from != $dest) {
 		if ($move) {
-			$rename = save_rename($from, $dest);
+			$rename = rename_safe($from, $dest);
 			if ($rename) {
 				set_message('Перемещено из <b>' . $copy . '</b> в <b>' . trim($p . DS . basename($from), DS) . '</b>');
 			}
@@ -208,7 +208,7 @@ if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])
 				$dest = $copy_to_path . DS . $f;
 				// do
 				if ($move) {
-					$rename = save_rename($from, $dest);
+					$rename = rename_safe($from, $dest);
 					if ($rename === false) {
 						$errors++;
 					}
@@ -248,7 +248,7 @@ if (isset($_GET['ren']) && isset($_GET['to'])) {
 	if ($p != '') $path .= DS . $p;
 	// rename
 	if ($old != '' && $new != '') {
-		if (save_rename($path . DS . $old, $path . DS . $new)) {
+		if (rename_safe($path . DS . $old, $path . DS . $new)) {
 			set_message('Переименовано из <b>' . $old . '</b> в <b>' . $new . '</b>');
 		}
 		else {
@@ -919,9 +919,9 @@ function rchmod($path, $filemode, $dirmode)
 }
 
 /*
- * Save rename
+ * Safely rename
  */
-function save_rename($old, $new)
+function rename_safe($old, $new)
 {
 	return (!file_exists($new) && file_exists($old)) ? rename($old, $new) : null;
 }
