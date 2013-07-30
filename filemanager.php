@@ -363,7 +363,7 @@ if (isset($_POST['group']) && isset($_POST['zip'])) {
 	$path = ABS_PATH;
 	if ($p != '') $path .= DS . $p;
 
-	if (!class_exists('Zipper')) {
+	if (!class_exists('ZipArchive')) {
 		set_message(__('Operations with archives are not available'), 'error');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
@@ -400,7 +400,7 @@ if (isset($_GET['unzip'])) {
 	$path = ABS_PATH;
 	if ($p != '') $path .= DS . $p;
 
-	if (!class_exists('Zipper')) {
+	if (!class_exists('ZipArchive')) {
 		set_message(__('Operations with archives are not available'), 'error');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
@@ -1290,98 +1290,96 @@ function get_file_icon($path)
 /*
  * Class to work with zip files (using ZipArchive)
  */
-if (class_exists('ZipArchive')) {
-	class Zipper
+class Zipper
+{
+	private $zip;
+
+	public function __construct()
 	{
-		private $zip;
+		$this->zip = new ZipArchive;
+	}
 
-		public function __construct()
-		{
-			$this->zip = new ZipArchive;
-		}
-
-		/*
-		 * Create archive with name $filename and files $files (RELATIVE PATHS!)
-		 */
-		public function create($filename, $files)
-		{
-			$res = $this->zip->open($filename, ZipArchive::CREATE);
-			if ($res !== true) return false;
-			if (is_array($files)) {
-				foreach ($files as $f) {
-					if (!$this->addFileOrDir($f)) {
-						$this->zip->close();
-						return false;
-					}
-				}
-				$this->zip->close();
-				return true;
-			}
-			else {
-				if ($this->addFileOrDir($files)) {
+	/*
+	 * Create archive with name $filename and files $files (RELATIVE PATHS!)
+	 */
+	public function create($filename, $files)
+	{
+		$res = $this->zip->open($filename, ZipArchive::CREATE);
+		if ($res !== true) return false;
+		if (is_array($files)) {
+			foreach ($files as $f) {
+				if (!$this->addFileOrDir($f)) {
 					$this->zip->close();
-					return true;
+					return false;
 				}
-				return false;
 			}
+			$this->zip->close();
+			return true;
 		}
-
-		/*
-		 * Extract archive $filename to folder $path (RELATIVE OR ABSOLUTE PATHS)
-		 */
-		public function unzip($filename, $path)
-		{
-			$res = $this->zip->open($filename);
-			if ($res !== true) return false;
-			if ($this->zip->extractTo($path)) {
+		else {
+			if ($this->addFileOrDir($files)) {
 				$this->zip->close();
 				return true;
 			}
 			return false;
 		}
+	}
 
-		/*
-		 * Add file/folder to archive
-		 */
-		private function addFileOrDir($filename)
-		{
-			if (is_file($filename)) {
-				return $this->zip->addFile($filename);
-			}
-			elseif (is_dir($filename)) {
-				return $this->addDir($filename);
-			}
+	/*
+	 * Extract archive $filename to folder $path (RELATIVE OR ABSOLUTE PATHS)
+	 */
+	public function unzip($filename, $path)
+	{
+		$res = $this->zip->open($filename);
+		if ($res !== true) return false;
+		if ($this->zip->extractTo($path)) {
+			$this->zip->close();
+			return true;
+		}
+		return false;
+	}
+
+	/*
+	 * Add file/folder to archive
+	 */
+	private function addFileOrDir($filename)
+	{
+		if (is_file($filename)) {
+			return $this->zip->addFile($filename);
+		}
+		elseif (is_dir($filename)) {
+			return $this->addDir($filename);
+		}
+		return false;
+	}
+
+	/*
+	 * Add folder recursively
+	 */
+	private function addDir($path)
+	{
+		if (!$this->zip->addEmptyDir($path)) {
 			return false;
 		}
-
-		/*
-		 * Add folder recursively
-		 */
-		private function addDir($path)
-		{
-			if (!$this->zip->addEmptyDir($path)) {
-				return false;
-			}
-			$objects = scandir($path);
-			if (is_array($objects)) {
-				foreach ($objects as $file) {
-					if ($file != '.' && $file != '..') {
-						if (is_dir($path . DS . $file)) {
-							if (!$this->addDir($path . DS . $file)) {
-								return false;
-							}
+		$objects = scandir($path);
+		if (is_array($objects)) {
+			foreach ($objects as $file) {
+				if ($file != '.' && $file != '..') {
+					if (is_dir($path . DS . $file)) {
+						if (!$this->addDir($path . DS . $file)) {
+							return false;
 						}
-						elseif (is_file($path . DS . $file)) {
-							if (!$this->zip->addFile($path . DS . $file)) {
-								return false;
-							}
+					}
+					elseif (is_file($path . DS . $file)) {
+						if (!$this->zip->addFile($path . DS . $file)) {
+							return false;
 						}
 					}
 				}
-				return true;
 			}
-			return false;
+			return true;
 		}
+		return false;
 	}
 }
 
