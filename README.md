@@ -18,8 +18,10 @@ If you are using .htaccess on your site and have problems with HTTP Auth try to 
 
 ## Languages
 
-* English
-* Russian
+To change default language set $lang to one of supported languages in list below.
+
+* English (en)
+* Russian (ru)
 
 ## Bug tracker
 
