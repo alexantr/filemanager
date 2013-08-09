@@ -1414,7 +1414,7 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .message.ok{border-color:green;color:green}.message.error{border-color:red;color:red}.message.alert{border-color:orange;color:orange}
 .btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#296ea3;cursor:pointer}.btn:hover{color:#b00}
 .preview-img{max-width:100%;background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAKklEQVR42mL5//8/Azbw+PFjrOJMDCSCUQ3EABZc4S0rKzsaSvTTABBgAMyfCMsY4B9iAAAAAElFTkSuQmCC") repeat 0 0}
-[class*="icon-"]{display:inline-block;width:16px;height:16px;background:url("?img=sprites") no-repeat 0 0;vertical-align:bottom}
+[class*="icon-"]{display:inline-block;width:16px;height:16px;background:url("<?php echo BASE_URL ?>?img=sprites") no-repeat 0 0;vertical-align:bottom}
 .icon-document{background-position:-16px 0}.icon-folder{background-position:-32px 0}
 .icon-folder_add{background-position:-48px 0}.icon-upload{background-position:-64px 0}
 .icon-arrow_up{background-position:-80px 0}.icon-home{background-position:-96px 0}
@@ -1436,8 +1436,8 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .icon-file_terminal{background-position:-288px -16px}.icon-file_text{background-position:-304px -16px}
 .icon-file_word{background-position:-320px -16px}.icon-file_zip{background-position:-336px -16px}
 </style>
-<link rel="icon" href="?img=favicon" type="image/png">
-<link rel="shortcut icon" href="?img=favicon" type="image/png">
+<link rel="icon" href="<?php echo BASE_URL ?>?img=favicon" type="image/png">
+<link rel="shortcut icon" href="<?php echo BASE_URL ?>?img=favicon" type="image/png">
 </head>
 <body>
 <div id="wrapper">
