@@ -40,7 +40,7 @@ session_start();
 define('DS', '/');
 
 // abs path for site
-define('ABS_PATH', $_SERVER['DOCUMENT_ROOT']);
+define('ABSPATH', $_SERVER['DOCUMENT_ROOT']);
 
 define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
 
@@ -90,7 +90,7 @@ if (isset($_GET['del'])) {
 	$del = clean_path($del);
 	$del = str_replace('/', '', $del);
 	if ($del != '' && $del != '..' && $del != '.') {
-		$path = ABS_PATH;
+		$path = ABSPATH;
 		if ($p != '') $path .= DS . $p;
 		$is_dir = (is_dir($path . DS . $del)) ? true : false;
 		if (rdelete($path . DS . $del)) {
@@ -114,7 +114,7 @@ if (isset($_GET['new'])) {
 	$new = clean_path($new);
 	$new = str_replace('/', '', $new);
 	if ($new != '' && $new != '..' && $new != '.') {
-		$path = ABS_PATH;
+		$path = ABSPATH;
 		if ($p != '') $path .= DS . $p;
 		if (mkdir_safe($path . DS . $new, false) === true) {
 			set_message(sprintf(__('Folder <b>%s</b> created'), $new));
@@ -143,9 +143,9 @@ if (isset($_GET['copy']) && isset($_GET['finish'])) {
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
 	// abs path from
-	$from = ABS_PATH . DS . $copy;
+	$from = ABSPATH . DS . $copy;
 	// abs path to
-	$dest = ABS_PATH;
+	$dest = ABSPATH;
 	if ($p != '') $dest .= DS . $p;
 	$dest .= DS . basename($from);
 	// move?
@@ -183,10 +183,10 @@ if (isset($_GET['copy']) && isset($_GET['finish'])) {
 // Mass copy files/ folders
 if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])) {
 	// from
-	$path = ABS_PATH;
+	$path = ABSPATH;
 	if ($p != '') $path .= DS . $p;
 	// to
-	$copy_to_path = ABS_PATH;
+	$copy_to_path = ABSPATH;
 	$copy_to = clean_path($_POST['copy_to']);
 	if ($copy_to != '') $copy_to_path .= DS . $copy_to;
 	if ($path == $copy_to_path) {
@@ -251,7 +251,7 @@ if (isset($_GET['ren']) && isset($_GET['to'])) {
 	$new = clean_path($new);
 	$new = str_replace('/', '', $new);
 	// path
-	$path = ABS_PATH;
+	$path = ABSPATH;
 	if ($p != '') $path .= DS . $p;
 	// rename
 	if ($old != '' && $new != '') {
@@ -273,7 +273,7 @@ if (isset($_GET['dl'])) {
 	$dl = $_GET['dl'];
 	$dl = clean_path($dl);
 	$dl = str_replace('/', '', $dl);
-	$path = ABS_PATH;
+	$path = ABSPATH;
 	if ($p != '') $path .= DS . $p;
 	if ($dl != '' && is_file($path . DS . $dl)) {
 		header('Content-Description: File Transfer');
@@ -296,7 +296,7 @@ if (isset($_GET['dl'])) {
 
 // Upload
 if (isset($_POST['upl'])) {
-	$path = ABS_PATH;
+	$path = ABSPATH;
 	if ($p != '') $path .= DS . $p;
 
 	$errors = 0;
@@ -330,7 +330,7 @@ if (isset($_POST['upl'])) {
 
 // Mass deleting
 if (isset($_POST['group']) && isset($_POST['delete'])) {
-	$path = ABS_PATH;
+	$path = ABSPATH;
 	if ($p != '') $path .= DS . $p;
 
 	$errors = 0;
@@ -360,7 +360,7 @@ if (isset($_POST['group']) && isset($_POST['delete'])) {
 
 // Pack files
 if (isset($_POST['group']) && isset($_POST['zip'])) {
-	$path = ABS_PATH;
+	$path = ABSPATH;
 	if ($p != '') $path .= DS . $p;
 
 	if (!class_exists('ZipArchive')) {
@@ -397,7 +397,7 @@ if (isset($_GET['unzip'])) {
 	$unzip = clean_path($unzip);
 	$unzip = str_replace('/', '', $unzip);
 
-	$path = ABS_PATH;
+	$path = ABSPATH;
 	if ($p != '') $path .= DS . $p;
 
 	if (!class_exists('ZipArchive')) {
@@ -438,7 +438,7 @@ if (isset($_GET['unzip'])) {
 /*************************** /ACTIONS ***************************/
 
 // get current path
-$path = ABS_PATH;
+$path = ABSPATH;
 if ($p != '') $path .= DS . $p;
 
 // check path
@@ -547,7 +547,7 @@ if (isset($_POST['copy'])) {
 if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	$copy = $_GET['copy'];
 	$copy = clean_path($copy);
-	if ($copy == '' || !file_exists(ABS_PATH . DS . $copy)) {
+	if ($copy == '' || !file_exists(ABSPATH . DS . $copy)) {
 		set_message(__('File not found'), 'error');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
@@ -1151,7 +1151,7 @@ function get_file_link($p, $f)
 {
 	$link = '';
 
-	$path = ABS_PATH;
+	$path = ABSPATH;
 	if ($p != '') $path .= DS . $p;
 
 	if (!empty($f)) {
