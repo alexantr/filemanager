@@ -475,7 +475,7 @@ if (isset($_GET['upload'])) {
 	<div class="path">
 		<p><b><?php _e('Uploading files') ?></b></p>
 
-		<p><?php _e('Destination folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT']  . '/' .  $p ?></p>
+		<p><?php _e('Destination folder:') ?> <?php echo ABSPATH  . '/' .  $p ?></p>
 
 		<form action="" method="post" enctype="multipart/form-data">
 			<input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
@@ -522,9 +522,9 @@ if (isset($_POST['copy'])) {
 
 			<p><?php _e('Files:') ?> <b><?php echo implode('</b>, <b>', $copy_files) ?></b> </p>
 
-			<p><?php _e('Source folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $p ?><br>
+			<p><?php _e('Source folder:') ?> <?php echo ABSPATH ?>/<?php echo $p ?><br>
 				<label for="inp_copy_to"><?php _e('Destination folder:') ?></label>
-				<?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<input type="text" name="copy_to" id="inp_copy_to" value="<?php echo encode_html($p) ?>">
+				<?php echo ABSPATH ?>/<input type="text" name="copy_to" id="inp_copy_to" value="<?php echo encode_html($p) ?>">
 			</p>
 
 			<p><label><input type="checkbox" name="move" value="1"> <?php _e('Move') ?></label></p>
@@ -558,8 +558,8 @@ if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	<div class="path">
 		<p><b><?php _e('Copying') ?></b></p>
 
-		<p><?php _e('Source path:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $copy ?><br>
-			<?php _e('Destination folder:') ?> <?php echo $_SERVER['DOCUMENT_ROOT'] ?>/<?php echo $p ?>
+		<p><?php _e('Source path:') ?> <?php echo ABSPATH ?>/<?php echo $copy ?><br>
+			<?php _e('Destination folder:') ?> <?php echo ABSPATH ?>/<?php echo $p ?>
 		</p>
 
 		<p>
@@ -1353,7 +1353,7 @@ function show_navigation_path($path)
 </div>
 		<?php
 		$path = clean_path($path);
-		$root_url = "<a href='?p='><i class='icon-home' title='{$_SERVER['DOCUMENT_ROOT']}'></i></a>";
+		$root_url = "<a href='?p='><i class='icon-home' title='" . ABSPATH . "'></i></a>";
 		$sep = '<i class="icon-separator"></i>';
 		if ($path != '') {
 			$exploded = explode('/', $path);
