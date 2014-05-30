@@ -4,23 +4,21 @@
  * Author: Alex Yashkin <alex.yashkin@gmail.com>
  */
 
-# CONFIG
+### CONFIG
 
-// Use HTTP Auth (set true/false to enable/disable it)
-$use_http_auth = false;
+// Use Auth (set true/false to enable/disable it)
+$use_auth = false;
 
-// Users for HTTP Auth (user => password)
-$users = array(
-	'admin' => 'pass123',
-);
+// Password for Auth
+$auth_pwd = 'pass123';
 
 // Default timezone for date() and time()
-$default_timezone = 'Asia/Kuwait'; // UTC+3
+$default_timezone = 'Europe/Minsk'; // UTC+3
 
 // Language (en, ru)
 $lang = 'ru';
 
-# END CONFIG
+### END CONFIG
 
 error_reporting(E_ALL);
 set_time_limit(600);
@@ -44,34 +42,49 @@ define('ABSPATH', $_SERVER['DOCUMENT_ROOT']);
 
 define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
 
-// HTTP Auth
-if ($use_http_auth) {
-	$realm = 'Restricted area';
-
-	if (empty($_SERVER['PHP_AUTH_DIGEST'])) {
-		header('HTTP/1.1 401 Unauthorized');
-		header('WWW-Authenticate: Digest realm="' . $realm . '",qop="auth",nonce="' . uniqid() . '",opaque="' . md5($realm) . '"');
-		exit('Restricted area!');
-	}
-
-	// analyze the PHP_AUTH_DIGEST variable
-	$data = http_digest_parse($_SERVER['PHP_AUTH_DIGEST']);
-	if (!$data || !isset($users[$data['username']])) {
-		exit('Wrong Credentials!');
-	}
-
-	// generate the valid response
-	$A1 = md5($data['username'] . ':' . $realm . ':' . $users[$data['username']]);
-	$A2 = md5($_SERVER['REQUEST_METHOD'] . ':' . $data['uri']);
-	$valid_response = md5($A1 . ':' . $data['nonce'] . ':' . $data['nc'] . ':' . $data['cnonce'] . ':' . $data['qop'] . ':' . $A2);
-
-	if ($data['response'] != $valid_response) {
-		exit('Wrong Credentials!');
-	}
-}
-
 // Show image here
 show_image();
+
+// Auth
+if ($use_auth && !empty($auth_pwd)) {
+	// Logged
+	if (isset($_SESSION['logged']) && $_SESSION['logged'] === true) {
+		$_SESSION['logged'] = true;
+	}
+	// Logging In
+	elseif (isset($_POST['fm_pwd'])) {
+		sleep(1);
+		if ($_POST['fm_pwd'] === $auth_pwd) {
+			$_SESSION['logged'] = true;
+			set_message(__('You are logged in'));
+			redirect(BASE_URL . '?p=');
+		}
+		else {
+			$_SESSION['logged'] = false;
+			set_message(__('Wrong password'), 'error');
+			redirect(BASE_URL);
+		}
+	}
+	// Form
+	else {
+		$_SESSION['logged'] = false;
+		show_header();
+		show_message();
+		?>
+		<div class="path">
+			<p><b><?php _e('Enter Password') ?></b></p>
+			<form action="" method="post">
+				<p>
+					<input type="password" name="fm_pwd" value="" placeholder="<?php _e('Enter Password') ?>" required>
+					<button type="submit" class="btn"><?php _e('Login') ?></button>
+				</p>
+			</form>
+		</div>
+		<?php
+		show_footer();
+		exit;
+	}
+}
 
 // always use ?p=
 if (!isset($_GET['p'])) redirect(BASE_URL . '?p=');
@@ -1828,6 +1841,10 @@ function get_strings($lang)
 		'files:'                                           => 'файлов:',
 		'folders:'                                         => 'папок:',
 		'Perms'                                            => 'Права',
+		'Enter Password'                                   => 'Введите пароль',
+		'Login'                                            => 'Войти',
+		'Wrong password'                                   => 'Неверный пароль',
+		'You are logged in'                                => 'Вы успешно вошли',
 	);
 	if (isset($strings[$lang])) {
 		return $strings[$lang];
