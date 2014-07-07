@@ -19,6 +19,7 @@ To change default language set $lang to one of supported languages in list below
 
 * English (en)
 * Russian (ru)
+* French (fr) - by [Nicolas KAROLAK](https://github.com/NicolasKAROLAK)
 
 ## Bug tracker
 
