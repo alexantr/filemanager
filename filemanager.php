@@ -801,7 +801,7 @@ $all_files_size = 0;
 <form action="" method="post">
 <input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
 <input type="hidden" name="group" value="1">
-<table><tr><th style="width:3%"></th><th style="width:58%"><?php _e('Name') ?></th><th style="width:10%"><?php _e('Size') ?></th><th style="width:12%"><?php _e('Modified') ?></th><th style="width:6%"><?php _e('Perms') ?></th><th style="width:11%"></th></tr>
+<table><tr><th style="width:3%"><label><input type="checkbox" title="<?php _e('Invert selection') ?>" onclick="checkbox_toggle()"></label></th><th style="width:58%"><?php _e('Name') ?></th><th style="width:10%"><?php _e('Size') ?></th><th style="width:12%"><?php _e('Modified') ?></th><th style="width:6%"><?php _e('Perms') ?></th><th style="width:11%"></th></tr>
 <?php
 
 			// link to parent folder
@@ -1475,6 +1475,7 @@ function get_checkboxes(){var i=document.getElementsByName('file[]'),a=[];for(va
 function select_all(){var l=get_checkboxes();change_checkboxes(l,true);}
 function unselect_all(){var l=get_checkboxes();change_checkboxes(l,false);}
 function invert_all(){var l=get_checkboxes();change_checkboxes(l);}
+function checkbox_toggle(){var l=get_checkboxes();l.push(this);change_checkboxes(l);}
 </script>
 </body>
 </html>
@@ -1828,7 +1829,7 @@ function get_strings($lang)
 		'Folder is empty'                                  => 'Папка пуста',
 		'Select all'                                       => 'Выделить все',
 		'Unselect all'                                     => 'Снять выделение',
-		'Invert selection'                                 => 'Инвертировать',
+		'Invert selection'                                 => 'Инвертировать выделение',
 		'Delete selected files and folders?'               => 'Удалить выбранные файлы и папки?',
 		'Pack'                                             => 'Упаковать',
 		'Copy'                                             => 'Копировать',
