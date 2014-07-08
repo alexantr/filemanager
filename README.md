@@ -11,7 +11,7 @@ Icons by [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/).
 Copy filemanager.php to your website and open it on browser
 (e.g. http://yoursite/any_path/filemanager.php).
 
-To enable Authentication set $use_auth to true and set Password in $auth_pwd.
+To enable Authentication set $use_auth to true and set users in $auth_users.
 
 ## Languages
 

@@ -9,8 +9,10 @@
 // Use Auth (set true/false to enable/disable it)
 $use_auth = false;
 
-// Password for Auth
-$auth_pwd = 'pass123';
+// Users array('Username' => 'Password', 'Username2' => 'Password2', ...)
+$auth_users = array(
+	'admin' => 'admin',
+);
 
 // Default timezone for date() and time()
 $default_timezone = 'Europe/Minsk'; // UTC+3
@@ -29,8 +31,6 @@ ini_set('default_charset', 'UTF-8');
 if (function_exists('mb_internal_encoding')) mb_internal_encoding('UTF-8');
 if (function_exists('mb_regex_encoding')) mb_regex_encoding('UTF-8');
 
-$start_time = microtime(true);
-
 session_cache_limiter('');
 session_name('filemanager');
 session_start();
@@ -46,15 +46,15 @@ define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
 show_image();
 
 // Auth
-if ($use_auth && !empty($auth_pwd)) {
+if ($use_auth && !empty($auth_users)) {
 	// Logged
 	if (isset($_SESSION['logged']) && $_SESSION['logged'] === true) {
 		$_SESSION['logged'] = true;
 	}
 	// Logging In
-	elseif (isset($_POST['fm_pwd'])) {
+	elseif (isset($_POST['fm_usr']) && isset($_POST['fm_pwd'])) {
 		sleep(1);
-		if ($_POST['fm_pwd'] === $auth_pwd) {
+		if (isset($auth_users[$_POST['fm_usr']]) && $_POST['fm_pwd'] === $auth_users[$_POST['fm_usr']]) {
 			$_SESSION['logged'] = true;
 			set_message(__('You are logged in'));
 			redirect(BASE_URL . '?p=');
@@ -72,12 +72,10 @@ if ($use_auth && !empty($auth_pwd)) {
 		show_message();
 		?>
 		<div class="path">
-			<p><b><?php _e('Enter Password') ?></b></p>
-			<form action="" method="post">
-				<p>
-					<input type="password" name="fm_pwd" value="" placeholder="<?php _e('Enter Password') ?>" required>
-					<button type="submit" class="btn"><?php _e('Login') ?></button>
-				</p>
+			<form action="" method="post" style="margin:10px;text-align:center">
+				<input type="text" name="fm_usr" value="" placeholder="<?php _e('Username') ?>" required>
+				<input type="password" name="fm_pwd" value="" placeholder="<?php _e('Password') ?>" required>
+				<button type="submit" class="btn"><?php _e('Login') ?></button>
 			</form>
 		</div>
 		<?php
@@ -1525,9 +1523,10 @@ a img{border:none}span{color:#777}small{font-size:11px;color:#999}p{margin-botto
 ul{margin-left:2em;margin-bottom:10px}ul{list-style-type:none;margin-left:0}ul li{padding:3px 0}
 table{border-collapse:collapse;border-spacing:0;margin-bottom:10px;width:100%}
 th,td{padding:4px 7px;text-align:left;vertical-align:top;border:1px solid #ddd;background:#fff;white-space:nowrap}
-th,td.gray{background-color:#eee}td.gray span{color:#222}tr:hover td{background-color:#f5f5f5}
+th,td.gray{background-color:#eee}td.gray span{color:#222}tr:hover td{background-color:#f5f5f5}tr:hover td.gray{background-color:#eee}
 code,pre{display:block;margin-bottom:10px;font:13px/16px Consolas,'Courier New',Courier,monospace;border:1px dashed #ccc;padding:5px;overflow:auto}
 code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;padding:0}
+input[type="text"],input[type="password"]{background:#fff;border:1px solid #ccc;padding:2px}
 #wrapper{max-width:900px;min-width:400px;margin:10px auto}
 .path{padding:4px 7px;border:1px solid #ddd;background-color:#fff;margin-bottom:10px}
 .right{text-align:right}.center{text-align:center}.float-right{float:right}
@@ -1571,9 +1570,8 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
  */
 function show_footer()
 {
-	global $start_time;
 	?>
-<p class="center"><small>PHP File Manager [<?php echo round((microtime(true) - $start_time), 4) ?>]</small></p>
+<p class="center"><small><a href="https://github.com/alexantr/filemanager" target="_blank">PHP File Manager</a></small></p>
 </div>
 
 <script>
@@ -1951,7 +1949,8 @@ function get_strings($lang)
 		'files:'                                           => 'файлов:',
 		'folders:'                                         => 'папок:',
 		'Perms'                                            => 'Права',
-		'Enter Password'                                   => 'Введите пароль',
+		'Username'                                         => 'Имя пользователя',
+		'Password'                                         => 'Пароль',
 		'Login'                                            => 'Войти',
 		'Wrong password'                                   => 'Неверный пароль',
 		'You are logged in'                                => 'Вы успешно вошли',
@@ -2062,7 +2061,8 @@ function get_strings($lang)
 		'files:'                                           => 'fichiers :',
 		'folders:'                                         => 'dossiers :',
 		'Perms'                                            => 'Permissions',
-		'Enter Password'                                   => 'Mot de passe',
+		'Username'                                         => 'Nom d\'utilisateur',
+		'Password'                                         => 'Mot de passe',
 		'Login'                                            => 'Identifiant',
 		'Wrong password'                                   => 'Mauvais mot de passe',
 		'You are logged in'                                => 'Vous êtes connecté',
