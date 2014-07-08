@@ -12,6 +12,7 @@ Copy filemanager.php to your website and open it on browser
 (e.g. http://yoursite/any_path/filemanager.php).
 
 Default username/password: admin/admin
+
 Please set your own username and password in $auth_users before use.
 
 To enable/disable authentication set $use_auth to true or false.
