@@ -7,7 +7,7 @@
 ### CONFIG
 
 // Use Auth (set true/false to enable/disable it)
-$use_auth = false;
+$use_auth = true;
 
 // Users array('Username' => 'Password', 'Username2' => 'Password2', ...)
 $auth_users = array(
@@ -21,6 +21,8 @@ $default_timezone = 'Europe/Minsk'; // UTC+3
 $lang = 'ru';
 
 ### END CONFIG
+
+$languages = array('en', 'ru', 'fr');
 
 error_reporting(E_ALL);
 set_time_limit(600);
@@ -56,12 +58,17 @@ if ($use_auth && !empty($auth_users)) {
 	// Logged
 	if (isset($_SESSION['logged']) && $_SESSION['logged'] === true) {
 		$_SESSION['logged'] = true;
+		$lang = (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $languages)) ? $_SESSION['lang'] : $lang;
 	}
 	// Logging In
 	elseif (isset($_POST['fm_usr']) && isset($_POST['fm_pwd'])) {
 		sleep(1);
 		if (isset($auth_users[$_POST['fm_usr']]) && $_POST['fm_pwd'] === $auth_users[$_POST['fm_usr']]) {
 			$_SESSION['logged'] = true;
+			if (isset($_POST['lang']) && in_array($_POST['lang'], $languages)) {
+				$_SESSION['lang'] = $_POST['lang'];
+				$lang = $_POST['lang'];
+			}
 			set_message(__('You are logged in'));
 			redirect(BASE_URL . '?p=');
 		}
@@ -81,6 +88,11 @@ if ($use_auth && !empty($auth_users)) {
 			<form action="" method="post" style="margin:10px;text-align:center">
 				<input type="text" name="fm_usr" value="" placeholder="<?php _e('Username') ?>" required>
 				<input type="password" name="fm_pwd" value="" placeholder="<?php _e('Password') ?>" required>
+				<select name="lang">
+					<?php foreach ($languages as $l): ?>
+						<option value="<?php echo $l ?>"<?php if ($l == $lang) echo ' selected'; ?>><?php echo $l ?></option>
+					<?php endforeach; ?>
+				</select>
 				<input type="submit" value="<?php _e('Login') ?>">
 			</form>
 		</div>
