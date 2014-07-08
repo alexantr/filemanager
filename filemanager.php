@@ -448,6 +448,40 @@ if (isset($_GET['unzip'])) {
 	redirect(BASE_URL . '?p=' . urlencode($p));
 }
 
+// Change Perms
+if (isset($_POST['chmod'])) {
+	$path = ABSPATH;
+	if ($p != '') $path .= DS . $p;
+
+	$file = $_POST['chmod'];
+	$file = clean_path($file);
+	$file = str_replace('/', '', $file);
+	if ($file == '' || (!is_file($path . DS . $file) && !is_dir($path . DS . $file))) {
+		set_message(__('File not found'), 'error');
+		redirect(BASE_URL . '?p=' . urlencode($p));
+	}
+
+	$mode = 0;
+	if (isset($_POST['ur']) && !empty($_POST['ur'])) $mode |= 0400;
+	if (isset($_POST['uw']) && !empty($_POST['uw'])) $mode |= 0200;
+	if (isset($_POST['ux']) && !empty($_POST['ux'])) $mode |= 0100;
+	if (isset($_POST['gr']) && !empty($_POST['gr'])) $mode |= 0040;
+	if (isset($_POST['gw']) && !empty($_POST['gw'])) $mode |= 0020;
+	if (isset($_POST['gx']) && !empty($_POST['gx'])) $mode |= 0010;
+	if (isset($_POST['or']) && !empty($_POST['or'])) $mode |= 0004;
+	if (isset($_POST['ow']) && !empty($_POST['ow'])) $mode |= 0002;
+	if (isset($_POST['ox']) && !empty($_POST['ox'])) $mode |= 0001;
+
+	if (@chmod($path . DS . $file, $mode)) {
+		set_message(__('Permissions changed'));
+	}
+	else {
+		set_message(__('Permissions not changed'), 'error');
+	}
+
+	redirect(BASE_URL . '?p=' . urlencode($p));
+}
+
 /*************************** /ACTIONS ***************************/
 
 // get current path
@@ -786,6 +820,76 @@ if (isset($_GET['showtxt'])) {
 	exit;
 }
 
+### chmod
+if (isset($_GET['chmod'])) {
+	$file = $_GET['chmod'];
+	$file = clean_path($file);
+	$file = str_replace('/', '', $file);
+	if ($file == '' || (!is_file($path . DS . $file) && !is_dir($path . DS . $file))) {
+		set_message(__('File not found'), 'error');
+		redirect(BASE_URL . '?p=' . urlencode($p));
+	}
+
+	show_header(); // HEADER
+	show_navigation_path($p); // current path
+
+	$file_url = 'http://' . getenv('HTTP_HOST') . '/' . $p . '/' . $file;
+	$file_path = $path . DS . $file;
+
+	$mode = fileperms($path . DS . $file);
+
+	?>
+	<div class="path">
+		<p><b><?php _e('Change Permissions') ?></b></p>
+
+		<p>
+			<?php _e('Full path:') ?> <?php echo $file_path ?><br>
+		</p>
+
+		<form action="" method="post">
+			<input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
+			<input type="hidden" name="chmod" value="<?php echo encode_html($file) ?>">
+
+			<table class="compact-table">
+				<tr>
+					<td></td>
+					<td><b><?php _e('Owner') ?></b></td>
+					<td><b><?php _e('Group') ?></b></td>
+					<td><b><?php _e('Other') ?></b></td>
+				</tr>
+				<tr>
+					<td style="text-align: right"><b><?php _e('Read') ?></b></td>
+					<td><label><input type="checkbox" name="ur" value="1"<?php if ($mode & 00400) echo ' checked="checked"'; ?>></label></td>
+					<td><label><input type="checkbox" name="gr" value="1"<?php if ($mode & 00040) echo ' checked="checked"'; ?>></label></td>
+					<td><label><input type="checkbox" name="or" value="1"<?php if ($mode & 00004) echo ' checked="checked"'; ?>></label></td>
+				</tr>
+				<tr>
+					<td style="text-align: right"><b><?php _e('Write') ?></b></td>
+					<td><label><input type="checkbox" name="uw" value="1"<?php if ($mode & 00200) echo ' checked="checked"'; ?>></label></td>
+					<td><label><input type="checkbox" name="gw" value="1"<?php if ($mode & 00020) echo ' checked="checked"'; ?>></label></td>
+					<td><label><input type="checkbox" name="ow" value="1"<?php if ($mode & 00002) echo ' checked="checked"'; ?>></label></td>
+				</tr>
+				<tr>
+					<td style="text-align: right"><b><?php _e('Execute') ?></b></td>
+					<td><label><input type="checkbox" name="ux" value="1"<?php if ($mode & 00100) echo ' checked="checked"'; ?>></label></td>
+					<td><label><input type="checkbox" name="gx" value="1"<?php if ($mode & 00010) echo ' checked="checked"'; ?>></label></td>
+					<td><label><input type="checkbox" name="ox" value="1"<?php if ($mode & 00001) echo ' checked="checked"'; ?>></label></td>
+				</tr>
+			</table>
+
+			<p>
+				<button type="submit" class="btn"><i class="icon-apply"></i> <?php _e('Change') ?></button> &nbsp;
+				<b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-cancel"></i> <?php _e('Cancel') ?></a></b>
+			</p>
+
+		</form>
+
+	</div>
+	<?php
+	show_footer();
+	exit;
+}
+
 //--- FILEMANAGER MAIN
 show_header(); // HEADER
 show_navigation_path($p); // current path
@@ -813,11 +917,13 @@ $all_files_size = 0;
 
 			foreach ($folders as $f) {
 				$modif = date("d.m.y H:i", filemtime($path . DS . $f));
-				$perms = substr(sprintf('%o', fileperms($path . DS . $f)), -4);
+				$perms = substr(decoct(fileperms($path . DS . $f)), -4);
 				?>
 <tr><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td>
 <td><a href="?p=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><i class="icon-folder"></i> <?php echo $f ?></a></td>
-<td><?php _e('Folder') ?></td><td><?php echo $modif ?></td><td><?php echo $perms ?></td><td>
+<td><?php _e('Folder') ?></td><td><?php echo $modif ?></td>
+<td><a title="<?php _e('Change Permissions') ?>" href="?p=<?php echo urlencode($p) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a></td>
+<td>
 <a title="<?php _e('Delete') ?>" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php _e('Delete folder?') ?>');"><i class="icon-cross"></i></a>
 <a title="<?php _e('Rename') ?>" href="#" onclick="rename('<?php echo encode_html($p) ?>', '<?php echo encode_html($f) ?>');return false;"><i class="icon-rename"></i></a>
 <a title="<?php _e('Copy to...') ?>" href="?p=&amp;copy=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><i class="icon-copy"></i></a>
@@ -833,12 +939,14 @@ $all_files_size = 0;
 				$filesize = get_filesize($filesize_raw);
 				$filelink = get_file_link($p, $f);
 				$all_files_size += $filesize_raw;
-				$perms = substr(sprintf('%o', fileperms($path . DS . $f)), -4);
+				$perms = substr(decoct(fileperms($path . DS . $f)), -4);
 				?>
 <tr><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td><td>
 <?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="' . __('File info') . '">' ?><i class="<?php echo $img ?>"></i> <?php echo $f ?><?php if (!empty($filelink)) echo '</a>' ?></td>
 <td><span title="<?php printf(__('%s byte'), $filesize_raw) ?>"><?php echo $filesize ?></span></td>
-<td><?php echo $modif ?></td><td><?php echo $perms ?></td><td>
+<td><?php echo $modif ?></td>
+<td><a title="<?php _e('Change Permissions') ?>" href="?p=<?php echo urlencode($p) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a></td>
+<td>
 <a title="<?php _e('Delete') ?>" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php _e('Delete file?') ?>');"><i class="icon-cross"></i></a>
 <a title="<?php _e('Rename') ?>" href="#" onclick="rename('<?php echo encode_html($p) ?>', '<?php echo encode_html($f) ?>');return false;"><i class="icon-rename"></i></a>
 <a title="<?php _e('Copy to...') ?>" href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><i class="icon-copy"></i></a>
@@ -1448,6 +1556,7 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .icon-file_powerpoint{background-position:-256px -16px}.icon-file_swf{background-position:-272px -16px}
 .icon-file_terminal{background-position:-288px -16px}.icon-file_text{background-position:-304px -16px}
 .icon-file_word{background-position:-320px -16px}.icon-file_zip{background-position:-336px -16px}
+.compact-table{border:0;width:auto}.compact-table td,.compact-table th{width:100px;border:0;text-align:center}.compact-table tr:hover td{background-color:#fff}
 </style>
 <link rel="icon" href="<?php echo BASE_URL ?>?img=favicon" type="image/png">
 <link rel="shortcut icon" href="<?php echo BASE_URL ?>?img=favicon" type="image/png">
@@ -1846,6 +1955,17 @@ function get_strings($lang)
 		'Login'                                            => 'Войти',
 		'Wrong password'                                   => 'Неверный пароль',
 		'You are logged in'                                => 'Вы успешно вошли',
+		'Change Permissions'                               => 'Изменение прав доступа',
+		'Permissions:'                                     => 'Права доступа:',
+		'Change'                                           => 'Изменить',
+		'Owner'                                            => 'Владелец',
+		'Group'                                            => 'Группа',
+		'Other'                                            => 'Прочие',
+		'Read'                                             => 'Чтение',
+		'Write'                                            => 'Запись',
+		'Execute'                                          => 'Выполнение',
+		'Permissions changed'                              => 'Права изменены',
+		'Permissions not changed'                          => 'Права не изменены',
 	);
 	$strings['fr'] = array(
 		'Folder <b>%s</b> deleted'                         => 'Dossier <b>%s</b> supprimé',
@@ -1946,6 +2066,17 @@ function get_strings($lang)
 		'Login'                                            => 'Identifiant',
 		'Wrong password'                                   => 'Mauvais mot de passe',
 		'You are logged in'                                => 'Vous êtes connecté',
+		'Change Permissions'                               => 'Modifier les permissions',
+		'Permissions:'                                     => 'Permissions:',
+		'Change'                                           => 'Modifier',
+		'Owner'                                            => 'Propriétaire',
+		'Group'                                            => 'Groupe',
+		'Other'                                            => 'Autre',
+		'Read'                                             => 'Lire',
+		'Write'                                            => 'Écrire',
+		'Execute'                                          => 'Exécuter',
+		'Permissions changed'                              => 'Permission changé',
+		'Permissions not changed'                          => 'Permission pas changé',
 	);
 	if (isset($strings[$lang])) {
 		return $strings[$lang];
