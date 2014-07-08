@@ -17,7 +17,7 @@ $auth_users = array(
 // Default timezone for date() and time()
 $default_timezone = 'Europe/Minsk'; // UTC+3
 
-// Language (en, ru)
+// Language (en, ru, fr)
 $lang = 'ru';
 
 ### END CONFIG
