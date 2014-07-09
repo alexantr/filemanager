@@ -665,7 +665,7 @@ if (isset($_GET['zip'])) {
 	show_header(); // HEADER
 	show_navigation_path($p); // current path
 
-	$file_url = 'http://' . getenv('HTTP_HOST') . '/' . $p . '/' . $file;
+	$file_url = 'http://' . getenv('HTTP_HOST') . (!empty($p) ? '/' . $p : '') . '/' . $file;
 	$file_path = $path . DS . $file;
 	?>
 	<div class="path">
@@ -749,7 +749,7 @@ if (isset($_GET['showimg'])) {
 	show_header(); // HEADER
 	show_navigation_path($p); // current path
 
-	$file_url = 'http://' . getenv('HTTP_HOST') . '/' . $p . '/' . $file;
+	$file_url = 'http://' . getenv('HTTP_HOST') . (!empty($p) ? '/' . $p : ''). '/' . $file;
 	$file_path = $path . DS . $file;
 
 	$image_size = getimagesize($file_path);
@@ -793,7 +793,7 @@ if (isset($_GET['showtxt'])) {
 	show_header(); // HEADER
 	show_navigation_path($p); // current path
 
-	$file_url = 'http://' . getenv('HTTP_HOST') . '/' . $p . '/' . $file;
+	$file_url = 'http://' . getenv('HTTP_HOST') . (!empty($p) ? '/' . $p : '') . '/' . $file;
 	$file_path = $path . DS . $file;
 
 	$content = file_get_contents($file_path);
@@ -849,7 +849,7 @@ if (isset($_GET['chmod'])) {
 	show_header(); // HEADER
 	show_navigation_path($p); // current path
 
-	$file_url = 'http://' . getenv('HTTP_HOST') . '/' . $p . '/' . $file;
+	$file_url = 'http://' . getenv('HTTP_HOST') . (!empty($p) ? '/' . $p : '') . '/' . $file;
 	$file_path = $path . DS . $file;
 
 	$mode = fileperms($path . DS . $file);
