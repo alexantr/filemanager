@@ -2053,7 +2053,7 @@ function get_strings($lang)
 		'Unpack to'                                        => 'Décompresser vers',
 		'Unpack to folder'                                 => 'Décompresser vers le dossier',
 		'Back'                                             => 'Retour',
-		'Error while fetching archive info'                => 'Erreur lors de la récupération de informations de l\'archive',
+		'Error while fetching archive info'                => 'Erreur lors de la récupération des informations de l\'archive',
 		'Image'                                            => 'Image',
 		'MIME-type:'                                       => 'MIME-Type :',
 		'Image sizes:'                                     => 'Taille de l\'image :',
@@ -2078,7 +2078,7 @@ function get_strings($lang)
 		'Select all'                                       => 'Tout sélectionner',
 		'Unselect all'                                     => 'Tout désélectionner',
 		'Invert selection'                                 => 'Inverser la sélection',
-		'Delete selected files and folders?'               => 'Supprime le fichiers et dossiers sélectionnés ?',
+		'Delete selected files and folders?'               => 'Supprimer les fichiers et dossiers sélectionnés ?',
 		'Pack'                                             => 'Archiver',
 		'Copy'                                             => 'Copier',
 		'Upload files'                                     => 'Envoyer des fichiers',
@@ -2105,8 +2105,8 @@ function get_strings($lang)
 		'Read'                                             => 'Lire',
 		'Write'                                            => 'Écrire',
 		'Execute'                                          => 'Exécuter',
-		'Permissions changed'                              => 'Permission changé',
-		'Permissions not changed'                          => 'Permission pas changé',
+		'Permissions changed'                              => 'Permissions modifiées',
+		'Permissions not changed'                          => 'Permission non modifiées',
 	);
 	if (isset($strings[$lang])) {
 		return $strings[$lang];
