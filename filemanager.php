@@ -4,12 +4,12 @@
  * Author: Alex Yashkin <alex.yashkin@gmail.com>
  */
 
-### CONFIG
+//--- CONFIG
 
-// Use Auth (set true/false to enable/disable it)
+// Auth with login/password (set true/false to enable/disable it)
 $use_auth = true;
 
-// Users array('Username' => 'Password', 'Username2' => 'Password2', ...)
+// Users: array('Username' => 'Password', 'Username2' => 'Password2', ...)
 $auth_users = array(
 	'admin' => 'admin',
 );
@@ -17,10 +17,10 @@ $auth_users = array(
 // Default timezone for date() and time()
 $default_timezone = 'Europe/Minsk'; // UTC+3
 
-// Language (en, ru, fr)
+// Default language (en, ru, fr)
 $lang = 'ru';
 
-### END CONFIG
+//--- END CONFIG
 
 $languages = array('en', 'ru', 'fr');
 
@@ -55,13 +55,12 @@ show_image();
 
 // Auth
 if ($use_auth && !empty($auth_users)) {
-	// Logged
 	if (isset($_SESSION['logged']) && $_SESSION['logged'] === true) {
+		// Logged
 		$_SESSION['logged'] = true;
 		$lang = (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $languages)) ? $_SESSION['lang'] : $lang;
-	}
-	// Logging In
-	elseif (isset($_POST['fm_usr']) && isset($_POST['fm_pwd'])) {
+	} elseif (isset($_POST['fm_usr']) && isset($_POST['fm_pwd'])) {
+		// Logging In
 		sleep(1);
 		if (isset($auth_users[$_POST['fm_usr']]) && $_POST['fm_pwd'] === $auth_users[$_POST['fm_usr']]) {
 			$_SESSION['logged'] = true;
@@ -71,15 +70,13 @@ if ($use_auth && !empty($auth_users)) {
 			}
 			set_message(__('You are logged in'));
 			redirect(BASE_URL . '?p=');
-		}
-		else {
+		} else {
 			$_SESSION['logged'] = false;
 			set_message(__('Wrong password'), 'error');
 			redirect(BASE_URL);
 		}
-	}
-	// Form
-	else {
+	} else {
+		// Form
 		$_SESSION['logged'] = false;
 		show_header();
 		show_message();
@@ -125,13 +122,11 @@ if (isset($_GET['del'])) {
 		if (rdelete($path . DS . $del)) {
 			$msg = $is_dir ? __('Folder <b>%s</b> deleted') : __('File <b>%s</b> deleted');
 			set_message(sprintf($msg, $del));
-		}
-		else {
+		} else {
 			$msg = $is_dir ? __('Folder <b>%s</b> not deleted') : __('File <b>%s</b> not deleted');
 			set_message(sprintf($msg, $del), 'error');
 		}
-	}
-	else {
+	} else {
 		set_message(__('Wrong file or folder name'), 'error');
 	}
 	redirect(BASE_URL . '?p=' . urlencode($p));
@@ -147,15 +142,12 @@ if (isset($_GET['new'])) {
 		if ($p != '') $path .= DS . $p;
 		if (mkdir_safe($path . DS . $new, false) === true) {
 			set_message(sprintf(__('Folder <b>%s</b> created'), $new));
-		}
-		elseif (mkdir_safe($path . DS . $new, false) === $path . DS . $new) {
+		} elseif (mkdir_safe($path . DS . $new, false) === $path . DS . $new) {
 			set_message(sprintf(__('Folder <b>%s</b> already exists'), $new), 'alert');
-		}
-		else {
+		} else {
 			set_message(sprintf(__('Folder <b>%s</b> not created'), $new), 'error');
 		}
-	}
-	else {
+	} else {
 		set_message(__('Wrong folder name'), 'error');
 	}
 	redirect(BASE_URL . '?p=' . urlencode($p));
@@ -186,24 +178,19 @@ if (isset($_GET['copy']) && isset($_GET['finish'])) {
 			$rename = rename_safe($from, $dest);
 			if ($rename) {
 				set_message(sprintf(__('Moved from <b>%s</b> to <b>%s</b>'), $copy, $msg_from));
-			}
-			elseif ($rename === null) {
+			} elseif ($rename === null) {
 				set_message(__('File or folder with this path already exists'), 'alert');
-			}
-			else {
+			} else {
 				set_message(sprintf(__('Error while moving from <b>%s</b> to <b>%s</b>'), $copy, $msg_from), 'error');
 			}
-		}
-		else {
+		} else {
 			if (rcopy($from, $dest)) {
 				set_message(sprintf(__('Copyied from <b>%s</b> to <b>%s</b>'), $copy, $msg_from));
-			}
-			else {
+			} else {
 				set_message(sprintf(__('Error while copying from <b>%s</b> to <b>%s</b>'), $copy, $msg_from), 'error');
 			}
 		}
-	}
-	else {
+	} else {
 		set_message(__('Paths must be not equal'), 'alert');
 	}
 	redirect(BASE_URL . '?p=' . urlencode($p));
@@ -246,8 +233,7 @@ if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])
 					if ($rename === false) {
 						$errors++;
 					}
-				}
-				else {
+				} else {
 					if (!rcopy($from, $dest)) {
 						$errors++;
 					}
@@ -257,13 +243,11 @@ if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])
 		if ($errors == 0) {
 			$msg = $move ? __('Selected files and folders moved') : __('Selected files and folders copied');
 			set_message($msg);
-		}
-		else {
+		} else {
 			$msg = $move ? __('Error while moving items') : __('Error while copying items');
 			set_message($msg, 'error');
 		}
-	}
-	else {
+	} else {
 		set_message(__('Nothing selected'), 'alert');
 	}
 	redirect(BASE_URL . '?p=' . urlencode($p));
@@ -286,12 +270,10 @@ if (isset($_GET['ren']) && isset($_GET['to'])) {
 	if ($old != '' && $new != '') {
 		if (rename_safe($path . DS . $old, $path . DS . $new)) {
 			set_message(sprintf(__('Renamed from <b>%s</b> to <b>%s</b>'), $old, $new));
-		}
-		else {
+		} else {
 			set_message(sprintf(__('Error while renaming from <b>%s</b> to <b>%s</b>'), $old, $new), 'error');
 		}
-	}
-	else {
+	} else {
 		set_message(__('Names not set'), 'error');
 	}
 	redirect(BASE_URL . '?p=' . urlencode($p));
@@ -316,8 +298,7 @@ if (isset($_GET['dl'])) {
 		header('Content-Length: ' . filesize($path . DS . $dl));
 		readfile($path . DS . $dl);
 		exit;
-	}
-	else {
+	} else {
 		set_message(__('File not found'), 'error');
 		redirect(BASE_URL . '?p=' . urlencode($p));
 	}
@@ -337,8 +318,7 @@ if (isset($_POST['upl'])) {
 		if (empty($_FILES['upload']['error'][$i]) && !empty($tmp_name) && $tmp_name != 'none') {
 			if (move_uploaded_file($tmp_name, $path . DS . $_FILES['upload']['name'][$i])) {
 				$uploads++;
-			}
-			else {
+			} else {
 				$errors++;
 			}
 		}
@@ -346,11 +326,9 @@ if (isset($_POST['upl'])) {
 
 	if ($errors == 0 && $uploads > 0) {
 		set_message(sprintf(__('All files uploaded to <b>%s</b>'), $path));
-	}
-	elseif ($errors == 0 && $uploads == 0) {
+	} elseif ($errors == 0 && $uploads == 0) {
 		set_message(__('Nothing uploaded'), 'alert');
-	}
-	else {
+	} else {
 		set_message(sprintf(__('Error while uploading files. Uploaded files: %s'), $uploads), 'error');
 	}
 
@@ -375,12 +353,10 @@ if (isset($_POST['group']) && isset($_POST['delete'])) {
 		}
 		if ($errors == 0) {
 			set_message(__('Selected files and folder deleted'));
-		}
-		else {
+		} else {
 			set_message(__('Error while deleting items'), 'error');
 		}
-	}
-	else {
+	} else {
 		set_message(__('Nothing selected'), 'alert');
 	}
 
@@ -408,12 +384,10 @@ if (isset($_POST['group']) && isset($_POST['zip'])) {
 
 		if ($res) {
 			set_message(sprintf(__('Archive <b>%s</b> created'), $zipname));
-		}
-		else {
+		} else {
 			set_message(__('Archive not created'), 'error');
 		}
-	}
-	else {
+	} else {
 		set_message(__('Nothing selected'), 'alert');
 	}
 
@@ -435,7 +409,6 @@ if (isset($_GET['unzip'])) {
 	}
 
 	if ($unzip != '' && is_file($path . DS . $unzip)) {
-
 		$zip_path = $path . DS . $unzip;
 
 		//to folder
@@ -452,13 +425,11 @@ if (isset($_GET['unzip'])) {
 
 		if ($res) {
 			set_message(__('Archive unpacked'));
-		}
-		else {
+		} else {
 			set_message(__('Archive not unpacked'), 'error');
 		}
 
-	}
-	else {
+	} else {
 		set_message(__('File not found'), 'error');
 	}
 	redirect(BASE_URL . '?p=' . urlencode($p));
@@ -490,8 +461,7 @@ if (isset($_POST['chmod'])) {
 
 	if (@chmod($path . DS . $file, $mode)) {
 		set_message(__('Permissions changed'));
-	}
-	else {
+	} else {
 		set_message(__('Permissions not changed'), 'error');
 	}
 
@@ -520,8 +490,7 @@ if (is_array($objects)) {
 		$new_path = $path . DS . $file;
 		if (is_file($new_path)) {
 			$files[] = $file;
-		}
-		elseif (is_dir($new_path) && $file != '.' && $file != '..') {
+		} elseif (is_dir($new_path) && $file != '.' && $file != '..') {
 			$folders[] = $file;
 		}
 	}
@@ -530,16 +499,14 @@ if (is_array($objects)) {
 if (!empty($files)) natcasesort($files);
 if (!empty($folders)) natcasesort($folders);
 
-### upload form
+// upload form
 if (isset($_GET['upload'])) {
 	show_header(); // HEADER
 	show_navigation_path($p); // current path
 	?>
 	<div class="path">
 		<p><b><?php _e('Uploading files') ?></b></p>
-
-		<p><?php _e('Destination folder:') ?> <?php echo ABSPATH  . '/' .  $p ?></p>
-
+		<p><?php _e('Destination folder:') ?> <?php echo ABSPATH . '/' . $p ?></p>
 		<form action="" method="post" enctype="multipart/form-data">
 			<input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
 			<input type="hidden" name="upl" value="1">
@@ -560,7 +527,7 @@ if (isset($_GET['upload'])) {
 	exit;
 }
 
-### copy form POST
+// copy form POST
 if (isset($_POST['copy'])) {
 	$copy_files = $_POST['file'];
 	if (!is_array($copy_files) || empty($copy_files)) {
@@ -573,7 +540,6 @@ if (isset($_POST['copy'])) {
 	?>
 	<div class="path">
 		<p><b><?php _e('Copying') ?></b></p>
-
 		<form action="" method="post">
 			<input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
 			<input type="hidden" name="finish" value="1">
@@ -582,31 +548,24 @@ if (isset($_POST['copy'])) {
 				echo '<input type="hidden" name="file[]" value="' . encode_html($cf) . '">' . PHP_EOL;
 			}
 			?>
-
-			<p><?php _e('Files:') ?> <b><?php echo implode('</b>, <b>', $copy_files) ?></b> </p>
-
+			<p><?php _e('Files:') ?> <b><?php echo implode('</b>, <b>', $copy_files) ?></b></p>
 			<p><?php _e('Source folder:') ?> <?php echo ABSPATH ?>/<?php echo $p ?><br>
 				<label for="inp_copy_to"><?php _e('Destination folder:') ?></label>
 				<?php echo ABSPATH ?>/<input type="text" name="copy_to" id="inp_copy_to" value="<?php echo encode_html($p) ?>">
 			</p>
-
 			<p><label><input type="checkbox" name="move" value="1"> <?php _e('Move') ?></label></p>
 			<p>
 				<button type="submit" class="btn"><i class="icon-apply"></i> <?php _e('Copy') ?></button> &nbsp;
 				<b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-cancel"></i> <?php _e('Cancel') ?></a></b>
 			</p>
 		</form>
-
-		<!--<p><i><?php /*_e('Select folder:')*/ ?></i></p>
-		<ul class="folders"></ul>-->
-
 	</div>
 	<?php
 	show_footer();
 	exit;
 }
 
-### copy form
+// copy form
 if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	$copy = $_GET['copy'];
 	$copy = clean_path($copy);
@@ -620,17 +579,15 @@ if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	?>
 	<div class="path">
 		<p><b><?php _e('Copying') ?></b></p>
-
-		<p><?php _e('Source path:') ?> <?php echo ABSPATH ?>/<?php echo $copy ?><br>
+		<p>
+			<?php _e('Source path:') ?> <?php echo ABSPATH ?>/<?php echo $copy ?><br>
 			<?php _e('Destination folder:') ?> <?php echo ABSPATH ?>/<?php echo $p ?>
 		</p>
-
 		<p>
 			<b><a href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1"><i class="icon-apply"></i> <?php _e('Copy') ?></a></b> &nbsp;
 			<b><a href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1&amp;move=1"><i class="icon-apply"></i> <?php _e('Move') ?></a></b> &nbsp;
 			<b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-cancel"></i> <?php _e('Cancel') ?></a></b>
 		</p>
-
 		<p><i><?php _e('Select folder:') ?></i></p>
 		<ul class="folders">
 			<?php
@@ -652,7 +609,7 @@ if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	exit;
 }
 
-### zip info
+// zip info
 if (isset($_GET['zip'])) {
 	$file = $_GET['zip'];
 	$file = clean_path($file);
@@ -671,11 +628,8 @@ if (isset($_GET['zip'])) {
 	<div class="path">
 		<p><b><?php _e('Archive') ?> <?php echo $file ?></b></p>
 		<?php
-
 		$filenames = get_zif_info($file_path);
-
 		if ($filenames !== false) {
-
 			$total_files = 0;
 			$total_comp = 0;
 			$total_uncomp = 0;
@@ -697,7 +651,6 @@ if (isset($_GET['zip'])) {
 				<?php _e('Size in archive:') ?> <?php echo get_filesize($total_comp) ?><br>
 				<?php _e('Compression:') ?> <?php echo round(($total_comp / $total_uncomp) * 100) ?>%
 			</p>
-
 			<p>
 				<b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-folder_open"></i> <?php _e('Open') ?></a></b> &nbsp;
 				<b><a href="?p=<?php echo urlencode($p) ?>&amp;unzip=<?php echo urlencode($file) ?>"><i class="icon-apply"></i> <?php _e('Unpack') ?></a></b> &nbsp;
@@ -705,22 +658,19 @@ if (isset($_GET['zip'])) {
 						<?php _e('Unpack to folder') ?></a></b> &nbsp;
 				<b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-goback"></i> <?php _e('Back') ?></a></b>
 			</p>
-
 			<code class="maxheight">
-			<?php
-			foreach ($filenames as $fn) {
-				if ($fn['folder']) {
-					echo '<b>' . $fn['name'] . '</b><br>';
+				<?php
+				foreach ($filenames as $fn) {
+					if ($fn['folder']) {
+						echo '<b>' . $fn['name'] . '</b><br>';
+					} else {
+						echo $fn['name'] . ' (' . get_filesize($fn['filesize']) . ')<br>';
+					}
 				}
-				else {
-					echo $fn['name'] . ' (' . get_filesize($fn['filesize']) . ')<br>';
-				}
-			}
-			?>
+				?>
 			</code>
 		<?php
-		}
-		else {
+		} else {
 			?>
 			<p><?php _e('Error while fetching archive info') ?></p>
 			<p>
@@ -736,7 +686,7 @@ if (isset($_GET['zip'])) {
 	exit;
 }
 
-### image info
+// image info
 if (isset($_GET['showimg'])) {
 	$file = $_GET['showimg'];
 	$file = clean_path($file);
@@ -749,21 +699,19 @@ if (isset($_GET['showimg'])) {
 	show_header(); // HEADER
 	show_navigation_path($p); // current path
 
-	$file_url = 'http://' . getenv('HTTP_HOST') . (!empty($p) ? '/' . $p : ''). '/' . $file;
+	$file_url = 'http://' . getenv('HTTP_HOST') . (!empty($p) ? '/' . $p : '') . '/' . $file;
 	$file_path = $path . DS . $file;
 
 	$image_size = getimagesize($file_path);
 	?>
 	<div class="path">
 		<p><b><?php _e('Image') ?> <?php echo $file ?></b></p>
-
 		<p>
 			<?php _e('Full path:') ?> <?php echo $file_path ?><br>
 			<?php _e('File size:') ?> <?php echo get_filesize(filesize($file_path)) ?><br>
 			<?php _e('MIME-type:') ?> <?php echo isset($image_size['mime']) ? $image_size['mime'] : get_mime_type($file_path) ?><br>
 			<?php _e('Image sizes:') ?> <?php echo (isset($image_size[0])) ? $image_size[0] : '0' ?> x <?php echo (isset($image_size[1])) ? $image_size[1] : '0' ?>
 		</p>
-
 		<p>
 			<b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-folder_open"></i> <?php _e('Open') ?></a></b> &nbsp;
 			<b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-goback"></i> <?php _e('Back') ?></a></b>
@@ -780,7 +728,7 @@ if (isset($_GET['showimg'])) {
 	exit;
 }
 
-### txt info
+// txt info
 if (isset($_GET['showtxt'])) {
 	$file = $_GET['showtxt'];
 	$file = clean_path($file);
@@ -808,27 +756,23 @@ if (isset($_GET['showtxt'])) {
 	$ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
 	if (in_array($ext, array('php', 'php4', 'php5', 'phtml', 'phps'))) {
 		$content = highlight_string($content, true);
-	}
-	else {
+	} else {
 		$content = '<pre>' . encode_html($content) . '</pre>';
 	}
 
 	?>
 	<div class="path">
 		<p><b><?php _e('File') ?> <?php echo $file ?></b></p>
-
 		<p>
 			<?php _e('Full path:') ?> <?php echo $file_path ?><br>
 			<?php _e('File size:') ?> <?php echo get_filesize(filesize($file_path)) ?><br>
 			<?php _e('MIME-type:') ?> <?php echo get_mime_type($file_path) ?><br>
 			<?php _e('Charset:') ?> <?php echo ($is_utf8) ? 'utf-8' : 'windows-1251' ?>
 		</p>
-
 		<p>
 			<b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-folder_open"></i> <?php _e('Open') ?></a></b> &nbsp;
 			<b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-goback"></i> <?php _e('Back') ?></a></b>
 		</p>
-
 		<?php echo $content ?>
 	</div>
 	<?php
@@ -836,7 +780,7 @@ if (isset($_GET['showtxt'])) {
 	exit;
 }
 
-### chmod
+// chmod
 if (isset($_GET['chmod'])) {
 	$file = $_GET['chmod'];
 	$file = clean_path($file);
@@ -857,11 +801,9 @@ if (isset($_GET['chmod'])) {
 	?>
 	<div class="path">
 		<p><b><?php _e('Change Permissions') ?></b></p>
-
 		<p>
 			<?php _e('Full path:') ?> <?php echo $file_path ?><br>
 		</p>
-
 		<form action="" method="post">
 			<input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
 			<input type="hidden" name="chmod" value="<?php echo encode_html($file) ?>">
@@ -923,18 +865,16 @@ $all_files_size = 0;
 <input type="hidden" name="group" value="1">
 <table><tr><th style="width:3%"><label><input type="checkbox" title="<?php _e('Invert selection') ?>" onclick="checkbox_toggle()"></label></th><th style="width:58%"><?php _e('Name') ?></th><th style="width:10%"><?php _e('Size') ?></th><th style="width:12%"><?php _e('Modified') ?></th><th style="width:6%"><?php _e('Perms') ?></th><th style="width:11%"></th></tr>
 <?php
-
-			// link to parent folder
-			if ($parent !== false) {
-				?>
+// link to parent folder
+if ($parent !== false) {
+	?>
 <tr><td></td><td colspan="5"><a href="?p=<?php echo urlencode($parent) ?>"><i class="icon-arrow_up"></i> ..</a></td></tr>
 <?php
-			}
-
-			foreach ($folders as $f) {
-				$modif = date("d.m.y H:i", filemtime($path . DS . $f));
-				$perms = substr(decoct(fileperms($path . DS . $f)), -4);
-				?>
+}
+foreach ($folders as $f) {
+	$modif = date("d.m.y H:i", filemtime($path . DS . $f));
+	$perms = substr(decoct(fileperms($path . DS . $f)), -4);
+	?>
 <tr><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td>
 <td><a href="?p=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><i class="icon-folder"></i> <?php echo $f ?></a></td>
 <td><?php _e('Folder') ?></td><td><?php echo $modif ?></td>
@@ -944,21 +884,22 @@ $all_files_size = 0;
 <a title="<?php _e('Rename') ?>" href="#" onclick="rename('<?php echo encode_html($p) ?>', '<?php echo encode_html($f) ?>');return false;"><i class="icon-rename"></i></a>
 <a title="<?php _e('Copy to...') ?>" href="?p=&amp;copy=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><i class="icon-copy"></i></a>
 </td></tr>
-<?php
-				flush();
-			}
+	<?php
+	flush();
+}
 
-			foreach ($files as $f) {
-				$img = get_file_icon($path . DS . $f);
-				$modif = date("d.m.y H:i", filemtime($path . DS . $f));
-				$filesize_raw = filesize($path . DS . $f);
-				$filesize = get_filesize($filesize_raw);
-				$filelink = get_file_link($p, $f);
-				$all_files_size += $filesize_raw;
-				$perms = substr(decoct(fileperms($path . DS . $f)), -4);
-				?>
-<tr><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td><td>
-<?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="' . __('File info') . '">' ?><i class="<?php echo $img ?>"></i> <?php echo $f ?><?php if (!empty($filelink)) echo '</a>' ?></td>
+foreach ($files as $f) {
+	$img = get_file_icon($path . DS . $f);
+	$modif = date("d.m.y H:i", filemtime($path . DS . $f));
+	$filesize_raw = filesize($path . DS . $f);
+	$filesize = get_filesize($filesize_raw);
+	$filelink = get_file_link($p, $f);
+	$all_files_size += $filesize_raw;
+	$perms = substr(decoct(fileperms($path . DS . $f)), -4);
+	?>
+<tr>
+<td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td>
+<td><?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="' . __('File info') . '">' ?><i class="<?php echo $img ?>"></i> <?php echo $f ?><?php if (!empty($filelink)) echo '</a>' ?></td>
 <td><span title="<?php printf(__('%s byte'), $filesize_raw) ?>"><?php echo $filesize ?></span></td>
 <td><?php echo $modif ?></td>
 <td><a title="<?php _e('Change Permissions') ?>" href="?p=<?php echo urlencode($p) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a></td>
@@ -968,25 +909,24 @@ $all_files_size = 0;
 <a title="<?php _e('Copy to...') ?>" href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><i class="icon-copy"></i></a>
 <a title="<?php _e('Download') ?>" href="?p=<?php echo urlencode($p) ?>&amp;dl=<?php echo urlencode($f) ?>"><i class="icon-download"></i></a>
 </td></tr>
-<?php
-				flush();
-			}
+	<?php
+	flush();
+}
 
-			if (empty($folders) && empty($files)) {
-				?>
+if (empty($folders) && empty($files)) {
+	?>
 <tr><td></td><td colspan="5"><em><?php _e('Folder is empty') ?></em></td></tr>
 <?php
-			}
-			else {
-				?>
+} else {
+	?>
 <tr><td class="gray"></td><td class="gray" colspan="5">
 <?php _e('Full size:') ?> <span title="<?php printf(__('%s byte'), $all_files_size) ?>"><?php echo get_filesize($all_files_size) ?></span>,
 <?php _e('files:') ?> <?php echo $num_files ?>,
 <?php _e('folders:') ?> <?php echo $num_folders ?>
 </td></tr>
 <?php
-			}
-			?>
+}
+?>
 </table>
 <p class="path"><a href="#" onclick="select_all();return false;"><i class="icon-checkbox"></i> <?php _e('Select all') ?></a> &nbsp;
 <a href="#" onclick="unselect_all();return false;"><i class="icon-checkbox_uncheck"></i> <?php _e('Unselect all') ?></a> &nbsp;
@@ -1023,8 +963,7 @@ function rdelete($path)
 			}
 		}
 		return ($ok) ? rmdir($path) : false;
-	}
-	elseif (is_file($path)) {
+	} elseif (is_file($path)) {
 		return unlink($path);
 	}
 	return false;
@@ -1048,11 +987,9 @@ function rchmod($path, $filemode, $dirmode)
 			}
 		}
 		return true;
-	}
-	elseif (is_link($path)) {
+	} elseif (is_link($path)) {
 		return true;
-	}
-	elseif (is_file($path)) {
+	} elseif (is_file($path)) {
 		return chmod($path, $filemode);
 	}
 	return false;
@@ -1087,8 +1024,7 @@ function rcopy($path, $dest, $upd = true, $force = true)
 			}
 		}
 		return $ok;
-	}
-	elseif (is_file($path)) {
+	} elseif (is_file($path)) {
 		return copy_safe($path, $dest, $upd);
 	}
 	return false;
@@ -1133,16 +1069,13 @@ function get_mime_type($file_path)
 		$mime = finfo_file($finfo, $file_path);
 		finfo_close($finfo);
 		return $mime;
-	}
-	elseif (function_exists('mime_content_type')) {
+	} elseif (function_exists('mime_content_type')) {
 		return mime_content_type($file_path);
-	}
-	elseif (!stristr(ini_get('disable_functions'), 'shell_exec')) {
+	} elseif (!stristr(ini_get('disable_functions'), 'shell_exec')) {
 		$file = escapeshellarg($file_path);
 		$mime = shell_exec('file -bi ' . $file);
 		return $mime;
-	}
-	else {
+	} else {
 		return '--';
 	}
 }
@@ -1212,10 +1145,10 @@ function get_zif_info($path)
 				$zip_name = zip_entry_name($zip_entry);
 				$zip_folder = (substr($zip_name, -1) == '/') ? true : false;
 				$filenames[] = array(
-					'name'            => $zip_name,
-					'filesize'        => zip_entry_filesize($zip_entry),
+					'name' => $zip_name,
+					'filesize' => zip_entry_filesize($zip_entry),
 					'compressed_size' => zip_entry_compressedsize($zip_entry),
-					'folder'          => $zip_folder
+					'folder' => $zip_folder
 					//'compression_method' => zip_entry_compressionmethod($zip_entry),
 				);
 			}
@@ -1235,8 +1168,7 @@ function get_files_recursive($path = '.')
 			foreach ($objects as $file) {
 				if (is_file($path . DS . $file)) {
 					$files[] = $path . DS . $file;
-				}
-				elseif (is_dir($path . DS . $file) && $file != '.' && $file != '..') {
+				} elseif (is_dir($path . DS . $file) && $file != '.' && $file != '..') {
 					$files = array_merge($files, get_files_recursive($path . DS . $file));
 				}
 			}
@@ -1332,46 +1264,46 @@ function get_file_icon($path)
 		case 'config': case 'twig': case 'tpl':
 			$img = 'icon-file_text'; break;
 		case 'zip': case 'rar': case 'gz': case 'tar': case '7z':
-		$img = 'icon-file_zip'; break;
+			$img = 'icon-file_zip'; break;
 		case 'php': case 'php4': case 'php5': case 'phps': case 'phtml':
-		$img = 'icon-file_php'; break;
+			$img = 'icon-file_php'; break;
 		case 'htm': case 'html': case 'shtml': case 'xhtml':
-		$img = 'icon-file_html'; break;
+			$img = 'icon-file_html'; break;
 		case 'xml': case 'xsl':
-		$img = 'icon-file_code'; break;
+			$img = 'icon-file_code'; break;
 		case 'wav': case 'mp3': case 'mp2': case 'm4a': case 'aac': case 'ogg':
 		case 'oga': case 'wma': case 'mka': case 'flac': case 'ac3': case 'tds':
-		$img = 'icon-file_music'; break;
+			$img = 'icon-file_music'; break;
 		case 'm3u': case 'm3u8': case 'pls': case 'cue':
-		$img = 'icon-file_playlist'; break;
+			$img = 'icon-file_playlist'; break;
 		case 'avi': case 'mpg': case 'mpeg': case 'mp4': case 'm4v': case 'flv':
 		case 'f4v': case 'ogm': case 'ogv': case 'mov': case 'mkv': case '3gp':
 		case 'asf': case 'wmv':
-		$img = 'icon-file_film'; break;
+			$img = 'icon-file_film'; break;
 		case 'eml': case 'msg':
-		$img = 'icon-file_outlook'; break;
+			$img = 'icon-file_outlook'; break;
 		case 'xls': case 'xlsx':
-		$img = 'icon-file_excel'; break;
+			$img = 'icon-file_excel'; break;
 		case 'csv':
-			$img = 'icon-file_csv';  break;
+			$img = 'icon-file_csv'; break;
 		case 'doc': case 'docx':
-		$img = 'icon-file_word'; break;
+			$img = 'icon-file_word'; break;
 		case 'ppt': case 'pptx':
-		$img = 'icon-file_powerpoint'; break;
+			$img = 'icon-file_powerpoint'; break;
 		case 'ttf': case 'ttc': case 'otf': case 'woff': case 'eot': case 'fon':
-		$img = 'icon-file_font'; break;
+			$img = 'icon-file_font'; break;
 		case 'pdf':
 			$img = 'icon-file_pdf'; break;
 		case 'psd':
 			$img = 'icon-file_photoshop'; break;
 		case 'ai': case 'eps':
-		$img = 'icon-file_illustrator'; break;
+			$img = 'icon-file_illustrator'; break;
 		case 'fla':
 			$img = 'icon-file_flash'; break;
 		case 'swf':
 			$img = 'icon-file_swf'; break;
 		case 'exe': case 'msi':
-		$img = 'icon-file_application'; break;
+			$img = 'icon-file_application'; break;
 		case 'bat':
 			$img = 'icon-file_terminal'; break;
 		default:
@@ -1381,7 +1313,7 @@ function get_file_icon($path)
 	return $img;
 }
 
-/*
+/**
  * Class to work with zip files (using ZipArchive)
  */
 class Zipper
@@ -1409,8 +1341,7 @@ class Zipper
 			}
 			$this->zip->close();
 			return true;
-		}
-		else {
+		} else {
 			if ($this->addFileOrDir($files)) {
 				$this->zip->close();
 				return true;
@@ -1440,8 +1371,7 @@ class Zipper
 	{
 		if (is_file($filename)) {
 			return $this->zip->addFile($filename);
-		}
-		elseif (is_dir($filename)) {
+		} elseif (is_dir($filename)) {
 			return $this->addDir($filename);
 		}
 		return false;
@@ -1463,8 +1393,7 @@ class Zipper
 						if (!$this->addDir($path . DS . $file)) {
 							return false;
 						}
-					}
-					elseif (is_file($path . DS . $file)) {
+					} elseif (is_file($path . DS . $file)) {
 						if (!$this->zip->addFile($path . DS . $file)) {
 							return false;
 						}
@@ -1593,7 +1522,6 @@ function show_footer()
 	?>
 <p class="center"><small><a href="https://github.com/alexantr/filemanager" target="_blank">PHP File Manager</a></small></p>
 </div>
-
 <script>
 function newfolder(p){var n=prompt('<?php _e('New folder name') ?>','folder');if(n!==null&&n!==''){window.location.search='p='+encodeURIComponent(p)+'&new='+encodeURIComponent(n);}}
 function rename(p,f){var n=prompt('<?php _e('New name') ?>',f);if(n!==null&&n!==''&&n!=f){window.location.search='p='+encodeURIComponent(p)+'&ren='+encodeURIComponent(f)+'&to='+encodeURIComponent(n);}}
@@ -1634,8 +1562,7 @@ function show_image()
 		if (function_exists('header_remove')) {
 			header_remove('Cache-Control');
 			header_remove('Pragma');
-		}
-		else {
+		} else {
 			header('Cache-Control:');
 			header('Pragma:');
 		}
@@ -1883,235 +1810,234 @@ u/L116/LvFq2NH+7c6dL+v8TYAAPepMHV9yJUQAAAABJRU5ErkJggg==',
 function get_strings($lang)
 {
 	$strings['ru'] = array(
-		'Folder <b>%s</b> deleted'                         => 'Папка <b>%s</b> удалена',
-		'Folder <b>%s</b> not deleted'                     => 'Папка <b>%s</b> не удалена',
-		'File <b>%s</b> deleted'                           => 'Файл <b>%s</b> удален',
-		'File <b>%s</b> not deleted'                       => 'Файл <b>%s</b> не удален',
-		'Wrong file or folder name'                        => 'Имя папки или файла задано не верно',
-		'Folder <b>%s</b> created'                         => 'Папка <b>%s</b> создана',
-		'Folder <b>%s</b> already exists'                  => 'Папка <b>%s</b> уже существует',
-		'Folder <b>%s</b> not created'                     => 'Папка <b>%s</b> не создана',
-		'Wrong folder name'                                => 'Имя папки задано не верно',
-		'Source path not defined'                          => 'Не задан исходный путь',
-		'Moved from <b>%s</b> to <b>%s</b>'                => 'Перемещено из <b>%s</b> в <b>%s</b>',
-		'File or folder with this path already exists'     => 'Файл или папка уже есть по указанному пути',
-		'Error while moving from <b>%s</b> to <b>%s</b>'   => 'Произошла ошибка при перемещении из <b>%s</b> в <b>%s</b>',
-		'Copyied from <b>%s</b> to <b>%s</b>'              => 'Скопировано из <b>%s</b> в <b>%s</b>',
-		'Error while copying from <b>%s</b> to <b>%s</b>'  => 'Произошла ошибка при копировании из <b>%s</b> в <b>%s</b>',
-		'Paths must be not equal'                          => 'Пути не должны совпадать',
-		'Unable to create destination folder'              => 'Невозможно создать папку назначения',
-		'Selected files and folders moved'                 => 'Все отмеченные файлы и папки перемещены',
-		'Selected files and folders copied'                => 'Все отмеченные файлы и папки сопированы',
-		'Error while moving items'                         => 'При перемещении возникли ошибки',
-		'Error while copying items'                        => 'При копировании возникли ошибки',
-		'Nothing selected'                                 => 'Ничего не выбрано',
-		'Renamed from <b>%s</b> to <b>%s</b>'              => 'Переименовано из <b>%s</b> в <b>%s</b>',
+		'Folder <b>%s</b> deleted' => 'Папка <b>%s</b> удалена',
+		'Folder <b>%s</b> not deleted' => 'Папка <b>%s</b> не удалена',
+		'File <b>%s</b> deleted' => 'Файл <b>%s</b> удален',
+		'File <b>%s</b> not deleted' => 'Файл <b>%s</b> не удален',
+		'Wrong file or folder name' => 'Имя папки или файла задано не верно',
+		'Folder <b>%s</b> created' => 'Папка <b>%s</b> создана',
+		'Folder <b>%s</b> already exists' => 'Папка <b>%s</b> уже существует',
+		'Folder <b>%s</b> not created' => 'Папка <b>%s</b> не создана',
+		'Wrong folder name' => 'Имя папки задано не верно',
+		'Source path not defined' => 'Не задан исходный путь',
+		'Moved from <b>%s</b> to <b>%s</b>' => 'Перемещено из <b>%s</b> в <b>%s</b>',
+		'File or folder with this path already exists' => 'Файл или папка уже есть по указанному пути',
+		'Error while moving from <b>%s</b> to <b>%s</b>' => 'Произошла ошибка при перемещении из <b>%s</b> в <b>%s</b>',
+		'Copyied from <b>%s</b> to <b>%s</b>' => 'Скопировано из <b>%s</b> в <b>%s</b>',
+		'Error while copying from <b>%s</b> to <b>%s</b>' => 'Произошла ошибка при копировании из <b>%s</b> в <b>%s</b>',
+		'Paths must be not equal' => 'Пути не должны совпадать',
+		'Unable to create destination folder' => 'Невозможно создать папку назначения',
+		'Selected files and folders moved' => 'Все отмеченные файлы и папки перемещены',
+		'Selected files and folders copied' => 'Все отмеченные файлы и папки сопированы',
+		'Error while moving items' => 'При перемещении возникли ошибки',
+		'Error while copying items' => 'При копировании возникли ошибки',
+		'Nothing selected' => 'Ничего не выбрано',
+		'Renamed from <b>%s</b> to <b>%s</b>' => 'Переименовано из <b>%s</b> в <b>%s</b>',
 		'Error while renaming from <b>%s</b> to <b>%s</b>' => 'Произошла ошибка при переименовании из <b>%s</b> в <b>%s</b>',
-		'Names not set'                                    => 'Не заданы имена',
-		'File not found'                                   => 'Файл не найден',
-		'All files uploaded to <b>%s</b>'                  => 'Все файлы загружены в папку <b>%s</b>',
-		'Nothing uploaded'                                 => 'Ничего не загружено',
-		'Error while uploading files. Uploaded files: %s'  => 'При загрузке файлов возникли ошибки. Загружено файлов: %s',
-		'Selected files and folder deleted'                => 'Все отмеченные файлы и папки удалены',
-		'Error while deleting items'                       => 'При удалении возникли ошибки',
-		'Archive <b>%s</b> created'                        => 'Архив <b>%s</b> успешно создан',
-		'Archive not created'                              => 'Ошибка. Архив не создан',
-		'Archive unpacked'                                 => 'Архив распакован',
-		'Archive not unpacked'                             => 'Архив не распакован',
-		'Uploading files'                                  => 'Загрузка файлов',
-		'Destination folder:'                              => 'Папка назначения:',
-		'Upload'                                           => 'Загрузить',
-		'Cancel'                                           => 'Отмена',
-		'Copying'                                          => 'Копирование',
-		'Files:'                                           => 'Файлы:',
-		'Source folder:'                                   => 'Исходная папка:',
-		'Move'                                             => 'Переместить',
-		'Select folder:'                                   => 'Выбрать папку:',
-		'Source path:'                                     => 'Исходный путь:',
-		'Archive'                                          => 'Архив',
-		'Full path:'                                       => 'Полный путь:',
-		'File size:'                                       => 'Размер файла:',
-		'Files in archive:'                                => 'Файлов в архиве:',
-		'Total size:'                                      => 'Общий размер:',
-		'Size in archive:'                                 => 'Размер в архиве:',
-		'Compression:'                                     => 'Степень сжатия:',
-		'Open'                                             => 'Открыть',
-		'Unpack'                                           => 'Распаковать',
-		'Unpack to'                                        => 'Распаковать в',
-		'Unpack to folder'                                 => 'Распаковать в папку',
-		'Back'                                             => 'Назад',
-		'Error while fetching archive info'                => 'Ошибка получения информации об архиве',
-		'Image'                                            => 'Изображение',
-		'MIME-type:'                                       => 'MIME-тип:',
-		'Image sizes:'                                     => 'Размеры изображения:',
-		'File'                                             => 'Файл',
-		'Charset:'                                         => 'Кодировка:',
-		'Name'                                             => 'Имя',
-		'Size'                                             => 'Размер',
-		'Modified'                                         => 'Изменен',
-		'Folder'                                           => 'Папка',
-		'Delete'                                           => 'Удалить',
-		'Delete folder?'                                   => 'Удалить папку?',
-		'Delete file?'                                     => 'Удалить файл?',
-		'Rename'                                           => 'Переименовать',
-		'Copy to...'                                       => 'Копировать в...',
-		'File info'                                        => 'Информация о файле',
-		'%s byte'                                          => '%s байт',
-		'%s KB'                                            => '%s КБ',
-		'%s MB'                                            => '%s МБ',
-		'%s GB'                                            => '%s ГБ',
-		'Download'                                         => 'Скачать',
-		'Folder is empty'                                  => 'Папка пуста',
-		'Select all'                                       => 'Выделить все',
-		'Unselect all'                                     => 'Снять выделение',
-		'Invert selection'                                 => 'Инвертировать выделение',
-		'Delete selected files and folders?'               => 'Удалить выбранные файлы и папки?',
-		'Pack'                                             => 'Упаковать',
-		'Copy'                                             => 'Копировать',
-		'Upload files'                                     => 'Загрузить файлы',
-		'New folder'                                       => 'Новая папка',
-		'New folder name'                                  => 'Имя новой папки',
-		'New name'                                         => 'Новое имя',
-		'Operations with archives are not available'       => 'Операции с архивами недоступны',
-		'Full size:'                                       => 'Общий размер:',
-		'files:'                                           => 'файлов:',
-		'folders:'                                         => 'папок:',
-		'Perms'                                            => 'Права',
-		'Username'                                         => 'Имя пользователя',
-		'Password'                                         => 'Пароль',
-		'Login'                                            => 'Войти',
-		'Logout'                                           => 'Выход',
-		'Wrong password'                                   => 'Неверный пароль',
-		'You are logged in'                                => 'Вы успешно вошли',
-		'Change Permissions'                               => 'Изменение прав доступа',
-		'Permissions:'                                     => 'Права доступа:',
-		'Change'                                           => 'Изменить',
-		'Owner'                                            => 'Владелец',
-		'Group'                                            => 'Группа',
-		'Other'                                            => 'Прочие',
-		'Read'                                             => 'Чтение',
-		'Write'                                            => 'Запись',
-		'Execute'                                          => 'Выполнение',
-		'Permissions changed'                              => 'Права изменены',
-		'Permissions not changed'                          => 'Права не изменены',
+		'Names not set' => 'Не заданы имена',
+		'File not found' => 'Файл не найден',
+		'All files uploaded to <b>%s</b>' => 'Все файлы загружены в папку <b>%s</b>',
+		'Nothing uploaded' => 'Ничего не загружено',
+		'Error while uploading files. Uploaded files: %s' => 'При загрузке файлов возникли ошибки. Загружено файлов: %s',
+		'Selected files and folder deleted' => 'Все отмеченные файлы и папки удалены',
+		'Error while deleting items' => 'При удалении возникли ошибки',
+		'Archive <b>%s</b> created' => 'Архив <b>%s</b> успешно создан',
+		'Archive not created' => 'Ошибка. Архив не создан',
+		'Archive unpacked' => 'Архив распакован',
+		'Archive not unpacked' => 'Архив не распакован',
+		'Uploading files' => 'Загрузка файлов',
+		'Destination folder:' => 'Папка назначения:',
+		'Upload' => 'Загрузить',
+		'Cancel' => 'Отмена',
+		'Copying' => 'Копирование',
+		'Files:' => 'Файлы:',
+		'Source folder:' => 'Исходная папка:',
+		'Move' => 'Переместить',
+		'Select folder:' => 'Выбрать папку:',
+		'Source path:' => 'Исходный путь:',
+		'Archive' => 'Архив',
+		'Full path:' => 'Полный путь:',
+		'File size:' => 'Размер файла:',
+		'Files in archive:' => 'Файлов в архиве:',
+		'Total size:' => 'Общий размер:',
+		'Size in archive:' => 'Размер в архиве:',
+		'Compression:' => 'Степень сжатия:',
+		'Open' => 'Открыть',
+		'Unpack' => 'Распаковать',
+		'Unpack to' => 'Распаковать в',
+		'Unpack to folder' => 'Распаковать в папку',
+		'Back' => 'Назад',
+		'Error while fetching archive info' => 'Ошибка получения информации об архиве',
+		'Image' => 'Изображение',
+		'MIME-type:' => 'MIME-тип:',
+		'Image sizes:' => 'Размеры изображения:',
+		'File' => 'Файл',
+		'Charset:' => 'Кодировка:',
+		'Name' => 'Имя',
+		'Size' => 'Размер',
+		'Modified' => 'Изменен',
+		'Folder' => 'Папка',
+		'Delete' => 'Удалить',
+		'Delete folder?' => 'Удалить папку?',
+		'Delete file?' => 'Удалить файл?',
+		'Rename' => 'Переименовать',
+		'Copy to...' => 'Копировать в...',
+		'File info' => 'Информация о файле',
+		'%s byte' => '%s байт',
+		'%s KB' => '%s КБ',
+		'%s MB' => '%s МБ',
+		'%s GB' => '%s ГБ',
+		'Download' => 'Скачать',
+		'Folder is empty' => 'Папка пуста',
+		'Select all' => 'Выделить все',
+		'Unselect all' => 'Снять выделение',
+		'Invert selection' => 'Инвертировать выделение',
+		'Delete selected files and folders?' => 'Удалить выбранные файлы и папки?',
+		'Pack' => 'Упаковать',
+		'Copy' => 'Копировать',
+		'Upload files' => 'Загрузить файлы',
+		'New folder' => 'Новая папка',
+		'New folder name' => 'Имя новой папки',
+		'New name' => 'Новое имя',
+		'Operations with archives are not available' => 'Операции с архивами недоступны',
+		'Full size:' => 'Общий размер:',
+		'files:' => 'файлов:',
+		'folders:' => 'папок:',
+		'Perms' => 'Права',
+		'Username' => 'Имя пользователя',
+		'Password' => 'Пароль',
+		'Login' => 'Войти',
+		'Logout' => 'Выход',
+		'Wrong password' => 'Неверный пароль',
+		'You are logged in' => 'Вы успешно вошли',
+		'Change Permissions' => 'Изменение прав доступа',
+		'Permissions:' => 'Права доступа:',
+		'Change' => 'Изменить',
+		'Owner' => 'Владелец',
+		'Group' => 'Группа',
+		'Other' => 'Прочие',
+		'Read' => 'Чтение',
+		'Write' => 'Запись',
+		'Execute' => 'Выполнение',
+		'Permissions changed' => 'Права изменены',
+		'Permissions not changed' => 'Права не изменены',
 	);
 	$strings['fr'] = array(
-		'Folder <b>%s</b> deleted'                         => 'Dossier <b>%s</b> supprimé',
-		'Folder <b>%s</b> not deleted'                     => 'Dossier <b>%s</b> non supprimé',
-		'File <b>%s</b> deleted'                           => 'Fichier <b>%s</b> supprimé',
-		'File <b>%s</b> not deleted'                       => 'Fichier <b>%s</b> non supprimé',
-		'Wrong file or folder name'                        => 'Nom de fichier ou dossier incorrect',
-		'Folder <b>%s</b> created'                         => 'Dossier <b>%s</b> créé',
-		'Folder <b>%s</b> already exists'                  => 'Dossier <b>%s</b> déjà existant',
-		'Folder <b>%s</b> not created'                     => 'Dossier <b>%s</b> non créé',
-		'Wrong folder name'                                => 'Nom de dossier inccorect',
-		'Source path not defined'                          => 'Chemin source non défini',
-		'Moved from <b>%s</b> to <b>%s</b>'                => 'Déplacé de <b>%s</b> à <b>%s</b>',
-		'File or folder with this path already exists'     => 'Fichier ou dossier avec ce chemin déjà existant',
-		'Error while moving from <b>%s</b> to <b>%s</b>'   => 'Erreur lors du déplacement de <b>%s</b> à <b>%s</b>',
-		'Copyied from <b>%s</b> to <b>%s</b>'              => 'Copié de <b>%s</b> à <b>%s</b>',
-		'Error while copying from <b>%s</b> to <b>%s</b>'  => 'Erreur lors de la copie de <b>%s</b> à <b>%s</b>',
-		'Paths must be not equal'                          => 'Les chemins doivent être différents',
-		'Unable to create destination folder'              => 'Impossible de créer le dossier de destination',
-		'Selected files and folders moved'                 => 'Fichiers et dossiers sélectionnés déplacés',
-		'Selected files and folders copied'                => 'Fichiers et dossiers sélectionnés copiés',
-		'Error while moving items'                         => 'Erreur lors du déplacement des éléments',
-		'Error while copying items'                        => 'Erreur lors de la copie des éléments',
-		'Nothing selected'                                 => 'Sélection vide',
-		'Renamed from <b>%s</b> to <b>%s</b>'              => 'Renommé de <b>%s</b> à <b>%s</b>',
+		'Folder <b>%s</b> deleted' => 'Dossier <b>%s</b> supprimé',
+		'Folder <b>%s</b> not deleted' => 'Dossier <b>%s</b> non supprimé',
+		'File <b>%s</b> deleted' => 'Fichier <b>%s</b> supprimé',
+		'File <b>%s</b> not deleted' => 'Fichier <b>%s</b> non supprimé',
+		'Wrong file or folder name' => 'Nom de fichier ou dossier incorrect',
+		'Folder <b>%s</b> created' => 'Dossier <b>%s</b> créé',
+		'Folder <b>%s</b> already exists' => 'Dossier <b>%s</b> déjà existant',
+		'Folder <b>%s</b> not created' => 'Dossier <b>%s</b> non créé',
+		'Wrong folder name' => 'Nom de dossier inccorect',
+		'Source path not defined' => 'Chemin source non défini',
+		'Moved from <b>%s</b> to <b>%s</b>' => 'Déplacé de <b>%s</b> à <b>%s</b>',
+		'File or folder with this path already exists' => 'Fichier ou dossier avec ce chemin déjà existant',
+		'Error while moving from <b>%s</b> to <b>%s</b>' => 'Erreur lors du déplacement de <b>%s</b> à <b>%s</b>',
+		'Copyied from <b>%s</b> to <b>%s</b>' => 'Copié de <b>%s</b> à <b>%s</b>',
+		'Error while copying from <b>%s</b> to <b>%s</b>' => 'Erreur lors de la copie de <b>%s</b> à <b>%s</b>',
+		'Paths must be not equal' => 'Les chemins doivent être différents',
+		'Unable to create destination folder' => 'Impossible de créer le dossier de destination',
+		'Selected files and folders moved' => 'Fichiers et dossiers sélectionnés déplacés',
+		'Selected files and folders copied' => 'Fichiers et dossiers sélectionnés copiés',
+		'Error while moving items' => 'Erreur lors du déplacement des éléments',
+		'Error while copying items' => 'Erreur lors de la copie des éléments',
+		'Nothing selected' => 'Sélection vide',
+		'Renamed from <b>%s</b> to <b>%s</b>' => 'Renommé de <b>%s</b> à <b>%s</b>',
 		'Error while renaming from <b>%s</b> to <b>%s</b>' => 'Erreur lors du renommage de <b>%s</b> en <b>%s</b>',
-		'Names not set'                                    => 'Noms indéfinis',
-		'File not found'                                   => 'Fichier non trouvé',
-		'All files uploaded to <b>%s</b>'                  => 'Tous les fichiers ont été envoyé dans <b>%s</b>',
-		'Nothing uploaded'                                 => 'Rien a été envoyé',
-		'Error while uploading files. Uploaded files: %s'  => 'Erreur lors de l\'envoi des fichiers. Fichiers envoyés : %s',
-		'Selected files and folder deleted'                => 'Fichiers et dossier sélectionnés supprimés',
-		'Error while deleting items'                       => 'Erreur lors de la suppression des éléments',
-		'Archive <b>%s</b> created'                        => 'Archive <b>%s</b> créée',
-		'Archive not created'                              => 'Archive non créée',
-		'Archive unpacked'                                 => 'Archive décompressée',
-		'Archive not unpacked'                             => 'Archive non décompressée',
-		'Uploading files'                                  => 'Envoie des fichiers',
-		'Destination folder:'                              => 'Dossier de destination :',
-		'Upload'                                           => 'Envoi',
-		'Cancel'                                           => 'Annuler',
-		'Copying'                                          => 'Copie en cours',
-		'Files:'                                           => 'Fichiers :',
-		'Source folder:'                                   => 'Dossier source :',
-		'Move'                                             => 'Déplacer',
-		'Select folder:'                                   => 'Dossier sélectionné :',
-		'Source path:'                                     => 'Chemin source :',
-		'Archive'                                          => 'Archive',
-		'Full path:'                                       => 'Chemin complet :',
-		'File size:'                                       => 'Taille du fichier :',
-		'Files in archive:'                                => 'Fichiers dans l\'archive :',
-		'Total size:'                                      => 'Taille totale :',
-		'Size in archive:'                                 => 'Taille dans l\'archive :',
-		'Compression:'                                     => 'Compression :',
-		'Open'                                             => 'Ouvrir',
-		'Unpack'                                           => 'Décompresser',
-		'Unpack to'                                        => 'Décompresser vers',
-		'Unpack to folder'                                 => 'Décompresser vers le dossier',
-		'Back'                                             => 'Retour',
-		'Error while fetching archive info'                => 'Erreur lors de la récupération des informations de l\'archive',
-		'Image'                                            => 'Image',
-		'MIME-type:'                                       => 'MIME-Type :',
-		'Image sizes:'                                     => 'Taille de l\'image :',
-		'File'                                             => 'Fichier',
-		'Charset:'                                         => 'Charset :',
-		'Name'                                             => 'Nom',
-		'Size'                                             => 'Taille',
-		'Modified'                                         => 'Modifié',
-		'Folder'                                           => 'Dossier',
-		'Delete'                                           => 'Supprimer',
-		'Delete folder?'                                   => 'Supprimer le dossier ?',
-		'Delete file?'                                     => 'Supprimer le fichier ?',
-		'Rename'                                           => 'Renommer',
-		'Copy to...'                                       => 'Copier vers...',
-		'File info'                                        => 'Informations',
-		'%s byte'                                          => '%s octet',
-		'%s KB'                                            => '%s Кb',
-		'%s MB'                                            => '%s Мb',
-		'%s GB'                                            => '%s Gb',
-		'Download'                                         => 'Télécharger',
-		'Folder is empty'                                  => 'Dossier vide',
-		'Select all'                                       => 'Tout sélectionner',
-		'Unselect all'                                     => 'Tout désélectionner',
-		'Invert selection'                                 => 'Inverser la sélection',
-		'Delete selected files and folders?'               => 'Supprimer les fichiers et dossiers sélectionnés ?',
-		'Pack'                                             => 'Archiver',
-		'Copy'                                             => 'Copier',
-		'Upload files'                                     => 'Envoyer des fichiers',
-		'New folder'                                       => 'Nouveau dossier',
-		'New folder name'                                  => 'Nouveau nom de dossier',
-		'New name'                                         => 'Nouveau nom',
-		'Operations with archives are not available'       => 'Opérations d\archivage non disponibles',
-		'Full size:'                                       => 'Taille totale :',
-		'files:'                                           => 'fichiers :',
-		'folders:'                                         => 'dossiers :',
-		'Perms'                                            => 'Permissions',
-		'Username'                                         => 'Nom d\'utilisateur',
-		'Password'                                         => 'Mot de passe',
-		'Login'                                            => 'Identifiant',
-		'Logout'                                           => 'Déconnexion',
-		'Wrong password'                                   => 'Mauvais mot de passe',
-		'You are logged in'                                => 'Vous êtes connecté',
-		'Change Permissions'                               => 'Modifier les permissions',
-		'Permissions:'                                     => 'Permissions:',
-		'Change'                                           => 'Modifier',
-		'Owner'                                            => 'Propriétaire',
-		'Group'                                            => 'Groupe',
-		'Other'                                            => 'Autre',
-		'Read'                                             => 'Lire',
-		'Write'                                            => 'Écrire',
-		'Execute'                                          => 'Exécuter',
-		'Permissions changed'                              => 'Permissions modifiées',
-		'Permissions not changed'                          => 'Permission non modifiées',
+		'Names not set' => 'Noms indéfinis',
+		'File not found' => 'Fichier non trouvé',
+		'All files uploaded to <b>%s</b>' => 'Tous les fichiers ont été envoyé dans <b>%s</b>',
+		'Nothing uploaded' => 'Rien a été envoyé',
+		'Error while uploading files. Uploaded files: %s' => 'Erreur lors de l\'envoi des fichiers. Fichiers envoyés : %s',
+		'Selected files and folder deleted' => 'Fichiers et dossier sélectionnés supprimés',
+		'Error while deleting items' => 'Erreur lors de la suppression des éléments',
+		'Archive <b>%s</b> created' => 'Archive <b>%s</b> créée',
+		'Archive not created' => 'Archive non créée',
+		'Archive unpacked' => 'Archive décompressée',
+		'Archive not unpacked' => 'Archive non décompressée',
+		'Uploading files' => 'Envoie des fichiers',
+		'Destination folder:' => 'Dossier de destination :',
+		'Upload' => 'Envoi',
+		'Cancel' => 'Annuler',
+		'Copying' => 'Copie en cours',
+		'Files:' => 'Fichiers :',
+		'Source folder:' => 'Dossier source :',
+		'Move' => 'Déplacer',
+		'Select folder:' => 'Dossier sélectionné :',
+		'Source path:' => 'Chemin source :',
+		'Archive' => 'Archive',
+		'Full path:' => 'Chemin complet :',
+		'File size:' => 'Taille du fichier :',
+		'Files in archive:' => 'Fichiers dans l\'archive :',
+		'Total size:' => 'Taille totale :',
+		'Size in archive:' => 'Taille dans l\'archive :',
+		'Compression:' => 'Compression :',
+		'Open' => 'Ouvrir',
+		'Unpack' => 'Décompresser',
+		'Unpack to' => 'Décompresser vers',
+		'Unpack to folder' => 'Décompresser vers le dossier',
+		'Back' => 'Retour',
+		'Error while fetching archive info' => 'Erreur lors de la récupération des informations de l\'archive',
+		'Image' => 'Image',
+		'MIME-type:' => 'MIME-Type :',
+		'Image sizes:' => 'Taille de l\'image :',
+		'File' => 'Fichier',
+		'Charset:' => 'Charset :',
+		'Name' => 'Nom',
+		'Size' => 'Taille',
+		'Modified' => 'Modifié',
+		'Folder' => 'Dossier',
+		'Delete' => 'Supprimer',
+		'Delete folder?' => 'Supprimer le dossier ?',
+		'Delete file?' => 'Supprimer le fichier ?',
+		'Rename' => 'Renommer',
+		'Copy to...' => 'Copier vers...',
+		'File info' => 'Informations',
+		'%s byte' => '%s octet',
+		'%s KB' => '%s Кb',
+		'%s MB' => '%s Мb',
+		'%s GB' => '%s Gb',
+		'Download' => 'Télécharger',
+		'Folder is empty' => 'Dossier vide',
+		'Select all' => 'Tout sélectionner',
+		'Unselect all' => 'Tout désélectionner',
+		'Invert selection' => 'Inverser la sélection',
+		'Delete selected files and folders?' => 'Supprimer les fichiers et dossiers sélectionnés ?',
+		'Pack' => 'Archiver',
+		'Copy' => 'Copier',
+		'Upload files' => 'Envoyer des fichiers',
+		'New folder' => 'Nouveau dossier',
+		'New folder name' => 'Nouveau nom de dossier',
+		'New name' => 'Nouveau nom',
+		'Operations with archives are not available' => 'Opérations d\archivage non disponibles',
+		'Full size:' => 'Taille totale :',
+		'files:' => 'fichiers :',
+		'folders:' => 'dossiers :',
+		'Perms' => 'Permissions',
+		'Username' => 'Nom d\'utilisateur',
+		'Password' => 'Mot de passe',
+		'Login' => 'Identifiant',
+		'Logout' => 'Déconnexion',
+		'Wrong password' => 'Mauvais mot de passe',
+		'You are logged in' => 'Vous êtes connecté',
+		'Change Permissions' => 'Modifier les permissions',
+		'Permissions:' => 'Permissions:',
+		'Change' => 'Modifier',
+		'Owner' => 'Propriétaire',
+		'Group' => 'Groupe',
+		'Other' => 'Autre',
+		'Read' => 'Lire',
+		'Write' => 'Écrire',
+		'Execute' => 'Exécuter',
+		'Permissions changed' => 'Permissions modifiées',
+		'Permissions not changed' => 'Permission non modifiées',
 	);
 	if (isset($strings[$lang])) {
 		return $strings[$lang];
-	}
-	else {
+	} else {
 		return false;
 	}
 }
