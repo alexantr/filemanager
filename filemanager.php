@@ -741,6 +741,49 @@ if (isset($_GET['showimg'])) {
 	exit;
 }
 
+// video & audio info
+if (isset($_GET['showvideo']) || isset($_GET['showaudio'])) {
+	$is_video = isset($_GET['showvideo']);
+	$file = $is_video ? $_GET['showvideo'] : $_GET['showaudio'];
+	$file = clean_path($file);
+	$file = str_replace('/', '', $file);
+	if ($file == '' || !is_file($path . DS . $file)) {
+		set_message(__('File not found'), 'error');
+		redirect(FM_URL . '?p=' . urlencode($p));
+	}
+
+	show_header(); // HEADER
+	show_navigation_path($p); // current path
+
+	$file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
+	$file_path = $path . DS . $file;
+
+	?>
+	<div class="path">
+		<p><b><?php $is_video ? _e('Video') : _e('Audio') ?> <?php echo $file ?></b></p>
+		<p>
+			<?php _e('Full path:') ?> <?php echo $file_path ?><br>
+			<?php _e('File size:') ?> <?php echo get_filesize(filesize($file_path)) ?><br>
+			<?php _e('MIME-type:') ?> <?php echo get_mime_type($file_path) ?>
+		</p>
+		<p>
+			<b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-folder_open"></i> <?php _e('Open') ?></a></b> &nbsp;
+			<b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-goback"></i> <?php _e('Back') ?></a></b>
+		</p>
+		<?php
+		$ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+		if (in_array($ext, array('webm', 'mp4', 'm4v', 'ogm', 'ogv'))) {
+			echo '<div class="preview-video"><video src="' . $file_url . '" width="640" height="360" controls preload="metadata"></video></div>';
+		} elseif (in_array($ext, array('wav', 'mp3', 'ogg'))) {
+			echo '<p><audio src="' . $file_url . '" controls preload="metadata"></audio></p>';
+		}
+		?>
+	</div>
+	<?php
+	show_footer();
+	exit;
+}
+
 // txt info
 if (isset($_GET['showtxt'])) {
 	$file = $_GET['showtxt'];
@@ -1247,6 +1290,10 @@ function get_file_link($p, $f)
 			case 'ico': case 'gif': case 'jpg': case 'jpeg': case 'jpc': case 'jp2': case 'jpx':
 			case 'xbm': case 'wbmp': case 'png': case 'bmp': case 'tif': case 'tiff': case 'psd':
 				$link = '?p=' . urlencode($p) . '&amp;showimg=' . urlencode($f); break;
+			case 'webm': case 'mp4': case 'm4v': case 'ogm': case 'ogv':
+				$link = '?p=' . urlencode($p) . '&amp;showvideo=' . urlencode($f); break;
+			case 'wav': case 'mp3': case 'ogg':
+				$link = '?p=' . urlencode($p) . '&amp;showaudio=' . urlencode($f); break;
 			case 'txt': case 'css': case 'ini': case 'conf': case 'log': case 'htaccess':
 			case 'passwd': case 'ftpquota': case 'sql': case 'js': case 'json': case 'sh':
 			case 'config': case 'php': case 'php4': case 'php5': case 'phps': case 'phtml':
@@ -1497,6 +1544,7 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .message.ok{border-color:green;color:green}.message.error{border-color:red;color:red}.message.alert{border-color:orange;color:orange}
 .btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#296ea3;cursor:pointer}.btn:hover{color:#b00}
 .preview-img{max-width:100%;background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAKklEQVR42mL5//8/Azbw+PFjrOJMDCSCUQ3EABZc4S0rKzsaSvTTABBgAMyfCMsY4B9iAAAAAElFTkSuQmCC") repeat 0 0}
+.preview-video{position:relative;max-width:100%;height:0;padding-bottom:62.5%;margin-bottom:10px}.preview-video video{position:absolute;width:100%;height:100%;left:0;top:0;background:#000}
 [class*="icon-"]{display:inline-block;width:16px;height:16px;background:url("<?php echo FM_URL ?>?img=sprites") no-repeat 0 0;vertical-align:bottom}
 .icon-document{background-position:-16px 0}.icon-folder{background-position:-32px 0}
 .icon-folder_add{background-position:-48px 0}.icon-upload{background-position:-64px 0}
@@ -1936,6 +1984,8 @@ function get_strings($lang)
 		'Execute' => 'Выполнение',
 		'Permissions changed' => 'Права изменены',
 		'Permissions not changed' => 'Права не изменены',
+		'Video' => 'Видео',
+		'Audio' => 'Аудио',
 	);
 	$strings['fr'] = array(
 		'Folder <b>%s</b> deleted' => 'Dossier <b>%s</b> supprimé',
@@ -2049,6 +2099,8 @@ function get_strings($lang)
 		'Execute' => 'Exécuter',
 		'Permissions changed' => 'Permissions modifiées',
 		'Permissions not changed' => 'Permission non modifiées',
+		'Video' => 'Vidéo',
+		'Audio' => 'Audio',
 	);
 	if (isset($strings[$lang])) {
 		return $strings[$lang];
