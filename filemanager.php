@@ -20,6 +20,9 @@ $default_timezone = 'Europe/Minsk'; // UTC+3
 // Default language (en, ru, fr)
 $lang = 'ru';
 
+// Base folder ('', 'subfolder', 'subfolder/subfolder2' etc.)
+$base_folder = '';
+
 //--- END CONFIG
 
 $languages = array('en', 'ru', 'fr');
@@ -39,15 +42,25 @@ session_start();
 
 define('DS', '/');
 
-// abs path for site
-define('ABSPATH', $_SERVER['DOCUMENT_ROOT']);
+$base_folder = clean_path($base_folder);
+$is_https = isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1)
+	|| isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https';
 
-define('BASE_URL', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+// check $base_folder
+$root_path = $_SERVER['DOCUMENT_ROOT'] . (!empty($base_folder) ? DS . $base_folder : '');
+if (!is_dir($root_path)) {
+	$base_folder = '';
+}
+
+// abs path for site
+define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT'] . (!empty($base_folder) ? DS . $base_folder : ''));
+define('ROOT_URL', ($is_https ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . (!empty($base_folder) ? '/' . $base_folder : ''));
+define('FM_URL', ($is_https ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
 
 // logout
 if (isset($_GET['logout'])) {
 	unset($_SESSION['logged']);
-	redirect(BASE_URL);
+	redirect(FM_URL);
 }
 
 // Show image here
@@ -69,11 +82,11 @@ if ($use_auth && !empty($auth_users)) {
 				$lang = $_POST['lang'];
 			}
 			set_message(__('You are logged in'));
-			redirect(BASE_URL . '?p=');
+			redirect(FM_URL . '?p=');
 		} else {
 			$_SESSION['logged'] = false;
 			set_message(__('Wrong password'), 'error');
-			redirect(BASE_URL);
+			redirect(FM_URL);
 		}
 	} else {
 		// Form
@@ -100,7 +113,7 @@ if ($use_auth && !empty($auth_users)) {
 }
 
 // always use ?p=
-if (!isset($_GET['p'])) redirect(BASE_URL . '?p=');
+if (!isset($_GET['p'])) redirect(FM_URL . '?p=');
 
 // get path
 $p = isset($_GET['p']) ? $_GET['p'] : (isset($_POST['p']) ? $_POST['p'] : '');
@@ -116,7 +129,7 @@ if (isset($_GET['del'])) {
 	$del = clean_path($del);
 	$del = str_replace('/', '', $del);
 	if ($del != '' && $del != '..' && $del != '.') {
-		$path = ABSPATH;
+		$path = ROOT_PATH;
 		if ($p != '') $path .= DS . $p;
 		$is_dir = (is_dir($path . DS . $del)) ? true : false;
 		if (rdelete($path . DS . $del)) {
@@ -129,7 +142,7 @@ if (isset($_GET['del'])) {
 	} else {
 		set_message(__('Wrong file or folder name'), 'error');
 	}
-	redirect(BASE_URL . '?p=' . urlencode($p));
+	redirect(FM_URL . '?p=' . urlencode($p));
 }
 
 // Create folder
@@ -138,7 +151,7 @@ if (isset($_GET['new'])) {
 	$new = clean_path($new);
 	$new = str_replace('/', '', $new);
 	if ($new != '' && $new != '..' && $new != '.') {
-		$path = ABSPATH;
+		$path = ROOT_PATH;
 		if ($p != '') $path .= DS . $p;
 		if (mkdir_safe($path . DS . $new, false) === true) {
 			set_message(sprintf(__('Folder <b>%s</b> created'), $new));
@@ -150,7 +163,7 @@ if (isset($_GET['new'])) {
 	} else {
 		set_message(__('Wrong folder name'), 'error');
 	}
-	redirect(BASE_URL . '?p=' . urlencode($p));
+	redirect(FM_URL . '?p=' . urlencode($p));
 }
 
 // Copy folder / file
@@ -161,12 +174,12 @@ if (isset($_GET['copy']) && isset($_GET['finish'])) {
 	// empty path
 	if ($copy == '') {
 		set_message(__('Source path not defined'), 'error');
-		redirect(BASE_URL . '?p=' . urlencode($p));
+		redirect(FM_URL . '?p=' . urlencode($p));
 	}
 	// abs path from
-	$from = ABSPATH . DS . $copy;
+	$from = ROOT_PATH . DS . $copy;
 	// abs path to
-	$dest = ABSPATH;
+	$dest = ROOT_PATH;
 	if ($p != '') $dest .= DS . $p;
 	$dest .= DS . basename($from);
 	// move?
@@ -193,26 +206,26 @@ if (isset($_GET['copy']) && isset($_GET['finish'])) {
 	} else {
 		set_message(__('Paths must be not equal'), 'alert');
 	}
-	redirect(BASE_URL . '?p=' . urlencode($p));
+	redirect(FM_URL . '?p=' . urlencode($p));
 }
 
 // Mass copy files/ folders
 if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])) {
 	// from
-	$path = ABSPATH;
+	$path = ROOT_PATH;
 	if ($p != '') $path .= DS . $p;
 	// to
-	$copy_to_path = ABSPATH;
+	$copy_to_path = ROOT_PATH;
 	$copy_to = clean_path($_POST['copy_to']);
 	if ($copy_to != '') $copy_to_path .= DS . $copy_to;
 	if ($path == $copy_to_path) {
 		set_message(__('Paths must be not equal'), 'alert');
-		redirect(BASE_URL . '?p=' . urlencode($p));
+		redirect(FM_URL . '?p=' . urlencode($p));
 	}
 	if (!is_dir($copy_to_path)) {
 		if (!mkdir_safe($copy_to_path, true)) {
 			set_message(__('Unable to create destination folder'), 'error');
-			redirect(BASE_URL . '?p=' . urlencode($p));
+			redirect(FM_URL . '?p=' . urlencode($p));
 		}
 	}
 	// move?
@@ -250,7 +263,7 @@ if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])
 	} else {
 		set_message(__('Nothing selected'), 'alert');
 	}
-	redirect(BASE_URL . '?p=' . urlencode($p));
+	redirect(FM_URL . '?p=' . urlencode($p));
 }
 
 // Rename
@@ -264,7 +277,7 @@ if (isset($_GET['ren']) && isset($_GET['to'])) {
 	$new = clean_path($new);
 	$new = str_replace('/', '', $new);
 	// path
-	$path = ABSPATH;
+	$path = ROOT_PATH;
 	if ($p != '') $path .= DS . $p;
 	// rename
 	if ($old != '' && $new != '') {
@@ -276,7 +289,7 @@ if (isset($_GET['ren']) && isset($_GET['to'])) {
 	} else {
 		set_message(__('Names not set'), 'error');
 	}
-	redirect(BASE_URL . '?p=' . urlencode($p));
+	redirect(FM_URL . '?p=' . urlencode($p));
 }
 
 // Download
@@ -284,7 +297,7 @@ if (isset($_GET['dl'])) {
 	$dl = $_GET['dl'];
 	$dl = clean_path($dl);
 	$dl = str_replace('/', '', $dl);
-	$path = ABSPATH;
+	$path = ROOT_PATH;
 	if ($p != '') $path .= DS . $p;
 	if ($dl != '' && is_file($path . DS . $dl)) {
 		header('Content-Description: File Transfer');
@@ -300,13 +313,13 @@ if (isset($_GET['dl'])) {
 		exit;
 	} else {
 		set_message(__('File not found'), 'error');
-		redirect(BASE_URL . '?p=' . urlencode($p));
+		redirect(FM_URL . '?p=' . urlencode($p));
 	}
 }
 
 // Upload
 if (isset($_POST['upl'])) {
-	$path = ABSPATH;
+	$path = ROOT_PATH;
 	if ($p != '') $path .= DS . $p;
 
 	$errors = 0;
@@ -332,12 +345,12 @@ if (isset($_POST['upl'])) {
 		set_message(sprintf(__('Error while uploading files. Uploaded files: %s'), $uploads), 'error');
 	}
 
-	redirect(BASE_URL . '?p=' . urlencode($p));
+	redirect(FM_URL . '?p=' . urlencode($p));
 }
 
 // Mass deleting
 if (isset($_POST['group']) && isset($_POST['delete'])) {
-	$path = ABSPATH;
+	$path = ROOT_PATH;
 	if ($p != '') $path .= DS . $p;
 
 	$errors = 0;
@@ -360,17 +373,17 @@ if (isset($_POST['group']) && isset($_POST['delete'])) {
 		set_message(__('Nothing selected'), 'alert');
 	}
 
-	redirect(BASE_URL . '?p=' . urlencode($p));
+	redirect(FM_URL . '?p=' . urlencode($p));
 }
 
 // Pack files
 if (isset($_POST['group']) && isset($_POST['zip'])) {
-	$path = ABSPATH;
+	$path = ROOT_PATH;
 	if ($p != '') $path .= DS . $p;
 
 	if (!class_exists('ZipArchive')) {
 		set_message(__('Operations with archives are not available'), 'error');
-		redirect(BASE_URL . '?p=' . urlencode($p));
+		redirect(FM_URL . '?p=' . urlencode($p));
 	}
 
 	$files = $_POST['file'];
@@ -391,7 +404,7 @@ if (isset($_POST['group']) && isset($_POST['zip'])) {
 		set_message(__('Nothing selected'), 'alert');
 	}
 
-	redirect(BASE_URL . '?p=' . urlencode($p));
+	redirect(FM_URL . '?p=' . urlencode($p));
 }
 
 // Unpack
@@ -400,12 +413,12 @@ if (isset($_GET['unzip'])) {
 	$unzip = clean_path($unzip);
 	$unzip = str_replace('/', '', $unzip);
 
-	$path = ABSPATH;
+	$path = ROOT_PATH;
 	if ($p != '') $path .= DS . $p;
 
 	if (!class_exists('ZipArchive')) {
 		set_message(__('Operations with archives are not available'), 'error');
-		redirect(BASE_URL . '?p=' . urlencode($p));
+		redirect(FM_URL . '?p=' . urlencode($p));
 	}
 
 	if ($unzip != '' && is_file($path . DS . $unzip)) {
@@ -432,12 +445,12 @@ if (isset($_GET['unzip'])) {
 	} else {
 		set_message(__('File not found'), 'error');
 	}
-	redirect(BASE_URL . '?p=' . urlencode($p));
+	redirect(FM_URL . '?p=' . urlencode($p));
 }
 
 // Change Perms
 if (isset($_POST['chmod'])) {
-	$path = ABSPATH;
+	$path = ROOT_PATH;
 	if ($p != '') $path .= DS . $p;
 
 	$file = $_POST['chmod'];
@@ -445,7 +458,7 @@ if (isset($_POST['chmod'])) {
 	$file = str_replace('/', '', $file);
 	if ($file == '' || (!is_file($path . DS . $file) && !is_dir($path . DS . $file))) {
 		set_message(__('File not found'), 'error');
-		redirect(BASE_URL . '?p=' . urlencode($p));
+		redirect(FM_URL . '?p=' . urlencode($p));
 	}
 
 	$mode = 0;
@@ -465,18 +478,18 @@ if (isset($_POST['chmod'])) {
 		set_message(__('Permissions not changed'), 'error');
 	}
 
-	redirect(BASE_URL . '?p=' . urlencode($p));
+	redirect(FM_URL . '?p=' . urlencode($p));
 }
 
 /*************************** /ACTIONS ***************************/
 
 // get current path
-$path = ABSPATH;
+$path = ROOT_PATH;
 if ($p != '') $path .= DS . $p;
 
 // check path
 if (!is_dir($path)) {
-	redirect(BASE_URL . '?p=');
+	redirect(FM_URL . '?p=');
 }
 
 // get parent folder
@@ -506,7 +519,7 @@ if (isset($_GET['upload'])) {
 	?>
 	<div class="path">
 		<p><b><?php _e('Uploading files') ?></b></p>
-		<p><?php _e('Destination folder:') ?> <?php echo ABSPATH . '/' . $p ?></p>
+		<p><?php _e('Destination folder:') ?> <?php echo ROOT_PATH . '/' . $p ?></p>
 		<form action="" method="post" enctype="multipart/form-data">
 			<input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
 			<input type="hidden" name="upl" value="1">
@@ -532,7 +545,7 @@ if (isset($_POST['copy'])) {
 	$copy_files = $_POST['file'];
 	if (!is_array($copy_files) || empty($copy_files)) {
 		set_message(__('Nothing selected'), 'alert');
-		redirect(BASE_URL . '?p=' . urlencode($p));
+		redirect(FM_URL . '?p=' . urlencode($p));
 	}
 
 	show_header(); // HEADER
@@ -549,9 +562,9 @@ if (isset($_POST['copy'])) {
 			}
 			?>
 			<p><?php _e('Files:') ?> <b><?php echo implode('</b>, <b>', $copy_files) ?></b></p>
-			<p><?php _e('Source folder:') ?> <?php echo ABSPATH ?>/<?php echo $p ?><br>
+			<p><?php _e('Source folder:') ?> <?php echo ROOT_PATH ?>/<?php echo $p ?><br>
 				<label for="inp_copy_to"><?php _e('Destination folder:') ?></label>
-				<?php echo ABSPATH ?>/<input type="text" name="copy_to" id="inp_copy_to" value="<?php echo encode_html($p) ?>">
+				<?php echo ROOT_PATH ?>/<input type="text" name="copy_to" id="inp_copy_to" value="<?php echo encode_html($p) ?>">
 			</p>
 			<p><label><input type="checkbox" name="move" value="1"> <?php _e('Move') ?></label></p>
 			<p>
@@ -569,9 +582,9 @@ if (isset($_POST['copy'])) {
 if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	$copy = $_GET['copy'];
 	$copy = clean_path($copy);
-	if ($copy == '' || !file_exists(ABSPATH . DS . $copy)) {
+	if ($copy == '' || !file_exists(ROOT_PATH . DS . $copy)) {
 		set_message(__('File not found'), 'error');
-		redirect(BASE_URL . '?p=' . urlencode($p));
+		redirect(FM_URL . '?p=' . urlencode($p));
 	}
 
 	show_header(); // HEADER
@@ -580,8 +593,8 @@ if (isset($_GET['copy']) && !isset($_GET['finish'])) {
 	<div class="path">
 		<p><b><?php _e('Copying') ?></b></p>
 		<p>
-			<?php _e('Source path:') ?> <?php echo ABSPATH ?>/<?php echo $copy ?><br>
-			<?php _e('Destination folder:') ?> <?php echo ABSPATH ?>/<?php echo $p ?>
+			<?php _e('Source path:') ?> <?php echo ROOT_PATH ?>/<?php echo $copy ?><br>
+			<?php _e('Destination folder:') ?> <?php echo ROOT_PATH ?>/<?php echo $p ?>
 		</p>
 		<p>
 			<b><a href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1"><i class="icon-apply"></i> <?php _e('Copy') ?></a></b> &nbsp;
@@ -616,13 +629,13 @@ if (isset($_GET['zip'])) {
 	$file = str_replace('/', '', $file);
 	if ($file == '' || !is_file($path . DS . $file)) {
 		set_message(__('File not found'), 'error');
-		redirect(BASE_URL . '?p=' . urlencode($p));
+		redirect(FM_URL . '?p=' . urlencode($p));
 	}
 
 	show_header(); // HEADER
 	show_navigation_path($p); // current path
 
-	$file_url = 'http://' . getenv('HTTP_HOST') . (!empty($p) ? '/' . $p : '') . '/' . $file;
+	$file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
 	$file_path = $path . DS . $file;
 	?>
 	<div class="path">
@@ -693,13 +706,13 @@ if (isset($_GET['showimg'])) {
 	$file = str_replace('/', '', $file);
 	if ($file == '' || !is_file($path . DS . $file)) {
 		set_message(__('File not found'), 'error');
-		redirect(BASE_URL . '?p=' . urlencode($p));
+		redirect(FM_URL . '?p=' . urlencode($p));
 	}
 
 	show_header(); // HEADER
 	show_navigation_path($p); // current path
 
-	$file_url = 'http://' . getenv('HTTP_HOST') . (!empty($p) ? '/' . $p : '') . '/' . $file;
+	$file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
 	$file_path = $path . DS . $file;
 
 	$image_size = getimagesize($file_path);
@@ -735,13 +748,13 @@ if (isset($_GET['showtxt'])) {
 	$file = str_replace('/', '', $file);
 	if ($file == '' || !is_file($path . DS . $file)) {
 		set_message(__('File not found'), 'error');
-		redirect(BASE_URL . '?p=' . urlencode($p));
+		redirect(FM_URL . '?p=' . urlencode($p));
 	}
 
 	show_header(); // HEADER
 	show_navigation_path($p); // current path
 
-	$file_url = 'http://' . getenv('HTTP_HOST') . (!empty($p) ? '/' . $p : '') . '/' . $file;
+	$file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
 	$file_path = $path . DS . $file;
 
 	$content = file_get_contents($file_path);
@@ -787,13 +800,13 @@ if (isset($_GET['chmod'])) {
 	$file = str_replace('/', '', $file);
 	if ($file == '' || (!is_file($path . DS . $file) && !is_dir($path . DS . $file))) {
 		set_message(__('File not found'), 'error');
-		redirect(BASE_URL . '?p=' . urlencode($p));
+		redirect(FM_URL . '?p=' . urlencode($p));
 	}
 
 	show_header(); // HEADER
 	show_navigation_path($p); // current path
 
-	$file_url = 'http://' . getenv('HTTP_HOST') . (!empty($p) ? '/' . $p : '') . '/' . $file;
+	$file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
 	$file_path = $path . DS . $file;
 
 	$mode = fileperms($path . DS . $file);
@@ -1220,7 +1233,7 @@ function get_file_link($p, $f)
 {
 	$link = '';
 
-	$path = ABSPATH;
+	$path = ROOT_PATH;
 	if ($p != '') $path .= DS . $p;
 
 	if (!empty($f)) {
@@ -1239,7 +1252,8 @@ function get_file_link($p, $f)
 			case 'config': case 'php': case 'php4': case 'php5': case 'phps': case 'phtml':
 			case 'htm': case 'html': case 'shtml': case 'xhtml': case 'xml': case 'xsl':
 			case 'm3u': case 'm3u8': case 'pls': case 'cue': case 'eml': case 'msg':
-			case 'csv': case 'bat': case 'twig': case 'tpl':
+			case 'csv': case 'bat': case 'twig': case 'tpl': case 'md': case 'gitignore':
+			case 'less': case 'sass':
 				$link = '?p=' . urlencode($p) . '&amp;showtxt=' . urlencode($f); break;
 			default:
 				$link = '';
@@ -1261,7 +1275,8 @@ function get_file_icon($path)
 			$img = 'icon-file_image'; break;
 		case 'txt': case 'css': case 'ini': case 'conf': case 'log': case 'htaccess':
 		case 'passwd': case 'ftpquota': case 'sql': case 'js': case 'json': case 'sh':
-		case 'config': case 'twig': case 'tpl':
+		case 'config': case 'twig': case 'tpl': case 'md': case 'gitignore':
+		case 'less': case 'sass':
 			$img = 'icon-file_text'; break;
 		case 'zip': case 'rar': case 'gz': case 'tar': case '7z':
 			$img = 'icon-file_zip'; break;
@@ -1420,7 +1435,7 @@ function show_navigation_path($path)
 </div>
 		<?php
 		$path = clean_path($path);
-		$root_url = "<a href='?p='><i class='icon-home' title='" . ABSPATH . "'></i></a>";
+		$root_url = "<a href='?p='><i class='icon-home' title='" . ROOT_PATH . "'></i></a>";
 		$sep = '<i class="icon-separator"></i>';
 		if ($path != '') {
 			$exploded = explode('/', $path);
@@ -1482,7 +1497,7 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .message.ok{border-color:green;color:green}.message.error{border-color:red;color:red}.message.alert{border-color:orange;color:orange}
 .btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#296ea3;cursor:pointer}.btn:hover{color:#b00}
 .preview-img{max-width:100%;background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAKklEQVR42mL5//8/Azbw+PFjrOJMDCSCUQ3EABZc4S0rKzsaSvTTABBgAMyfCMsY4B9iAAAAAElFTkSuQmCC") repeat 0 0}
-[class*="icon-"]{display:inline-block;width:16px;height:16px;background:url("<?php echo BASE_URL ?>?img=sprites") no-repeat 0 0;vertical-align:bottom}
+[class*="icon-"]{display:inline-block;width:16px;height:16px;background:url("<?php echo FM_URL ?>?img=sprites") no-repeat 0 0;vertical-align:bottom}
 .icon-document{background-position:-16px 0}.icon-folder{background-position:-32px 0}
 .icon-folder_add{background-position:-48px 0}.icon-upload{background-position:-64px 0}
 .icon-arrow_up{background-position:-80px 0}.icon-home{background-position:-96px 0}
@@ -1506,8 +1521,8 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .icon-logout{background-position:-304px 0}
 .compact-table{border:0;width:auto}.compact-table td,.compact-table th{width:100px;border:0;text-align:center}.compact-table tr:hover td{background-color:#fff}
 </style>
-<link rel="icon" href="<?php echo BASE_URL ?>?img=favicon" type="image/png">
-<link rel="shortcut icon" href="<?php echo BASE_URL ?>?img=favicon" type="image/png">
+<link rel="icon" href="<?php echo FM_URL ?>?img=favicon" type="image/png">
+<link rel="shortcut icon" href="<?php echo FM_URL ?>?img=favicon" type="image/png">
 </head>
 <body>
 <div id="wrapper">
