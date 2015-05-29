@@ -830,7 +830,7 @@ if (isset($_GET['showtxt'])) {
             <?php _e('Full path:') ?> <?php echo $file_path ?><br>
             <?php _e('File size:') ?> <?php echo get_filesize(filesize($file_path)) ?><br>
             <?php _e('MIME-type:') ?> <?php echo get_mime_type($file_path) ?><br>
-            <?php _e('Charset:') ?> <?php echo ($is_utf8) ? 'utf-8' : 'windows-1251' ?>
+            <?php _e('Charset:') ?> <?php echo ($is_utf8) ? 'utf-8' : '8 bit' ?>
         </p>
         <p>
             <b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-folder_open"></i> <?php _e('Open') ?></a></b> &nbsp;
