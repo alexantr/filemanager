@@ -15,7 +15,7 @@ $auth_users = array(
     'user' => '12345',
 );
 
-// Default timezone for date() and time()
+// Default timezone for date() and time() - http://php.net/manual/en/timezones.php
 $default_timezone = 'Europe/Minsk'; // UTC+3
 
 // Default language (en, ru, fr)
@@ -46,20 +46,18 @@ session_cache_limiter('');
 session_name('filemanager');
 session_start();
 
-define('DS', '/');
-
 $base_folder = clean_path($base_folder);
 $is_https = isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1)
     || isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https';
 
 // check $base_folder
-$root_path = $_SERVER['DOCUMENT_ROOT'] . (!empty($base_folder) ? DS . $base_folder : '');
+$root_path = $_SERVER['DOCUMENT_ROOT'] . (!empty($base_folder) ? '/' . $base_folder : '');
 if (!is_dir($root_path)) {
     $base_folder = '';
 }
 
 // abs path for site
-define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT'] . (!empty($base_folder) ? DS . $base_folder : ''));
+define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT'] . (!empty($base_folder) ? '/' . $base_folder : ''));
 define('ROOT_URL', ($is_https ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . (!empty($base_folder) ? '/' . $base_folder : ''));
 define('FM_URL', ($is_https ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
 
@@ -137,9 +135,9 @@ if (isset($_GET['del']) && !READONLY) {
     $del = str_replace('/', '', $del);
     if ($del != '' && $del != '..' && $del != '.') {
         $path = ROOT_PATH;
-        if ($p != '') $path .= DS . $p;
-        $is_dir = (is_dir($path . DS . $del)) ? true : false;
-        if (rdelete($path . DS . $del)) {
+        if ($p != '') $path .= '/' . $p;
+        $is_dir = (is_dir($path . '/' . $del)) ? true : false;
+        if (rdelete($path . '/' . $del)) {
             $msg = $is_dir ? __('Folder <b>%s</b> deleted') : __('File <b>%s</b> deleted');
             set_message(sprintf($msg, $del));
         } else {
@@ -159,10 +157,10 @@ if (isset($_GET['new']) && !READONLY) {
     $new = str_replace('/', '', $new);
     if ($new != '' && $new != '..' && $new != '.') {
         $path = ROOT_PATH;
-        if ($p != '') $path .= DS . $p;
-        if (mkdir_safe($path . DS . $new, false) === true) {
+        if ($p != '') $path .= '/' . $p;
+        if (mkdir_safe($path . '/' . $new, false) === true) {
             set_message(sprintf(__('Folder <b>%s</b> created'), $new));
-        } elseif (mkdir_safe($path . DS . $new, false) === $path . DS . $new) {
+        } elseif (mkdir_safe($path . '/' . $new, false) === $path . '/' . $new) {
             set_message(sprintf(__('Folder <b>%s</b> already exists'), $new), 'alert');
         } else {
             set_message(sprintf(__('Folder <b>%s</b> not created'), $new), 'error');
@@ -184,16 +182,16 @@ if (isset($_GET['copy']) && isset($_GET['finish']) && !READONLY) {
         redirect(FM_URL . '?p=' . urlencode($p));
     }
     // abs path from
-    $from = ROOT_PATH . DS . $copy;
+    $from = ROOT_PATH . '/' . $copy;
     // abs path to
     $dest = ROOT_PATH;
-    if ($p != '') $dest .= DS . $p;
-    $dest .= DS . basename($from);
+    if ($p != '') $dest .= '/' . $p;
+    $dest .= '/' . basename($from);
     // move?
     $move = (isset($_GET['move'])) ? true : false;
     // copy/move
     if ($from != $dest) {
-        $msg_from = trim($p . DS . basename($from), DS);
+        $msg_from = trim($p . '/' . basename($from), '/');
         if ($move) {
             $rename = rename_safe($from, $dest);
             if ($rename) {
@@ -220,11 +218,11 @@ if (isset($_GET['copy']) && isset($_GET['finish']) && !READONLY) {
 if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish']) && !READONLY) {
     // from
     $path = ROOT_PATH;
-    if ($p != '') $path .= DS . $p;
+    if ($p != '') $path .= '/' . $p;
     // to
     $copy_to_path = ROOT_PATH;
     $copy_to = clean_path($_POST['copy_to']);
-    if ($copy_to != '') $copy_to_path .= DS . $copy_to;
+    if ($copy_to != '') $copy_to_path .= '/' . $copy_to;
     if ($path == $copy_to_path) {
         set_message(__('Paths must be not equal'), 'alert');
         redirect(FM_URL . '?p=' . urlencode($p));
@@ -244,9 +242,9 @@ if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])
         foreach ($files as $f) {
             if ($f != '') {
                 // abs path from
-                $from = $path . DS . $f;
+                $from = $path . '/' . $f;
                 // abs path to
-                $dest = $copy_to_path . DS . $f;
+                $dest = $copy_to_path . '/' . $f;
                 // do
                 if ($move) {
                     $rename = rename_safe($from, $dest);
@@ -285,10 +283,10 @@ if (isset($_GET['ren']) && isset($_GET['to']) && !READONLY) {
     $new = str_replace('/', '', $new);
     // path
     $path = ROOT_PATH;
-    if ($p != '') $path .= DS . $p;
+    if ($p != '') $path .= '/' . $p;
     // rename
     if ($old != '' && $new != '') {
-        if (rename_safe($path . DS . $old, $path . DS . $new)) {
+        if (rename_safe($path . '/' . $old, $path . '/' . $new)) {
             set_message(sprintf(__('Renamed from <b>%s</b> to <b>%s</b>'), $old, $new));
         } else {
             set_message(sprintf(__('Error while renaming from <b>%s</b> to <b>%s</b>'), $old, $new), 'error');
@@ -305,18 +303,18 @@ if (isset($_GET['dl'])) {
     $dl = clean_path($dl);
     $dl = str_replace('/', '', $dl);
     $path = ROOT_PATH;
-    if ($p != '') $path .= DS . $p;
-    if ($dl != '' && is_file($path . DS . $dl)) {
+    if ($p != '') $path .= '/' . $p;
+    if ($dl != '' && is_file($path . '/' . $dl)) {
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="' . basename($path . DS . $dl) . '"');
+        header('Content-Disposition: attachment; filename="' . basename($path . '/' . $dl) . '"');
         header('Content-Transfer-Encoding: binary');
         header('Connection: Keep-Alive');
         header('Expires: 0');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Pragma: public');
-        header('Content-Length: ' . filesize($path . DS . $dl));
-        readfile($path . DS . $dl);
+        header('Content-Length: ' . filesize($path . '/' . $dl));
+        readfile($path . '/' . $dl);
         exit;
     } else {
         set_message(__('File not found'), 'error');
@@ -327,7 +325,7 @@ if (isset($_GET['dl'])) {
 // Upload
 if (isset($_POST['upl']) && !READONLY) {
     $path = ROOT_PATH;
-    if ($p != '') $path .= DS . $p;
+    if ($p != '') $path .= '/' . $p;
 
     $errors = 0;
     $uploads = 0;
@@ -336,7 +334,7 @@ if (isset($_POST['upl']) && !READONLY) {
     for ($i = 0; $i < $total; $i++) {
         $tmp_name = $_FILES['upload']['tmp_name'][$i];
         if (empty($_FILES['upload']['error'][$i]) && !empty($tmp_name) && $tmp_name != 'none') {
-            if (move_uploaded_file($tmp_name, $path . DS . $_FILES['upload']['name'][$i])) {
+            if (move_uploaded_file($tmp_name, $path . '/' . $_FILES['upload']['name'][$i])) {
                 $uploads++;
             } else {
                 $errors++;
@@ -358,14 +356,14 @@ if (isset($_POST['upl']) && !READONLY) {
 // Mass deleting
 if (isset($_POST['group']) && isset($_POST['delete']) && !READONLY) {
     $path = ROOT_PATH;
-    if ($p != '') $path .= DS . $p;
+    if ($p != '') $path .= '/' . $p;
 
     $errors = 0;
     $files = $_POST['file'];
     if (is_array($files) && count($files)) {
         foreach ($files as $f) {
             if ($f != '') {
-                $new_path = $path . DS . $f;
+                $new_path = $path . '/' . $f;
                 if (!rdelete($new_path)) {
                     $errors++;
                 }
@@ -386,7 +384,7 @@ if (isset($_POST['group']) && isset($_POST['delete']) && !READONLY) {
 // Pack files
 if (isset($_POST['group']) && isset($_POST['zip']) && !READONLY) {
     $path = ROOT_PATH;
-    if ($p != '') $path .= DS . $p;
+    if ($p != '') $path .= '/' . $p;
 
     if (!class_exists('ZipArchive')) {
         set_message(__('Operations with archives are not available'), 'error');
@@ -421,22 +419,22 @@ if (isset($_GET['unzip']) && !READONLY) {
     $unzip = str_replace('/', '', $unzip);
 
     $path = ROOT_PATH;
-    if ($p != '') $path .= DS . $p;
+    if ($p != '') $path .= '/' . $p;
 
     if (!class_exists('ZipArchive')) {
         set_message(__('Operations with archives are not available'), 'error');
         redirect(FM_URL . '?p=' . urlencode($p));
     }
 
-    if ($unzip != '' && is_file($path . DS . $unzip)) {
-        $zip_path = $path . DS . $unzip;
+    if ($unzip != '' && is_file($path . '/' . $unzip)) {
+        $zip_path = $path . '/' . $unzip;
 
         //to folder
         $tofolder = '';
         if (isset($_GET['tofolder'])) {
             $tofolder = pathinfo($zip_path, PATHINFO_FILENAME);
-            if (mkdir_safe($path . DS . $tofolder, true)) {
-                $path .= DS . $tofolder;
+            if (mkdir_safe($path . '/' . $tofolder, true)) {
+                $path .= '/' . $tofolder;
             }
         }
 
@@ -458,12 +456,12 @@ if (isset($_GET['unzip']) && !READONLY) {
 // Change Perms
 if (isset($_POST['chmod']) && !READONLY) {
     $path = ROOT_PATH;
-    if ($p != '') $path .= DS . $p;
+    if ($p != '') $path .= '/' . $p;
 
     $file = $_POST['chmod'];
     $file = clean_path($file);
     $file = str_replace('/', '', $file);
-    if ($file == '' || (!is_file($path . DS . $file) && !is_dir($path . DS . $file))) {
+    if ($file == '' || (!is_file($path . '/' . $file) && !is_dir($path . '/' . $file))) {
         set_message(__('File not found'), 'error');
         redirect(FM_URL . '?p=' . urlencode($p));
     }
@@ -479,7 +477,7 @@ if (isset($_POST['chmod']) && !READONLY) {
     if (isset($_POST['ow']) && !empty($_POST['ow'])) $mode |= 0002;
     if (isset($_POST['ox']) && !empty($_POST['ox'])) $mode |= 0001;
 
-    if (@chmod($path . DS . $file, $mode)) {
+    if (@chmod($path . '/' . $file, $mode)) {
         set_message(__('Permissions changed'));
     } else {
         set_message(__('Permissions not changed'), 'error');
@@ -492,7 +490,7 @@ if (isset($_POST['chmod']) && !READONLY) {
 
 // get current path
 $path = ROOT_PATH;
-if ($p != '') $path .= DS . $p;
+if ($p != '') $path .= '/' . $p;
 
 // check path
 if (!is_dir($path)) {
@@ -507,7 +505,7 @@ $folders = array();
 $files = array();
 if (is_array($objects)) {
     foreach ($objects as $file) {
-        $new_path = $path . DS . $file;
+        $new_path = $path . '/' . $file;
         if (is_file($new_path)) {
             $files[] = $file;
         } elseif (is_dir($new_path) && $file != '.' && $file != '..') {
@@ -589,7 +587,7 @@ if (isset($_POST['copy']) && !READONLY) {
 if (isset($_GET['copy']) && !isset($_GET['finish']) && !READONLY) {
     $copy = $_GET['copy'];
     $copy = clean_path($copy);
-    if ($copy == '' || !file_exists(ROOT_PATH . DS . $copy)) {
+    if ($copy == '' || !file_exists(ROOT_PATH . '/' . $copy)) {
         set_message(__('File not found'), 'error');
         redirect(FM_URL . '?p=' . urlencode($p));
     }
@@ -618,7 +616,7 @@ if (isset($_GET['copy']) && !isset($_GET['finish']) && !READONLY) {
             }
             foreach ($folders as $f) {
                 ?>
-                <li><a href="?p=<?php echo urlencode(trim($p . DS . $f, DS)) ?>&amp;copy=<?php echo urlencode($copy) ?>"><i class="icon-folder"></i> <?php echo $f ?></a></li>
+                <li><a href="?p=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>&amp;copy=<?php echo urlencode($copy) ?>"><i class="icon-folder"></i> <?php echo $f ?></a></li>
             <?php
             }
             ?>
@@ -634,7 +632,7 @@ if (isset($_GET['zip'])) {
     $file = $_GET['zip'];
     $file = clean_path($file);
     $file = str_replace('/', '', $file);
-    if ($file == '' || !is_file($path . DS . $file)) {
+    if ($file == '' || !is_file($path . '/' . $file)) {
         set_message(__('File not found'), 'error');
         redirect(FM_URL . '?p=' . urlencode($p));
     }
@@ -643,7 +641,7 @@ if (isset($_GET['zip'])) {
     show_navigation_path($p); // current path
 
     $file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
-    $file_path = $path . DS . $file;
+    $file_path = $path . '/' . $file;
     ?>
     <div class="path">
         <p><b><?php _e('Archive') ?> <?php echo $file ?></b></p>
@@ -713,7 +711,7 @@ if (isset($_GET['showimg'])) {
     $file = $_GET['showimg'];
     $file = clean_path($file);
     $file = str_replace('/', '', $file);
-    if ($file == '' || !is_file($path . DS . $file)) {
+    if ($file == '' || !is_file($path . '/' . $file)) {
         set_message(__('File not found'), 'error');
         redirect(FM_URL . '?p=' . urlencode($p));
     }
@@ -722,7 +720,7 @@ if (isset($_GET['showimg'])) {
     show_navigation_path($p); // current path
 
     $file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
-    $file_path = $path . DS . $file;
+    $file_path = $path . '/' . $file;
 
     $image_size = getimagesize($file_path);
     ?>
@@ -756,7 +754,7 @@ if (isset($_GET['showvideo']) || isset($_GET['showaudio'])) {
     $file = $is_video ? $_GET['showvideo'] : $_GET['showaudio'];
     $file = clean_path($file);
     $file = str_replace('/', '', $file);
-    if ($file == '' || !is_file($path . DS . $file)) {
+    if ($file == '' || !is_file($path . '/' . $file)) {
         set_message(__('File not found'), 'error');
         redirect(FM_URL . '?p=' . urlencode($p));
     }
@@ -765,7 +763,7 @@ if (isset($_GET['showvideo']) || isset($_GET['showaudio'])) {
     show_navigation_path($p); // current path
 
     $file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
-    $file_path = $path . DS . $file;
+    $file_path = $path . '/' . $file;
 
     ?>
     <div class="path">
@@ -798,7 +796,7 @@ if (isset($_GET['showtxt'])) {
     $file = $_GET['showtxt'];
     $file = clean_path($file);
     $file = str_replace('/', '', $file);
-    if ($file == '' || !is_file($path . DS . $file)) {
+    if ($file == '' || !is_file($path . '/' . $file)) {
         set_message(__('File not found'), 'error');
         redirect(FM_URL . '?p=' . urlencode($p));
     }
@@ -807,7 +805,7 @@ if (isset($_GET['showtxt'])) {
     show_navigation_path($p); // current path
 
     $file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
-    $file_path = $path . DS . $file;
+    $file_path = $path . '/' . $file;
 
     $content = file_get_contents($file_path);
     $is_utf8 = is_utf8($content);
@@ -850,7 +848,7 @@ if (isset($_GET['chmod']) && !READONLY) {
     $file = $_GET['chmod'];
     $file = clean_path($file);
     $file = str_replace('/', '', $file);
-    if ($file == '' || (!is_file($path . DS . $file) && !is_dir($path . DS . $file))) {
+    if ($file == '' || (!is_file($path . '/' . $file) && !is_dir($path . '/' . $file))) {
         set_message(__('File not found'), 'error');
         redirect(FM_URL . '?p=' . urlencode($p));
     }
@@ -859,9 +857,9 @@ if (isset($_GET['chmod']) && !READONLY) {
     show_navigation_path($p); // current path
 
     $file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
-    $file_path = $path . DS . $file;
+    $file_path = $path . '/' . $file;
 
-    $mode = fileperms($path . DS . $file);
+    $mode = fileperms($path . '/' . $file);
 
     ?>
     <div class="path">
@@ -940,18 +938,18 @@ if ($parent !== false) {
 <?php
 }
 foreach ($folders as $f) {
-    $modif = date("d.m.y H:i", filemtime($path . DS . $f));
-    $perms = substr(decoct(fileperms($path . DS . $f)), -4);
+    $modif = date("d.m.y H:i", filemtime($path . '/' . $f));
+    $perms = substr(decoct(fileperms($path . '/' . $f)), -4);
     ?>
 <tr>
 <?php if (!READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td><?php endif; ?>
-<td><a href="?p=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><i class="icon-folder"></i> <?php echo $f ?></a></td>
+<td><a href="?p=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>"><i class="icon-folder"></i> <?php echo $f ?></a></td>
 <td><?php _e('Folder') ?></td><td><?php echo $modif ?></td>
 <td><?php if (!READONLY): ?><a title="<?php _e('Change Permissions') ?>" href="?p=<?php echo urlencode($p) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
 <td><?php if (!READONLY): ?>
 <a title="<?php _e('Delete') ?>" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php _e('Delete folder?') ?>');"><i class="icon-cross"></i></a>
 <a title="<?php _e('Rename') ?>" href="#" onclick="rename('<?php echo encode_html($p) ?>', '<?php echo encode_html($f) ?>');return false;"><i class="icon-rename"></i></a>
-<a title="<?php _e('Copy to...') ?>" href="?p=&amp;copy=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><i class="icon-copy"></i></a>
+<a title="<?php _e('Copy to...') ?>" href="?p=&amp;copy=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>"><i class="icon-copy"></i></a>
 <?php endif; ?>
 <a title="<?php _e('Direct link') ?>" href="<?php echo ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $f . '/' ?>" target="_blank"><i class="icon-chain"></i></a>
 </td></tr>
@@ -960,13 +958,13 @@ foreach ($folders as $f) {
 }
 
 foreach ($files as $f) {
-    $img = get_file_icon($path . DS . $f);
-    $modif = date("d.m.y H:i", filemtime($path . DS . $f));
-    $filesize_raw = filesize($path . DS . $f);
+    $img = get_file_icon($path . '/' . $f);
+    $modif = date("d.m.y H:i", filemtime($path . '/' . $f));
+    $filesize_raw = filesize($path . '/' . $f);
     $filesize = get_filesize($filesize_raw);
     $filelink = get_file_link($p, $f);
     $all_files_size += $filesize_raw;
-    $perms = substr(decoct(fileperms($path . DS . $f)), -4);
+    $perms = substr(decoct(fileperms($path . '/' . $f)), -4);
     ?>
 <tr>
 <?php if (!READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td><?php endif; ?>
@@ -978,7 +976,7 @@ foreach ($files as $f) {
 <?php if (!READONLY): ?>
 <a title="<?php _e('Delete') ?>" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php _e('Delete file?') ?>');"><i class="icon-cross"></i></a>
 <a title="<?php _e('Rename') ?>" href="#" onclick="rename('<?php echo encode_html($p) ?>', '<?php echo encode_html($f) ?>');return false;"><i class="icon-rename"></i></a>
-<a title="<?php _e('Copy to...') ?>" href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode(trim($p . DS . $f, DS)) ?>"><i class="icon-copy"></i></a>
+<a title="<?php _e('Copy to...') ?>" href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>"><i class="icon-copy"></i></a>
 <?php endif; ?>
 <a title="<?php _e('Direct link') ?>" href="<?php echo ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $f ?>" target="_blank"><i class="icon-chain"></i></a>
 <a title="<?php _e('Download') ?>" href="?p=<?php echo urlencode($p) ?>&amp;dl=<?php echo urlencode($f) ?>"><i class="icon-download"></i></a>
@@ -1032,7 +1030,7 @@ function rdelete($path)
         if (is_array($objects)) {
             foreach ($objects as $file) {
                 if ($file != '.' && $file != '..') {
-                    if (!rdelete($path . DS . $file)) {
+                    if (!rdelete($path . '/' . $file)) {
                         $ok = false;
                     }
                 }
@@ -1058,7 +1056,7 @@ function rchmod($path, $filemode, $dirmode)
         if (is_array($objects)) {
             foreach ($objects as $file) {
                 if ($file != '.' && $file != '..') {
-                    if (!rchmod($path . DS . $file, $filemode, $dirmode)) return false;
+                    if (!rchmod($path . '/' . $file, $filemode, $dirmode)) return false;
                 }
             }
         }
@@ -1093,7 +1091,7 @@ function rcopy($path, $dest, $upd = true, $force = true)
         if (is_array($objects)) {
             foreach ($objects as $file) {
                 if ($file != '.' && $file != '..') {
-                    if (!rcopy($path . DS . $file, $dest . DS . $file)) {
+                    if (!rcopy($path . '/' . $file, $dest . '/' . $file)) {
                         $ok = false;
                     }
                 }
@@ -1186,17 +1184,17 @@ function clean_path($path)
     $path = trim($path, '\\/');
     $path = str_replace(array('../', '..\\'), '', $path);
     if ($path == '..') $path = '';
-    return str_replace('\\', DS, $path);
+    return str_replace('\\', '/', $path);
 }
 
 function get_parent_path($path)
 {
     $path = clean_path($path);
     if ($path != '') {
-        $array = explode(DS, $path);
+        $array = explode('/', $path);
         if (count($array) > 1) {
             $array = array_slice($array, 0, -1);
-            return implode(DS, $array);
+            return implode('/', $array);
         }
         return '';
     }
@@ -1242,10 +1240,10 @@ function get_files_recursive($path = '.')
         $objects = scandir($path);
         if (is_array($objects)) {
             foreach ($objects as $file) {
-                if (is_file($path . DS . $file)) {
-                    $files[] = $path . DS . $file;
-                } elseif (is_dir($path . DS . $file) && $file != '.' && $file != '..') {
-                    $files = array_merge($files, get_files_recursive($path . DS . $file));
+                if (is_file($path . '/' . $file)) {
+                    $files[] = $path . '/' . $file;
+                } elseif (is_dir($path . '/' . $file) && $file != '.' && $file != '..') {
+                    $files = array_merge($files, get_files_recursive($path . '/' . $file));
                 }
             }
         }
@@ -1297,10 +1295,10 @@ function get_file_link($p, $f)
     $link = '';
 
     $path = ROOT_PATH;
-    if ($p != '') $path .= DS . $p;
+    if ($p != '') $path .= '/' . $p;
 
     if (!empty($f)) {
-        $path .= DS . $f;
+        $path .= '/' . $f;
         // get extension
         $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
@@ -1471,12 +1469,12 @@ class Zipper
         if (is_array($objects)) {
             foreach ($objects as $file) {
                 if ($file != '.' && $file != '..') {
-                    if (is_dir($path . DS . $file)) {
-                        if (!$this->addDir($path . DS . $file)) {
+                    if (is_dir($path . '/' . $file)) {
+                        if (!$this->addDir($path . '/' . $file)) {
                             return false;
                         }
-                    } elseif (is_file($path . DS . $file)) {
-                        if (!$this->zip->addFile($path . DS . $file)) {
+                    } elseif (is_file($path . '/' . $file)) {
+                        if (!$this->zip->addFile($path . '/' . $file)) {
                             return false;
                         }
                     }
@@ -1512,7 +1510,7 @@ function show_navigation_path($path)
             $array = array();
             $parent = '';
             for ($i = 0; $i < $count; $i++) {
-                $parent = trim($parent . DS . $exploded[$i], DS);
+                $parent = trim($parent . '/' . $exploded[$i], '/');
                 $parent_enc = urlencode($parent);
                 $array[] = "<a href='?p={$parent_enc}'>{$exploded[$i]}</a>";
             }
