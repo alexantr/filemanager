@@ -1,10 +1,8 @@
 <?php
 /**
  * PHP File Manager v1.0.2
- * Author: Alex Yashkin <alex.yashkin@gmail.com>
+ * https://github.com/alexantr/filemanager
  */
-
-//--- CONFIG
 
 // Default language (en, ru, fr)
 $lang = 'ru';
@@ -36,7 +34,7 @@ $root_url = '';
 // Server hostname. Can set manually if wrong
 $http_host = $_SERVER['HTTP_HOST'];
 
-//--- END CONFIG
+//--- EDIT BELOW CAREFULLY
 
 $languages = array('en', 'ru', 'fr');
 
