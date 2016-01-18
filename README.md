@@ -2,7 +2,7 @@
 
 A good solution for managing files and folders on your site.
 
-Author: Alex Yashkin <alex.yashkin@gmail.com>.
+![PHP File Manager](https://raw.github.com/alexantr/filemanager/master/phpfm.png)
 
 Icons by [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/).
 
@@ -11,7 +11,7 @@ Icons by [Yusuke Kamiyamane](http://p.yusukekamiyamane.com/).
 Copy filemanager.php to your website and open it on browser
 (e.g. http://yoursite/any_path/filemanager.php).
 
-Default username/password: admin/admin
+Default username/password: fm_admin/fm_admin
 
 Please set your own username and password in $auth_users before use.
 

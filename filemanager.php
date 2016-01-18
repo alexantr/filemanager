@@ -1,33 +1,40 @@
 <?php
 /**
- * PHP File Manager
+ * PHP File Manager v1.0.2
  * Author: Alex Yashkin <alex.yashkin@gmail.com>
  */
 
 //--- CONFIG
+
+// Default language (en, ru, fr)
+$lang = 'ru';
 
 // Auth with login/password (set true/false to enable/disable it)
 $use_auth = true;
 
 // Users: array('Username' => 'Password', 'Username2' => 'Password2', ...)
 $auth_users = array(
-    'admin' => 'admin',
-    'user' => '12345',
+    'fm_admin' => 'fm_admin',
+    //'user' => '12345',
+);
+
+// Readonly users (usernames array)
+$readonly_users = array(
+    //'user',
 );
 
 // Default timezone for date() and time() - http://php.net/manual/en/timezones.php
 $default_timezone = 'Europe/Minsk'; // UTC+3
 
-// Default language (en, ru, fr)
-$lang = 'ru';
+// Root path for file manager
+$root_path = $_SERVER['DOCUMENT_ROOT'];
 
-// Base folder (relative to document_root) ('', 'subfolder', 'subfolder/subfolder2' etc.)
-$base_folder = '';
+// Root url for links in file manager.Relative to $http_host. Variants: '', 'path/to/subfolder'
+// Will not working if $root_path will be outside of server document root
+$root_url = '';
 
-// Readonly users (usernames array)
-$readonly_users = array(
-    'user',
-);
+// Server hostname. Can set manually if wrong
+$http_host = $_SERVER['HTTP_HOST'];
 
 //--- END CONFIG
 
@@ -46,20 +53,23 @@ session_cache_limiter('');
 session_name('filemanager');
 session_start();
 
-$base_folder = clean_path($base_folder);
 $is_https = isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on' || $_SERVER['HTTPS'] == 1)
     || isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https';
 
-// check $base_folder
-$root_path = $_SERVER['DOCUMENT_ROOT'] . (!empty($base_folder) ? '/' . $base_folder : '');
+// clean and check $root_path
+$root_path = clean_path($root_path);
 if (!is_dir($root_path)) {
-    $base_folder = '';
+    echo 'Root path not found!';
+    exit;
 }
 
+// clean $root_url
+$root_url = clean_path($root_url);
+
 // abs path for site
-define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT'] . (!empty($base_folder) ? '/' . $base_folder : ''));
-define('ROOT_URL', ($is_https ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . (!empty($base_folder) ? '/' . $base_folder : ''));
-define('FM_URL', ($is_https ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+define('ROOT_PATH', $root_path);
+define('ROOT_URL', ($is_https ? 'https' : 'http') . '://' . $http_host . (!empty($root_url) ? '/' . $root_url : ''));
+define('FM_URL', ($is_https ? 'https' : 'http') . '://' . $http_host . $_SERVER['PHP_SELF']);
 
 // logout
 if (isset($_GET['logout'])) {
