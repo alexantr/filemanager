@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP File Manager v1.0.3
+ * PHP File Manager v1.0.4
  * https://github.com/alexantr/filemanager
  */
 
@@ -1549,6 +1549,9 @@ function show_header()
 {
     $sprites_ver = '20150326';
     header("Content-Type: text/html; charset=utf-8");
+    header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
+    header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
+    header("Pragma: no-cache");
     ?>
 <!DOCTYPE html>
 <html>
