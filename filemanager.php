@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP File Manager v1.0.4
+ * PHP File Manager v1.1-dev
  * https://github.com/alexantr/filemanager
  */
 
@@ -110,7 +110,7 @@ if ($use_auth && !empty($auth_users)) {
             <form action="" method="post" style="margin:10px;text-align:center">
                 <input type="text" name="fm_usr" value="" placeholder="<?php _e('Username') ?>" required>
                 <input type="password" name="fm_pwd" value="" placeholder="<?php _e('Password') ?>" required>
-                <select name="lang">
+                <select name="lang" title="Language">
                     <?php foreach ($languages as $l): ?>
                         <option value="<?php echo $l ?>"<?php if ($l == $lang) echo ' selected'; ?>><?php echo $l ?></option>
                     <?php endforeach; ?>
@@ -938,23 +938,29 @@ $all_files_size = 0;
 <?php if (!READONLY): ?><th style="width:3%"><label><input type="checkbox" title="<?php _e('Invert selection') ?>" onclick="checkbox_toggle()"></label></th><?php endif; ?>
 <th><?php _e('Name') ?></th><th style="width:10%"><?php _e('Size') ?></th>
 <th style="width:12%"><?php _e('Modified') ?></th><th style="width:6%"><?php _e('Perms') ?></th>
+<th style="width:10%"><?php _e('Owner') ?></th>
 <th style="width:<?php if (!READONLY): ?>13<?php else: ?>6.5<?php endif; ?>%"></th></tr>
 <?php
 // link to parent folder
 if ($parent !== false) {
     ?>
-<tr><?php if (!READONLY): ?><td></td><?php endif; ?><td colspan="5"><a href="?p=<?php echo urlencode($parent) ?>"><i class="icon-arrow_up"></i> ..</a></td></tr>
+<tr><?php if (!READONLY): ?><td></td><?php endif; ?><td colspan="6"><a href="?p=<?php echo urlencode($parent) ?>"><i class="icon-arrow_up"></i> ..</a></td></tr>
 <?php
 }
 foreach ($folders as $f) {
+    $is_link = is_link($p . '/' . $f);
+    $img = $is_link ? 'icon-link_folder' : 'icon-folder';
     $modif = date("d.m.y H:i", filemtime($path . '/' . $f));
     $perms = substr(decoct(fileperms($path . '/' . $f)), -4);
+    $owner = posix_getpwuid(fileowner($path . '/' . $f));
+    $group = posix_getgrgid(filegroup($path . '/' . $f));
     ?>
 <tr>
 <?php if (!READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td><?php endif; ?>
-<td><a href="?p=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>"><i class="icon-folder"></i> <?php echo $f ?></a></td>
+<td><a href="?p=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo $f ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($p . '/' . $f) . '</i>' : '') ?></td>
 <td><?php _e('Folder') ?></td><td><?php echo $modif ?></td>
 <td><?php if (!READONLY): ?><a title="<?php _e('Change Permissions') ?>" href="?p=<?php echo urlencode($p) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
+<td><?php echo $owner['name'] . ':' . $group['name'] ?></td>
 <td><?php if (!READONLY): ?>
 <a title="<?php _e('Delete') ?>" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php _e('Delete folder?') ?>');"><i class="icon-cross"></i></a>
 <a title="<?php _e('Rename') ?>" href="#" onclick="rename('<?php echo encode_html($p) ?>', '<?php echo encode_html($f) ?>');return false;"><i class="icon-rename"></i></a>
@@ -967,20 +973,24 @@ foreach ($folders as $f) {
 }
 
 foreach ($files as $f) {
-    $img = get_file_icon($path . '/' . $f);
+    $is_link = is_link($p . '/' . $f);
+    $img = $is_link ? 'icon-link_file' : get_file_icon($path . '/' . $f);
     $modif = date("d.m.y H:i", filemtime($path . '/' . $f));
     $filesize_raw = filesize($path . '/' . $f);
     $filesize = get_filesize($filesize_raw);
     $filelink = get_file_link($p, $f);
     $all_files_size += $filesize_raw;
     $perms = substr(decoct(fileperms($path . '/' . $f)), -4);
+    $owner = posix_getpwuid(fileowner($path . '/' . $f));
+    $group = posix_getgrgid(filegroup($path . '/' . $f));
     ?>
 <tr>
 <?php if (!READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td><?php endif; ?>
-<td><?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="' . __('File info') . '">' ?><i class="<?php echo $img ?>"></i> <?php echo $f ?><?php if (!empty($filelink)) echo '</a>' ?></td>
+<td><?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="' . __('File info') . '">' ?><i class="<?php echo $img ?>"></i> <?php echo $f ?><?php if (!empty($filelink)) echo '</a>' ?><?php echo ($is_link ? ' &rarr; <i>' . readlink($p . '/' . $f) . '</i>' : '') ?></td>
 <td><span title="<?php printf(__('%s byte'), $filesize_raw) ?>"><?php echo $filesize ?></span></td>
 <td><?php echo $modif ?></td>
 <td><?php if (!READONLY): ?><a title="<?php _e('Change Permissions') ?>" href="?p=<?php echo urlencode($p) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
+<td><?php echo $owner['name'] . ':' . $group['name'] ?></td>
 <td>
 <?php if (!READONLY): ?>
 <a title="<?php _e('Delete') ?>" href="?p=<?php echo urlencode($p) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php _e('Delete file?') ?>');"><i class="icon-cross"></i></a>
@@ -996,11 +1006,11 @@ foreach ($files as $f) {
 
 if (empty($folders) && empty($files)) {
     ?>
-<tr><?php if (!READONLY): ?><td></td><?php endif; ?><td colspan="5"><em><?php _e('Folder is empty') ?></em></td></tr>
+<tr><?php if (!READONLY): ?><td></td><?php endif; ?><td colspan="6"><em><?php _e('Folder is empty') ?></em></td></tr>
 <?php
 } else {
     ?>
-<tr><?php if (!READONLY): ?><td class="gray"></td><?php endif; ?><td class="gray" colspan="5">
+<tr><?php if (!READONLY): ?><td class="gray"></td><?php endif; ?><td class="gray" colspan="6">
 <?php _e('Full size:') ?> <span title="<?php printf(__('%s byte'), $all_files_size) ?>"><?php echo get_filesize($all_files_size) ?></span>,
 <?php _e('files:') ?> <?php echo $num_files ?>,
 <?php _e('folders:') ?> <?php echo $num_folders ?>
@@ -1161,24 +1171,6 @@ function get_mime_type($file_path)
     } else {
         return '--';
     }
-}
-
-// function to parse the http auth header
-function http_digest_parse($txt)
-{
-    // protect against missing data
-    $needed_parts = array('nonce' => 1, 'nc' => 1, 'cnonce' => 1, 'qop' => 1, 'username' => 1, 'uri' => 1, 'response' => 1);
-    $data = array();
-    $keys = implode('|', array_keys($needed_parts));
-
-    preg_match_all('@(' . $keys . ')=(?:([\'"])([^\2]+?)\2|([^\s,]+))@', $txt, $matches, PREG_SET_ORDER);
-
-    foreach ($matches as $m) {
-        $data[$m[1]] = $m[3] ? $m[3] : $m[4];
-        unset($needed_parts[$m[1]]);
-    }
-
-    return $needed_parts ? false : $data;
 }
 
 function redirect($url, $code = 302)
@@ -1547,7 +1539,7 @@ function show_message()
  */
 function show_header()
 {
-    $sprites_ver = '20150326';
+    $sprites_ver = '20160315';
     header("Content-Type: text/html; charset=utf-8");
     header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
     header("Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0");
@@ -1560,21 +1552,24 @@ function show_header()
 <title>File Manager</title>
 <style>
 html,body,div,span,p,pre,a,code,em,img,small,strong,ol,ul,li,form,label,table,tr,th,td{margin:0;padding:0;vertical-align:baseline;outline:none;font-size:100%;background:transparent;border:none;text-decoration:none}
-html{overflow-y:scroll}body{padding:0;font:13px/16px Arial,sans-serif;color:#222;background:#efefef}
+html{overflow-y:scroll}body{padding:0;font:13px/16px Tahoma,Arial,sans-serif;color:#222;background:#efefef}
 input,select,textarea,button{font-size:inherit;font-family:inherit}
 a{color:#296ea3;text-decoration:none}a:hover{color:#b00}img{vertical-align:middle;border:none}
 a img{border:none}span{color:#777}small{font-size:11px;color:#999}p{margin-bottom:10px}
 ul{margin-left:2em;margin-bottom:10px}ul{list-style-type:none;margin-left:0}ul li{padding:3px 0}
 table{border-collapse:collapse;border-spacing:0;margin-bottom:10px;width:100%}
 th,td{padding:4px 7px;text-align:left;vertical-align:top;border:1px solid #ddd;background:#fff;white-space:nowrap}
-th,td.gray{background-color:#eee}td.gray span{color:#222}tr:hover td{background-color:#f5f5f5}tr:hover td.gray{background-color:#eee}
+th,td.gray{background-color:#eee}td.gray span{color:#222}
+tr:hover td{background-color:#f5f5f5}tr:hover td.gray{background-color:#eee}
 code,pre{display:block;margin-bottom:10px;font:13px/16px Consolas,'Courier New',Courier,monospace;border:1px dashed #ccc;padding:5px;overflow:auto}
 code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;padding:0}
-#wrapper{max-width:900px;min-width:400px;margin:10px auto}
+#wrapper{max-width:1000px;min-width:400px;margin:10px auto}
 .path{padding:4px 7px;border:1px solid #ddd;background-color:#fff;margin-bottom:10px}
 .right{text-align:right}.center{text-align:center}.float-right{float:right}
 .message{padding:4px 7px;border:1px solid #ddd;background-color:#fff}
-.message.ok{border-color:green;color:green}.message.error{border-color:red;color:red}.message.alert{border-color:orange;color:orange}
+.message.ok{border-color:green;color:green}
+.message.error{border-color:red;color:red}
+.message.alert{border-color:orange;color:orange}
 .btn{border:0;background:none;padding:0;margin:0;font-weight:bold;color:#296ea3;cursor:pointer}.btn:hover{color:#b00}
 .preview-img{max-width:100%;background:url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAKklEQVR42mL5//8/Azbw+PFjrOJMDCSCUQ3EABZc4S0rKzsaSvTTABBgAMyfCMsY4B9iAAAAAElFTkSuQmCC") repeat 0 0}
 .preview-video{position:relative;max-width:100%;height:0;padding-bottom:62.5%;margin-bottom:10px}.preview-video video{position:absolute;width:100%;height:100%;left:0;top:0;background:#000}
@@ -1600,6 +1595,7 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .icon-file_terminal{background-position:-288px -16px}.icon-file_text{background-position:-304px -16px}
 .icon-file_word{background-position:-320px -16px}.icon-file_zip{background-position:-336px -16px}
 .icon-logout{background-position:-304px 0}.icon-chain{background-position:-320px 0}
+.icon-link_folder{background-position:-352px -16px}.icon-link_file{background-position:-368px -16px}
 .compact-table{border:0;width:auto}.compact-table td,.compact-table th{width:100px;border:0;text-align:center}.compact-table tr:hover td{background-color:#fff}
 </style>
 <link rel="icon" href="<?php echo FM_URL ?>?img=favicon" type="image/png">
@@ -1688,88 +1684,91 @@ PKEizdEabUaeFCDKCCHAdV0wTVNFznMgpVqGlZ2cipzHGtKSZwCIZJgJwxB38KHT6Sjx21V75Jcn
 LXmGAKTRpGVZUx2dAqQzSEqw9kqwuGqONTufPrw37D8lQFxCvjgPXIixANLEGfwuQacMOC4kZz+q
 GdhJS550BjpRCdCbAJCMJRkMASEIg+4Bxz4JwAwDSEueAYDLIM+QrOk6GHiRxjXSkJY8KUCvdXZ6
 kbuvNx+mOcbN9taGBlpLAWf9nX8EGADoCfqkKWV/cgAAAABJRU5ErkJggg==',
-        'sprites' => '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
-WyT+DbQcaQClS8UbAAAAAElFTkSuQmCC',
+        'sprites' => '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
+RK5CYII=',
     );
 }
 
