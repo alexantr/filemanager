@@ -956,8 +956,8 @@ foreach ($folders as $f) {
         $owner = posix_getpwuid(fileowner($path . '/' . $f));
         $group = posix_getgrgid(filegroup($path . '/' . $f));
     } else {
-        $owner = '?';
-        $group = '?';
+        $owner = ['name' => '?'];
+        $group = ['name' => '?'];
     }
     ?>
 <tr>
@@ -990,8 +990,8 @@ foreach ($files as $f) {
         $owner = posix_getpwuid(fileowner($path . '/' . $f));
         $group = posix_getgrgid(filegroup($path . '/' . $f));
     } else {
-        $owner = '?';
-        $group = '?';
+        $owner = ['name' => '?'];
+        $group = ['name' => '?'];
     }
     ?>
 <tr>
