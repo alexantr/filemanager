@@ -57,7 +57,7 @@ $is_https = isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on' || $_SERVER['
 // clean and check $root_path
 $root_path = rtrim(trim($root_path), '\\/');
 $root_path = str_replace('\\', '/', $root_path);
-if (!is_dir($root_path)) {
+if (!@is_dir($root_path)) {
     echo "<h1>Root path &quot;{$root_path}&quot; not found!</h1>";
     exit;
 }
@@ -514,6 +514,7 @@ $folders = array();
 $files = array();
 if (is_array($objects)) {
     foreach ($objects as $file) {
+        if ($file == '.' || $file == '..') continue;
         $new_path = $path . '/' . $file;
         if (is_file($new_path)) {
             $files[] = $file;
