@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP File Manager v1.1
+ * PHP File Manager v1.1.1
  * https://github.com/alexantr/filemanager
  */
 
@@ -957,8 +957,8 @@ foreach ($folders as $f) {
         $owner = posix_getpwuid(fileowner($path . '/' . $f));
         $group = posix_getgrgid(filegroup($path . '/' . $f));
     } else {
-        $owner = ['name' => '?'];
-        $group = ['name' => '?'];
+        $owner = array('name' => '?');
+        $group = array('name' => '?');
     }
     ?>
 <tr>
@@ -991,8 +991,8 @@ foreach ($files as $f) {
         $owner = posix_getpwuid(fileowner($path . '/' . $f));
         $group = posix_getgrgid(filegroup($path . '/' . $f));
     } else {
-        $owner = ['name' => '?'];
-        $group = ['name' => '?'];
+        $owner = array('name' => '?');
+        $group = array('name' => '?');
     }
     ?>
 <tr>
