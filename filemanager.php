@@ -55,7 +55,7 @@ $is_https = isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on' || $_SERVER['
     || isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https';
 
 // clean and check $root_path
-$root_path = rtrim(trim($root_path), '\\/');
+$root_path = rtrim($root_path, '\\/');
 $root_path = str_replace('\\', '/', $root_path);
 if (!@is_dir($root_path)) {
     echo "<h1>Root path &quot;{$root_path}&quot; not found!</h1>";
@@ -509,7 +509,7 @@ if (!is_dir($path)) {
 // get parent folder
 $parent = get_parent_path($p);
 
-$objects = scandir($path);
+$objects = is_readable($path) ? scandir($path) : array();
 $folders = array();
 $files = array();
 if (is_array($objects)) {
@@ -949,7 +949,7 @@ if ($parent !== false) {
 <?php
 }
 foreach ($folders as $f) {
-    $is_link = is_link($p . '/' . $f);
+    $is_link = is_link($path . '/' . $f);
     $img = $is_link ? 'icon-link_folder' : 'icon-folder';
     $modif = date("d.m.y H:i", filemtime($path . '/' . $f));
     $perms = substr(decoct(fileperms($path . '/' . $f)), -4);
@@ -963,7 +963,7 @@ foreach ($folders as $f) {
     ?>
 <tr>
 <?php if (!READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td><?php endif; ?>
-<td><a href="?p=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo $f ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($p . '/' . $f) . '</i>' : '') ?></td>
+<td><a href="?p=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo $f ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></td>
 <td><?php _e('Folder') ?></td><td><?php echo $modif ?></td>
 <td><?php if (!READONLY): ?><a title="<?php _e('Change Permissions') ?>" href="?p=<?php echo urlencode($p) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
 <td><?php echo $owner['name'] . ':' . $group['name'] ?></td>
@@ -979,7 +979,7 @@ foreach ($folders as $f) {
 }
 
 foreach ($files as $f) {
-    $is_link = is_link($p . '/' . $f);
+    $is_link = is_link($path . '/' . $f);
     $img = $is_link ? 'icon-link_file' : get_file_icon($path . '/' . $f);
     $modif = date("d.m.y H:i", filemtime($path . '/' . $f));
     $filesize_raw = filesize($path . '/' . $f);
@@ -997,7 +997,7 @@ foreach ($files as $f) {
     ?>
 <tr>
 <?php if (!READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td><?php endif; ?>
-<td><?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="' . __('File info') . '">' ?><i class="<?php echo $img ?>"></i> <?php echo $f ?><?php if (!empty($filelink)) echo '</a>' ?><?php echo ($is_link ? ' &rarr; <i>' . readlink($p . '/' . $f) . '</i>' : '') ?></td>
+<td><?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="' . __('File info') . '">' ?><i class="<?php echo $img ?>"></i> <?php echo $f ?><?php if (!empty($filelink)) echo '</a>' ?><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></td>
 <td><span title="<?php printf(__('%s byte'), $filesize_raw) ?>"><?php echo $filesize ?></span></td>
 <td><?php echo $modif ?></td>
 <td><?php if (!READONLY): ?><a title="<?php _e('Change Permissions') ?>" href="?p=<?php echo urlencode($p) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
