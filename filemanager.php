@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP File Manager v1.1-dev
+ * PHP File Manager v1.1
  * https://github.com/alexantr/filemanager
  */
 
@@ -145,7 +145,7 @@ if (isset($_GET['del']) && !READONLY) {
     if ($del != '' && $del != '..' && $del != '.') {
         $path = ROOT_PATH;
         if ($p != '') $path .= '/' . $p;
-        $is_dir = (is_dir($path . '/' . $del)) ? true : false;
+        $is_dir = is_dir($path . '/' . $del);
         if (rdelete($path . '/' . $del)) {
             $msg = $is_dir ? __('Folder <b>%s</b> deleted') : __('File <b>%s</b> deleted');
             set_message(sprintf($msg, $del));
@@ -197,7 +197,7 @@ if (isset($_GET['copy']) && isset($_GET['finish']) && !READONLY) {
     if ($p != '') $dest .= '/' . $p;
     $dest .= '/' . basename($from);
     // move?
-    $move = (isset($_GET['move'])) ? true : false;
+    $move = isset($_GET['move']);
     // copy/move
     if ($from != $dest) {
         $msg_from = trim($p . '/' . basename($from), '/');
@@ -243,7 +243,7 @@ if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])
         }
     }
     // move?
-    $move = (isset($_POST['move'])) ? true : false;
+    $move = isset($_POST['move']);
     // copy/move
     $errors = 0;
     $files = $_POST['file'];
@@ -1054,7 +1054,9 @@ show_footer();
  */
 function rdelete($path)
 {
-    if (is_dir($path)) {
+    if (is_link($path)) {
+        return unlink($path);
+    } elseif (is_dir($path)) {
         $objects = scandir($path);
         $ok = true;
         if (is_array($objects)) {
@@ -1229,7 +1231,7 @@ function get_zif_info($path)
             $filenames = array();
             while ($zip_entry = zip_read($arch)) {
                 $zip_name = zip_entry_name($zip_entry);
-                $zip_folder = (substr($zip_name, -1) == '/') ? true : false;
+                $zip_folder = substr($zip_name, -1) == '/';
                 $filenames[] = array(
                     'name' => $zip_name,
                     'filesize' => zip_entry_filesize($zip_entry),
