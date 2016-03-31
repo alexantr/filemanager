@@ -740,7 +740,8 @@ if (isset($_GET['view'])) {
             ?>
         </p>
         <p>
-            <b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-goback"></i> <?php _e('Back') ?></a></b> &nbsp;
+            <b><a href="?p=<?php echo urlencode($p) ?>&amp;dl=<?php echo urlencode($file) ?>"><i class="icon-download"></i> <?php _e('Download') ?></a></b> &nbsp;
+            <b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-chain"></i> <?php _e('Open') ?></a></b> &nbsp;
             <?php
             // ZIP actions
             if (!READONLY && $is_zip && $filenames !== false) {
@@ -752,8 +753,7 @@ if (isset($_GET['view'])) {
                 <?php
             }
             ?>
-            <b><a href="?p=<?php echo urlencode($p) ?>&amp;dl=<?php echo urlencode($file) ?>"><i class="icon-download"></i> <?php _e('Download') ?></a></b> &nbsp;
-            <b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-chain"></i> <?php _e('Open') ?></a></b>
+            <b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-goback"></i> <?php _e('Back') ?></a></b>
         </p>
         <?php
         if ($is_zip) {
