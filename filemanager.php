@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP File Manager v1.1.1
+ * PHP File Manager v1.2-dev
  * https://github.com/alexantr/filemanager
  */
 
@@ -21,6 +21,12 @@ $readonly_users = array(
     //'user',
 );
 
+// Enable highlight.js (https://highlightjs.org/) on view's page
+$use_highlightjs = true;
+
+// highlight.js style
+$highlightjs_style = 'vs';
+
 // Default timezone for date() and time() - http://php.net/manual/en/timezones.php
 $default_timezone = 'Europe/Minsk'; // UTC+3
 
@@ -33,6 +39,9 @@ $root_url = '';
 
 // Server hostname. Can set manually if wrong
 $http_host = $_SERVER['HTTP_HOST'];
+
+// input encoding for iconv
+$iconv_input_encoding = 'CP1251';
 
 //--- EDIT BELOW CAREFULLY
 
@@ -125,6 +134,7 @@ if ($use_auth && !empty($auth_users)) {
 }
 
 define('READONLY', $use_auth && !empty($auth_users) && !empty($readonly_users) && isset($_SESSION['logged']) && in_array($_SESSION['logged'], $readonly_users));
+define('IS_WIN', DIRECTORY_SEPARATOR == '\\');
 
 // always use ?p=
 if (!isset($_GET['p'])) redirect(FM_URL . '?p=');
@@ -534,7 +544,7 @@ if (isset($_GET['upload']) && !READONLY) {
     ?>
     <div class="path">
         <p><b><?php _e('Uploading files') ?></b></p>
-        <p><?php _e('Destination folder:') ?> <?php echo ROOT_PATH . '/' . $p ?></p>
+        <p><?php _e('Destination folder:') ?> <?php echo convert_win(ROOT_PATH . '/' . $p) ?></p>
         <form action="" method="post" enctype="multipart/form-data">
             <input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
             <input type="hidden" name="upl" value="1">
@@ -577,7 +587,7 @@ if (isset($_POST['copy']) && !READONLY) {
             }
             ?>
             <p><?php _e('Files:') ?> <b><?php echo implode('</b>, <b>', $copy_files) ?></b></p>
-            <p><?php _e('Source folder:') ?> <?php echo ROOT_PATH ?>/<?php echo $p ?><br>
+            <p><?php _e('Source folder:') ?> <?php echo convert_win(ROOT_PATH . '/' . $p) ?><br>
                 <label for="inp_copy_to"><?php _e('Destination folder:') ?></label>
                 <?php echo ROOT_PATH ?>/<input type="text" name="copy_to" id="inp_copy_to" value="<?php echo encode_html($p) ?>">
             </p>
@@ -608,8 +618,8 @@ if (isset($_GET['copy']) && !isset($_GET['finish']) && !READONLY) {
     <div class="path">
         <p><b><?php _e('Copying') ?></b></p>
         <p>
-            <?php _e('Source path:') ?> <?php echo ROOT_PATH ?>/<?php echo $copy ?><br>
-            <?php _e('Destination folder:') ?> <?php echo ROOT_PATH ?>/<?php echo $p ?>
+            <?php _e('Source path:') ?> <?php echo convert_win(ROOT_PATH . '/' . $copy) ?><br>
+            <?php _e('Destination folder:') ?> <?php echo convert_win(ROOT_PATH . '/' . $p) ?>
         </p>
         <p>
             <b><a href="?p=<?php echo urlencode($p) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1"><i class="icon-apply"></i> <?php _e('Copy') ?></a></b> &nbsp;
@@ -626,7 +636,7 @@ if (isset($_GET['copy']) && !isset($_GET['finish']) && !READONLY) {
             }
             foreach ($folders as $f) {
                 ?>
-                <li><a href="?p=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>&amp;copy=<?php echo urlencode($copy) ?>"><i class="icon-folder"></i> <?php echo $f ?></a></li>
+                <li><a href="?p=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>&amp;copy=<?php echo urlencode($copy) ?>"><i class="icon-folder"></i> <?php echo convert_win($f) ?></a></li>
             <?php
             }
             ?>
@@ -637,9 +647,9 @@ if (isset($_GET['copy']) && !isset($_GET['finish']) && !READONLY) {
     exit;
 }
 
-// zip info
-if (isset($_GET['zip'])) {
-    $file = $_GET['zip'];
+// file viewer
+if (isset($_GET['view'])) {
+    $file = $_GET['view'];
     $file = clean_path($file);
     $file = str_replace('/', '', $file);
     if ($file == '' || !is_file($path . '/' . $file)) {
@@ -650,46 +660,106 @@ if (isset($_GET['zip'])) {
     show_header(); // HEADER
     show_navigation_path($p); // current path
 
-    $file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
+    $file_url = ROOT_URL . convert_win((!empty($p) ? '/' . $p : '') . '/' . $file);
     $file_path = $path . '/' . $file;
+
+    $ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
+    $mime_type = get_mime_type($file_path);
+    $filesize = filesize($file_path);
+
+    $is_zip = false;
+    $is_image = false;
+    $is_audio = false;
+    $is_video = false;
+    $is_text = false;
+
+    $view_title = 'File';
+    $filenames = false; // for zip
+    $content = ''; // for text
+
+    if ($ext == 'zip') {
+        $is_zip = true;
+        $view_title = 'Archive';
+        $filenames = get_zif_info($file_path);
+    } elseif (in_array($ext, image_exts())) {
+        $is_image = true;
+        $view_title = 'Image';
+    } elseif (in_array($ext, audio_exts())) {
+        $is_audio = true;
+        $view_title = 'Audio';
+    } elseif (in_array($ext, video_exts())) {
+        $is_video = true;
+        $view_title = 'Video';
+    } elseif (in_array($ext, text_exts()) || substr($mime_type, 0, 4) == 'text' || in_array($mime_type, text_mimes())) {
+        $is_text = true;
+        $content = file_get_contents($file_path);
+    }
+
     ?>
     <div class="path">
-        <p><b><?php _e('Archive') ?> <?php echo $file ?></b></p>
-        <?php
-        $filenames = get_zif_info($file_path);
-        if ($filenames !== false) {
-            $total_files = 0;
-            $total_comp = 0;
-            $total_uncomp = 0;
-            foreach ($filenames as $fn) {
-                if (!$fn['folder']) {
-                    $total_files++;
+        <p><b><?php _e($view_title) ?> <?php echo convert_win($file) ?></b></p>
+        <p>
+            <?php _e('Full path:') ?> <?php echo convert_win($file_path) ?><br>
+            <?php _e('File size:') ?> <?php echo get_filesize($filesize) ?> (<?php echo sprintf(__('%s byte'), $filesize) ?>)<br>
+            <?php _e('MIME-type:') ?> <?php echo $mime_type ?><br>
+            <?php
+            // ZIP info
+            if ($is_zip && $filenames !== false) {
+                $total_files = 0;
+                $total_comp = 0;
+                $total_uncomp = 0;
+                foreach ($filenames as $fn) {
+                    if (!$fn['folder']) {
+                        $total_files++;
+                    }
+                    $total_comp += $fn['compressed_size'];
+                    $total_uncomp += $fn['filesize'];
                 }
-                $total_comp += $fn['compressed_size'];
-                $total_uncomp += $fn['filesize'];
-            }
-
-            $zip_name = pathinfo($file_path, PATHINFO_FILENAME);
-            ?>
-            <p>
-                <?php _e('Full path:') ?> <?php echo $file_path ?><br>
-                <?php _e('File size:') ?> <?php echo get_filesize(filesize($file_path)) ?><br>
+                ?>
                 <?php _e('Files in archive:') ?> <?php echo $total_files ?><br>
                 <?php _e('Total size:') ?> <?php echo get_filesize($total_uncomp) ?><br>
                 <?php _e('Size in archive:') ?> <?php echo get_filesize($total_comp) ?><br>
-                <?php _e('Compression:') ?> <?php echo round(($total_comp / $total_uncomp) * 100) ?>%
-            </p>
-            <p>
-                <b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-folder_open"></i> <?php _e('Open') ?></a></b> &nbsp;
-                <?php if (!READONLY): ?>
-                    <b><a href="?p=<?php echo urlencode($p) ?>&amp;unzip=<?php echo urlencode($file) ?>"><i class="icon-apply"></i> <?php _e('Unpack') ?></a></b> &nbsp;
-                    <b><a href="?p=<?php echo urlencode($p) ?>&amp;unzip=<?php echo urlencode($file) ?>&amp;tofolder=1" title="<?php _e('Unpack to') ?> <?php echo encode_html($zip_name) ?>"><i class="icon-apply"></i>
-                        <?php _e('Unpack to folder') ?></a></b> &nbsp;
-                <?php endif; ?>
-                <b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-goback"></i> <?php _e('Back') ?></a></b>
-            </p>
-            <code class="maxheight">
+                <?php _e('Compression:') ?> <?php echo round(($total_comp / $total_uncomp) * 100) ?>%<br>
                 <?php
+            }
+            // Image info
+            if ($is_image) {
+                $image_size = getimagesize($file_path);
+                echo __('Image sizes:') . ' ' . (isset($image_size[0]) ? $image_size[0] : '0') . ' x ' . (isset($image_size[1]) ? $image_size[1] : '0') . '<br>';
+            }
+            // Text info
+            if ($is_text) {
+                $is_utf8 = is_utf8($content);
+                if (function_exists('iconv')) {
+                    if (!$is_utf8) {
+                        $content = iconv($iconv_input_encoding, 'UTF-8//IGNORE', $content);
+                    }
+                }
+                echo __('Charset:') . ' ' . ($is_utf8 ? 'utf-8' : '8 bit') . '<br>';
+            }
+            ?>
+        </p>
+        <p>
+            <b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-goback"></i> <?php _e('Back') ?></a></b> &nbsp;
+            <?php
+            // ZIP actions
+            if (!READONLY && $is_zip && $filenames !== false) {
+                $zip_name = pathinfo($file_path, PATHINFO_FILENAME);
+                ?>
+                <b><a href="?p=<?php echo urlencode($p) ?>&amp;unzip=<?php echo urlencode($file) ?>"><i class="icon-apply"></i> <?php _e('Unpack') ?></a></b> &nbsp;
+                <b><a href="?p=<?php echo urlencode($p) ?>&amp;unzip=<?php echo urlencode($file) ?>&amp;tofolder=1" title="<?php _e('Unpack to') ?> <?php echo encode_html($zip_name) ?>"><i class="icon-apply"></i>
+                    <?php _e('Unpack to folder') ?></a></b> &nbsp;
+                <?php
+            }
+            ?>
+            <b><a href="?p=<?php echo urlencode($p) ?>&amp;dl=<?php echo urlencode($file) ?>"><i class="icon-download"></i> <?php _e('Download') ?></a></b> &nbsp;
+            <b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-chain"></i> <?php _e('Open') ?></a></b>
+        </p>
+        <?php
+        if ($is_zip) {
+            // ZIP content
+            if ($filenames !== false) {
+                echo '<code class="maxheight">';
                 foreach ($filenames as $fn) {
                     if ($fn['folder']) {
                         echo '<b>' . $fn['name'] . '</b><br>';
@@ -697,156 +767,45 @@ if (isset($_GET['zip'])) {
                         echo $fn['name'] . ' (' . get_filesize($fn['filesize']) . ')<br>';
                     }
                 }
-                ?>
-            </code>
-        <?php
-        } else {
-            ?>
-            <p><?php _e('Error while fetching archive info') ?></p>
-            <p>
-                <b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-folder_open"></i> <?php _e('Open') ?></a></b> &nbsp;
-                <b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-goback"></i> <?php _e('Back') ?></a></b>
-            </p>
-        <?php
-        }
-        ?>
-    </div>
-    <?php
-    show_footer();
-    exit;
-}
-
-// image info
-if (isset($_GET['showimg'])) {
-    $file = $_GET['showimg'];
-    $file = clean_path($file);
-    $file = str_replace('/', '', $file);
-    if ($file == '' || !is_file($path . '/' . $file)) {
-        set_message(__('File not found'), 'error');
-        redirect(FM_URL . '?p=' . urlencode($p));
-    }
-
-    show_header(); // HEADER
-    show_navigation_path($p); // current path
-
-    $file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
-    $file_path = $path . '/' . $file;
-
-    $image_size = getimagesize($file_path);
-    ?>
-    <div class="path">
-        <p><b><?php _e('Image') ?> <?php echo $file ?></b></p>
-        <p>
-            <?php _e('Full path:') ?> <?php echo $file_path ?><br>
-            <?php _e('File size:') ?> <?php echo get_filesize(filesize($file_path)) ?><br>
-            <?php _e('MIME-type:') ?> <?php echo isset($image_size['mime']) ? $image_size['mime'] : get_mime_type($file_path) ?><br>
-            <?php _e('Image sizes:') ?> <?php echo (isset($image_size[0])) ? $image_size[0] : '0' ?> x <?php echo (isset($image_size[1])) ? $image_size[1] : '0' ?>
-        </p>
-        <p>
-            <b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-folder_open"></i> <?php _e('Open') ?></a></b> &nbsp;
-            <b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-goback"></i> <?php _e('Back') ?></a></b>
-        </p>
-        <?php
-        $ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
-        if (in_array($ext, array('gif', 'jpg', 'jpeg', 'png', 'bmp', 'ico'))) {
-            echo '<p><img src="' . $file_url . '" alt="" class="preview-img"></p>';
-        }
-        ?>
-    </div>
-    <?php
-    show_footer();
-    exit;
-}
-
-// video & audio info
-if (isset($_GET['showvideo']) || isset($_GET['showaudio'])) {
-    $is_video = isset($_GET['showvideo']);
-    $file = $is_video ? $_GET['showvideo'] : $_GET['showaudio'];
-    $file = clean_path($file);
-    $file = str_replace('/', '', $file);
-    if ($file == '' || !is_file($path . '/' . $file)) {
-        set_message(__('File not found'), 'error');
-        redirect(FM_URL . '?p=' . urlencode($p));
-    }
-
-    show_header(); // HEADER
-    show_navigation_path($p); // current path
-
-    $file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
-    $file_path = $path . '/' . $file;
-
-    ?>
-    <div class="path">
-        <p><b><?php $is_video ? _e('Video') : _e('Audio') ?> <?php echo $file ?></b></p>
-        <p>
-            <?php _e('Full path:') ?> <?php echo $file_path ?><br>
-            <?php _e('File size:') ?> <?php echo get_filesize(filesize($file_path)) ?><br>
-            <?php _e('MIME-type:') ?> <?php echo get_mime_type($file_path) ?>
-        </p>
-        <p>
-            <b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-folder_open"></i> <?php _e('Open') ?></a></b> &nbsp;
-            <b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-goback"></i> <?php _e('Back') ?></a></b>
-        </p>
-        <?php
-        $ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
-        if (in_array($ext, array('webm', 'mp4', 'm4v', 'ogm', 'ogv'))) {
-            echo '<div class="preview-video"><video src="' . $file_url . '" width="640" height="360" controls preload="metadata"></video></div>';
-        } elseif (in_array($ext, array('wav', 'mp3', 'ogg'))) {
+                echo '</code>';
+            } else {
+                echo '<p>' . __('Error while fetching archive info') . '</p>';
+            }
+        } elseif ($is_image) {
+            // Image content
+            if (in_array($ext, array('gif', 'jpg', 'jpeg', 'png', 'bmp', 'ico'))) {
+                echo '<p><img src="' . $file_url . '" alt="" class="preview-img"></p>';
+            }
+        } elseif ($is_audio) {
+            // Audio content
             echo '<p><audio src="' . $file_url . '" controls preload="metadata"></audio></p>';
+        } elseif ($is_video) {
+            // Video content
+            echo '<div class="preview-video"><video src="' . $file_url . '" width="640" height="360" controls preload="metadata"></video></div>';
+        } elseif ($is_text) {
+            if ($use_highlightjs) {
+                // highlight
+                $hljs_classes = array(
+                    'shtml' => 'xml',
+                    'htaccess' => 'apache',
+                    'phtml' => 'php',
+                    'lock' => 'json',
+                    'svg' => 'xml',
+                );
+                $hljs_class = isset($hljs_classes[$ext]) ? 'lang-' . $hljs_classes[$ext] : 'lang-' . $ext;
+                if (empty($ext) || in_array(strtolower($file), text_names()) || preg_match('#\.min\.(css|js)$#i', $file)) {
+                    $hljs_class = 'nohighlight';
+                }
+                $content = '<pre class="with-hljs"><code class="' . $hljs_class . '">' . encode_html($content) . '</code></pre>';
+            } elseif (in_array($ext, array('php', 'php4', 'php5', 'phtml', 'phps'))) {
+                // php highlight
+                $content = highlight_string($content, true);
+            } else {
+                $content = '<pre>' . encode_html($content) . '</pre>';
+            }
+            echo $content;
         }
         ?>
-    </div>
-    <?php
-    show_footer();
-    exit;
-}
-
-// txt info
-if (isset($_GET['showtxt'])) {
-    $file = $_GET['showtxt'];
-    $file = clean_path($file);
-    $file = str_replace('/', '', $file);
-    if ($file == '' || !is_file($path . '/' . $file)) {
-        set_message(__('File not found'), 'error');
-        redirect(FM_URL . '?p=' . urlencode($p));
-    }
-
-    show_header(); // HEADER
-    show_navigation_path($p); // current path
-
-    $file_url = ROOT_URL . (!empty($p) ? '/' . $p : '') . '/' . $file;
-    $file_path = $path . '/' . $file;
-
-    $content = file_get_contents($file_path);
-    $is_utf8 = is_utf8($content);
-    if (function_exists('iconv')) {
-        if (!$is_utf8) {
-            $content = iconv('CP1251', 'UTF-8//IGNORE', $content);
-        }
-    }
-
-    // php highlight
-    $ext = strtolower(pathinfo($file_path, PATHINFO_EXTENSION));
-    if (in_array($ext, array('php', 'php4', 'php5', 'phtml', 'phps'))) {
-        $content = highlight_string($content, true);
-    } else {
-        $content = '<pre>' . encode_html($content) . '</pre>';
-    }
-
-    ?>
-    <div class="path">
-        <p><b><?php _e('File') ?> <?php echo $file ?></b></p>
-        <p>
-            <?php _e('Full path:') ?> <?php echo $file_path ?><br>
-            <?php _e('File size:') ?> <?php echo get_filesize(filesize($file_path)) ?><br>
-            <?php _e('MIME-type:') ?> <?php echo get_mime_type($file_path) ?><br>
-            <?php _e('Charset:') ?> <?php echo ($is_utf8) ? 'utf-8' : '8 bit' ?>
-        </p>
-        <p>
-            <b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-folder_open"></i> <?php _e('Open') ?></a></b> &nbsp;
-            <b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-goback"></i> <?php _e('Back') ?></a></b>
-        </p>
-        <?php echo $content ?>
     </div>
     <?php
     show_footer();
@@ -963,7 +922,7 @@ foreach ($folders as $f) {
     ?>
 <tr>
 <?php if (!READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td><?php endif; ?>
-<td><a href="?p=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo $f ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></td>
+<td><a href="?p=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></td>
 <td><?php _e('Folder') ?></td><td><?php echo $modif ?></td>
 <td><?php if (!READONLY): ?><a title="<?php _e('Change Permissions') ?>" href="?p=<?php echo urlencode($p) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
 <td><?php echo $owner['name'] . ':' . $group['name'] ?></td>
@@ -984,7 +943,7 @@ foreach ($files as $f) {
     $modif = date("d.m.y H:i", filemtime($path . '/' . $f));
     $filesize_raw = filesize($path . '/' . $f);
     $filesize = get_filesize($filesize_raw);
-    $filelink = get_file_link($p, $f);
+    $filelink = '?p=' . urlencode($p) . '&amp;view=' . urlencode($f);
     $all_files_size += $filesize_raw;
     $perms = substr(decoct(fileperms($path . '/' . $f)), -4);
     if (function_exists('posix_getpwuid') && function_exists('posix_getgrgid')) {
@@ -997,7 +956,7 @@ foreach ($files as $f) {
     ?>
 <tr>
 <?php if (!READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td><?php endif; ?>
-<td><?php if (!empty($filelink)) echo '<a href="' . $filelink . '" title="' . __('File info') . '">' ?><i class="<?php echo $img ?>"></i> <?php echo $f ?><?php if (!empty($filelink)) echo '</a>' ?><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></td>
+<td><a href="<?php echo $filelink ?>" title="<?php _e('File info') ?>"><i class="<?php echo $img ?>"></i> <?php echo convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></td>
 <td><span title="<?php printf(__('%s byte'), $filesize_raw) ?>"><?php echo $filesize ?></span></td>
 <td><?php echo $modif ?></td>
 <td><?php if (!READONLY): ?><a title="<?php _e('Change Permissions') ?>" href="?p=<?php echo urlencode($p) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
@@ -1281,6 +1240,15 @@ function is_utf8($string)
     return preg_match('//u', $string);
 }
 
+function convert_win($filename)
+{
+    global $iconv_input_encoding;
+    if (IS_WIN && function_exists('iconv')) {
+        $filename = iconv($iconv_input_encoding, 'UTF-8//IGNORE', $filename);
+    }
+    return $filename;
+}
+
 // translation
 function __($str)
 {
@@ -1304,44 +1272,6 @@ function _e($str)
     echo __($str);
 }
 
-function get_file_link($p, $f)
-{
-    $link = '';
-
-    $path = ROOT_PATH;
-    if ($p != '') $path .= '/' . $p;
-
-    if (!empty($f)) {
-        $path .= '/' . $f;
-        // get extension
-        $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-
-        switch ($ext) {
-            case 'zip':
-                $link = '?p=' . urlencode($p) . '&amp;zip=' . urlencode($f); break;
-            case 'ico': case 'gif': case 'jpg': case 'jpeg': case 'jpc': case 'jp2': case 'jpx':
-            case 'xbm': case 'wbmp': case 'png': case 'bmp': case 'tif': case 'tiff': case 'psd':
-                $link = '?p=' . urlencode($p) . '&amp;showimg=' . urlencode($f); break;
-            case 'webm': case 'mp4': case 'm4v': case 'ogm': case 'ogv':
-                $link = '?p=' . urlencode($p) . '&amp;showvideo=' . urlencode($f); break;
-            case 'wav': case 'mp3': case 'ogg':
-                $link = '?p=' . urlencode($p) . '&amp;showaudio=' . urlencode($f); break;
-            case 'txt': case 'css': case 'ini': case 'conf': case 'log': case 'htaccess':
-            case 'passwd': case 'ftpquota': case 'sql': case 'js': case 'json': case 'sh':
-            case 'config': case 'php': case 'php4': case 'php5': case 'phps': case 'phtml':
-            case 'htm': case 'html': case 'shtml': case 'xhtml': case 'xml': case 'xsl':
-            case 'm3u': case 'm3u8': case 'pls': case 'cue': case 'eml': case 'msg':
-            case 'csv': case 'bat': case 'twig': case 'tpl': case 'md': case 'gitignore':
-            case 'less': case 'sass':
-                $link = '?p=' . urlencode($p) . '&amp;showtxt=' . urlencode($f); break;
-            default:
-                $link = '';
-        }
-    }
-
-    return $link;
-}
-
 function get_file_icon($path)
 {
     // get extension
@@ -1355,7 +1285,8 @@ function get_file_icon($path)
         case 'txt': case 'css': case 'ini': case 'conf': case 'log': case 'htaccess':
         case 'passwd': case 'ftpquota': case 'sql': case 'js': case 'json': case 'sh':
         case 'config': case 'twig': case 'tpl': case 'md': case 'gitignore':
-        case 'less': case 'sass':
+        case 'less': case 'sass': case 'scss': case 'c': case 'cpp': case 'cs': case 'py':
+        case 'map': case 'lock': case 'dtd':
             $img = 'icon-file_text'; break;
         case 'zip': case 'rar': case 'gz': case 'tar': case '7z':
             $img = 'icon-file_zip'; break;
@@ -1363,7 +1294,7 @@ function get_file_icon($path)
             $img = 'icon-file_php'; break;
         case 'htm': case 'html': case 'shtml': case 'xhtml':
             $img = 'icon-file_html'; break;
-        case 'xml': case 'xsl':
+        case 'xml': case 'xsl': case 'svg':
             $img = 'icon-file_code'; break;
         case 'wav': case 'mp3': case 'mp2': case 'm4a': case 'aac': case 'ogg':
         case 'oga': case 'wma': case 'mka': case 'flac': case 'ac3': case 'tds':
@@ -1384,7 +1315,7 @@ function get_file_icon($path)
             $img = 'icon-file_word'; break;
         case 'ppt': case 'pptx':
             $img = 'icon-file_powerpoint'; break;
-        case 'ttf': case 'ttc': case 'otf': case 'woff': case 'eot': case 'fon':
+        case 'ttf': case 'ttc': case 'otf': case 'woff':case 'woff2': case 'eot': case 'fon':
             $img = 'icon-file_font'; break;
         case 'pdf':
             $img = 'icon-file_pdf'; break;
@@ -1405,6 +1336,59 @@ function get_file_icon($path)
     }
 
     return $img;
+}
+
+function image_exts()
+{
+    return array(
+        'ico', 'gif', 'jpg', 'jpeg', 'jpc', 'jp2', 'jpx', 'xbm', 'wbmp', 'png', 'bmp', 'tif', 'tiff', 'psd',
+    );
+}
+
+function video_exts()
+{
+    return array(
+        'webm', 'mp4', 'm4v', 'ogm', 'ogv', 'mov',
+    );
+}
+
+function audio_exts()
+{
+    return array(
+        'wav', 'mp3', 'ogg', 'm4a',
+    );
+}
+
+function text_exts()
+{
+    return array(
+        'txt', 'css', 'ini', 'conf', 'log', 'htaccess', 'passwd', 'ftpquota', 'sql', 'js', 'json', 'sh', 'config',
+        'php', 'php4', 'php5', 'phps', 'phtml', 'htm', 'html', 'shtml', 'xhtml', 'xml', 'xsl', 'm3u', 'm3u8', 'pls', 'cue',
+        'eml', 'msg', 'csv', 'bat', 'twig', 'tpl', 'md', 'gitignore', 'less', 'sass', 'scss', 'c', 'cpp', 'cs', 'py',
+        'map', 'lock', 'dtd', 'svg',
+    );
+}
+
+function text_mimes()
+{
+    return array(
+        'application/xml',
+        'application/javascript',
+        'application/x-javascript',
+        'image/svg+xml',
+        'message/rfc822',
+    );
+}
+
+function text_names()
+{
+    return array(
+        'license',
+        'readme',
+        'authors',
+        'contributors',
+        'changelog',
+    );
 }
 
 /**
@@ -1526,7 +1510,7 @@ function show_navigation_path($path)
             for ($i = 0; $i < $count; $i++) {
                 $parent = trim($parent . '/' . $exploded[$i], '/');
                 $parent_enc = urlencode($parent);
-                $array[] = "<a href='?p={$parent_enc}'>{$exploded[$i]}</a>";
+                $array[] = "<a href='?p={$parent_enc}'>" . convert_win($exploded[$i]) . "</a>";
             }
             $root_url .= $sep . implode($sep, $array);
         }
@@ -1552,6 +1536,7 @@ function show_message()
  */
 function show_header()
 {
+    global $use_highlightjs, $highlightjs_style;
     $sprites_ver = '20160315';
     header("Content-Type: text/html; charset=utf-8");
     header("Expires: Sat, 26 Jul 1997 05:00:00 GMT");
@@ -1575,6 +1560,8 @@ th,td{padding:4px 7px;text-align:left;vertical-align:top;border:1px solid #ddd;b
 th,td.gray{background-color:#eee}td.gray span{color:#222}
 tr:hover td{background-color:#f5f5f5}tr:hover td.gray{background-color:#eee}
 code,pre{display:block;margin-bottom:10px;font:13px/16px Consolas,'Courier New',Courier,monospace;border:1px dashed #ccc;padding:5px;overflow:auto}
+pre.with-hljs{padding:0}
+pre.with-hljs code{margin:0;border:0;overflow:visible}
 code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;padding:0}
 #wrapper{max-width:1000px;min-width:400px;margin:10px auto}
 .path{padding:4px 7px;border:1px solid #ddd;background-color:#fff;margin-bottom:10px}
@@ -1613,6 +1600,9 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 </style>
 <link rel="icon" href="<?php echo FM_URL ?>?img=favicon" type="image/png">
 <link rel="shortcut icon" href="<?php echo FM_URL ?>?img=favicon" type="image/png">
+<?php if (isset($_GET['view']) && $use_highlightjs): ?>
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/styles/<?php echo $highlightjs_style; ?>.min.css">
+<?php endif; ?>
 </head>
 <body>
 <div id="wrapper">
@@ -1624,6 +1614,7 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
  */
 function show_footer()
 {
+    global $use_highlightjs;
     ?>
 <p class="center"><small><a href="https://github.com/alexantr/filemanager" target="_blank">PHP File Manager</a></small></p>
 </div>
@@ -1637,6 +1628,10 @@ function unselect_all(){var l=get_checkboxes();change_checkboxes(l,false);}
 function invert_all(){var l=get_checkboxes();change_checkboxes(l);}
 function checkbox_toggle(){var l=get_checkboxes();l.push(this);change_checkboxes(l);}
 </script>
+<?php if (isset($_GET['view']) && $use_highlightjs): ?>
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<?php endif; ?>
 </body>
 </html>
 <?php
