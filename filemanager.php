@@ -544,7 +544,7 @@ if (isset($_GET['upload']) && !READONLY) {
     ?>
     <div class="path">
         <p><b><?php _e('Uploading files') ?></b></p>
-        <p><?php _e('Destination folder:') ?> <?php echo convert_win(ROOT_PATH . '/' . $p) ?></p>
+        <p class="break-word"><?php _e('Destination folder:') ?> <?php echo convert_win(ROOT_PATH . '/' . $p) ?></p>
         <form action="" method="post" enctype="multipart/form-data">
             <input type="hidden" name="p" value="<?php echo encode_html($p) ?>">
             <input type="hidden" name="upl" value="1">
@@ -586,8 +586,8 @@ if (isset($_POST['copy']) && !READONLY) {
                 echo '<input type="hidden" name="file[]" value="' . encode_html($cf) . '">' . PHP_EOL;
             }
             ?>
-            <p><?php _e('Files:') ?> <b><?php echo implode('</b>, <b>', $copy_files) ?></b></p>
-            <p><?php _e('Source folder:') ?> <?php echo convert_win(ROOT_PATH . '/' . $p) ?><br>
+            <p class="break-word"><?php _e('Files:') ?> <b><?php echo implode('</b>, <b>', $copy_files) ?></b></p>
+            <p class="break-word"><?php _e('Source folder:') ?> <?php echo convert_win(ROOT_PATH . '/' . $p) ?><br>
                 <label for="inp_copy_to"><?php _e('Destination folder:') ?></label>
                 <?php echo ROOT_PATH ?>/<input type="text" name="copy_to" id="inp_copy_to" value="<?php echo encode_html($p) ?>">
             </p>
@@ -617,7 +617,7 @@ if (isset($_GET['copy']) && !isset($_GET['finish']) && !READONLY) {
     ?>
     <div class="path">
         <p><b><?php _e('Copying') ?></b></p>
-        <p>
+        <p class="break-word">
             <?php _e('Source path:') ?> <?php echo convert_win(ROOT_PATH . '/' . $copy) ?><br>
             <?php _e('Destination folder:') ?> <?php echo convert_win(ROOT_PATH . '/' . $p) ?>
         </p>
@@ -627,7 +627,7 @@ if (isset($_GET['copy']) && !isset($_GET['finish']) && !READONLY) {
             <b><a href="?p=<?php echo urlencode($p) ?>"><i class="icon-cancel"></i> <?php _e('Cancel') ?></a></b>
         </p>
         <p><i><?php _e('Select folder:') ?></i></p>
-        <ul class="folders">
+        <ul class="folders break-word">
             <?php
             if ($parent !== false) {
                 ?>
@@ -697,8 +697,8 @@ if (isset($_GET['view'])) {
 
     ?>
     <div class="path">
-        <p><b><?php _e($view_title) ?> <?php echo convert_win($file) ?></b></p>
-        <p>
+        <p class="break-word"><b><?php _e($view_title) ?> <?php echo convert_win($file) ?></b></p>
+        <p class="break-word">
             <?php _e('Full path:') ?> <?php echo convert_win($file_path) ?><br>
             <?php _e('File size:') ?> <?php echo get_filesize($filesize) ?> (<?php echo sprintf(__('%s byte'), $filesize) ?>)<br>
             <?php _e('MIME-type:') ?> <?php echo $mime_type ?><br>
@@ -922,7 +922,7 @@ foreach ($folders as $f) {
     ?>
 <tr>
 <?php if (!READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td><?php endif; ?>
-<td><a href="?p=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></td>
+<td><div class="filename"><a href="?p=<?php echo urlencode(trim($p . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
 <td><?php _e('Folder') ?></td><td><?php echo $modif ?></td>
 <td><?php if (!READONLY): ?><a title="<?php _e('Change Permissions') ?>" href="?p=<?php echo urlencode($p) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
 <td><?php echo $owner['name'] . ':' . $group['name'] ?></td>
@@ -956,7 +956,7 @@ foreach ($files as $f) {
     ?>
 <tr>
 <?php if (!READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo encode_html($f) ?>"></label></td><?php endif; ?>
-<td><a href="<?php echo $filelink ?>" title="<?php _e('File info') ?>"><i class="<?php echo $img ?>"></i> <?php echo convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></td>
+<td><div class="filename"><a href="<?php echo $filelink ?>" title="<?php _e('File info') ?>"><i class="<?php echo $img ?>"></i> <?php echo convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
 <td><span title="<?php printf(__('%s byte'), $filesize_raw) ?>"><?php echo $filesize ?></span></td>
 <td><?php echo $modif ?></td>
 <td><?php if (!READONLY): ?><a title="<?php _e('Change Permissions') ?>" href="?p=<?php echo urlencode($p) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
@@ -1491,7 +1491,7 @@ function show_navigation_path($path)
     global $p, $use_auth, $auth_users;
     ?>
 <div class="path">
-<div class='float-right'>
+<div class="float-right">
 <?php if (!READONLY): ?>
 <a title="<?php _e('Upload files') ?>" href="?p=<?php echo urlencode($p) ?>&amp;upload"><i class="icon-upload"></i></a>
 <a title="<?php _e('New folder') ?>" href="#" onclick="newfolder('<?php echo encode_html($p) ?>');return false;"><i class="icon-folder_add"></i></a>
@@ -1514,7 +1514,7 @@ function show_navigation_path($path)
             }
             $root_url .= $sep . implode($sep, $array);
         }
-        echo $root_url;
+        echo '<div class="break-word">' . $root_url . '</div>';
         ?>
 </div>
 <?php
@@ -1597,6 +1597,8 @@ code.maxheight,pre.maxheight{max-height:512px}input[type="checkbox"]{margin:0;pa
 .icon-logout{background-position:-304px 0}.icon-chain{background-position:-320px 0}
 .icon-link_folder{background-position:-352px -16px}.icon-link_file{background-position:-368px -16px}
 .compact-table{border:0;width:auto}.compact-table td,.compact-table th{width:100px;border:0;text-align:center}.compact-table tr:hover td{background-color:#fff}
+.filename{max-width:420px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.break-word{word-wrap:break-word}
 </style>
 <link rel="icon" href="<?php echo FM_URL ?>?img=favicon" type="image/png">
 <link rel="shortcut icon" href="<?php echo FM_URL ?>?img=favicon" type="image/png">
