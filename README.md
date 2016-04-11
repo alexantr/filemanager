@@ -9,7 +9,7 @@ A good solution for managing files and folders on your site.
 Copy **filemanager.php** to your website and open it on browser
 (e.g. http://yoursite/any_path/filemanager.php).
 
-Default username/password: **fm_admin/fm_admin**
+Default username/password: **fm_admin**/**fm_admin**
 
 Please set your own username and password in ```$auth_users``` before use.
 
@@ -21,7 +21,7 @@ To change default language set ```$lang``` to one of supported languages in list
 
 * English (en)
 * Russian (ru)
-* French (fr) - by [Nicolas KAROLAK](https://github.com/NicolasKAROLAK)
+* French (fr) - by [Nicolas Karolak](https://github.com/nikaro)
 
 ## Bug tracker
 
