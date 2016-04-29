@@ -15,6 +15,23 @@ Please set your own username and password in ```$auth_users``` before use.
 
 To enable/disable authentication set ```$use_auth``` to ```true``` or ```false```.
 
+You can include file manager in another scripts. Just define `FM_EMBED` and other necessary variables. Example:
+
+```php
+class SomeController
+{
+    public function actionIndex()
+    {
+        define('FM_EMBED', true);
+        define('FM_LANG', 'en');
+        define('FM_SELF_URL', UrlHelper::currentUrl());
+        require 'path/to/filemanager.php';
+    }
+}
+```
+
+Supports variables `FM_LANG`, `FM_ROOT_PATH`, `FM_ROOT_URL`, `FM_SELF_URL`.
+
 ## Languages
 
 To change default language set ```$lang``` to one of supported languages in list below.
