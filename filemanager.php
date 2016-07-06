@@ -112,6 +112,8 @@ if ($use_auth) {
             if (isset($_POST['lang']) && in_array($_POST['lang'], $languages)) {
                 $_SESSION['lang'] = $_POST['lang'];
                 $lang = $_POST['lang'];
+            } elseif (defined('FM_LANG')) {
+                $lang = FM_LANG;
             }
             set_message(__('You are logged in', $lang));
             redirect(FM_SELF_URL . '?p=');
@@ -122,6 +124,9 @@ if ($use_auth) {
         }
     } else {
         // Form
+        if (defined('FM_LANG')) {
+            $lang = FM_LANG;
+        }
         unset($_SESSION['logged']);
         show_header();
         show_message();
