@@ -113,11 +113,11 @@ if ($use_auth) {
                 $_SESSION['lang'] = $_POST['lang'];
                 $lang = $_POST['lang'];
             }
-            set_message(__('You are logged in'));
+            set_message(__('You are logged in', $lang));
             redirect(FM_SELF_URL . '?p=');
         } else {
             unset($_SESSION['logged']);
-            set_message(__('Wrong password'), 'error');
+            set_message(__('Wrong password', $lang), 'error');
             redirect(FM_SELF_URL);
         }
     } else {
@@ -128,14 +128,14 @@ if ($use_auth) {
         ?>
         <div class="path">
             <form action="" method="post" style="margin:10px;text-align:center">
-                <input type="text" name="fm_usr" value="" placeholder="<?php _e('Username') ?>" required>
-                <input type="password" name="fm_pwd" value="" placeholder="<?php _e('Password') ?>" required>
+                <input type="text" name="fm_usr" value="" placeholder="<?php _e('Username', $lang) ?>" required>
+                <input type="password" name="fm_pwd" value="" placeholder="<?php _e('Password', $lang) ?>" required>
                 <select name="lang" title="Language">
                     <?php foreach ($languages as $l): ?>
                         <option value="<?php echo $l ?>"<?php if ($l == $lang) echo ' selected'; ?>><?php echo $l ?></option>
                     <?php endforeach; ?>
                 </select>
-                <input type="submit" value="<?php _e('Login') ?>">
+                <input type="submit" value="<?php _e('Login', $lang) ?>">
             </form>
         </div>
         <?php
@@ -1268,9 +1268,16 @@ function convert_win($filename)
 }
 
 // translation
-function __($str)
+function __($str, $lang = null)
 {
-    $strings = get_strings(FM_LANG);
+    if ($lang === null) {
+        if (defined('FM_LANG')) {
+            $lang = FM_LANG;
+        } else {
+            return $str;
+        }
+    }
+    $strings = get_strings($lang);
     if (!$strings) return $str;
     $strings = (array)$strings;
 
@@ -1281,9 +1288,9 @@ function __($str)
 }
 
 // echo translation
-function _e($str)
+function _e($str, $lang = null)
 {
-    echo __($str);
+    echo __($str, $lang);
 }
 
 function get_file_icon($path)
