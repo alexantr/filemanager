@@ -465,7 +465,13 @@ if (isset($_POST['group'], $_POST['zip']) && !FM_READONLY) {
     if (!empty($files)) {
         chdir($path);
 
-        $zipname = 'archive_' . date('ymd_His') . '.zip';
+        if (count($files) == 1) {
+            $one_file = reset($files);
+            $one_file = basename($one_file);
+            $zipname = $one_file . '_' . date('ymd_His') . '.zip';
+        } else {
+            $zipname = 'archive_' . date('ymd_His') . '.zip';
+        }
 
         $zipper = new FM_Zipper();
         $res = $zipper->create($zipname, $files);
@@ -1055,7 +1061,7 @@ if (empty($folders) && empty($files)) {
 <a href="#" onclick="unselect_all();return false;"><i class="icon-checkbox_uncheck"></i> <?php echo fm_t('Unselect all') ?></a> &nbsp;
 <a href="#" onclick="invert_all();return false;"><i class="icon-checkbox_invert"></i> <?php echo fm_t('Invert selection') ?></a></p>
 <p><input type="submit" name="delete" value="<?php echo fm_t('Delete') ?>" onclick="return confirm('<?php echo fm_t('Delete selected files and folders?') ?>')">
-<input type="submit" name="zip" value="<?php echo fm_t('Pack') ?>">
+<input type="submit" name="zip" value="<?php echo fm_t('Pack') ?>" onclick="return confirm('<?php echo fm_t('Create archive?') ?>')">
 <input type="submit" name="copy" value="<?php echo fm_t('Copy') ?>"></p>
 <?php endif; ?>
 </form>
@@ -2080,6 +2086,7 @@ function fm_get_strings()
         'Video' => 'Видео',
         'Audio' => 'Аудио',
         'Direct link' => 'Прямая ссылка',
+        'Create archive?' => 'Создать архив?',
     );
     $strings['fr'] = array(
         'Folder <b>%s</b> deleted' => 'Dossier <b>%s</b> supprimé',
@@ -2196,6 +2203,7 @@ function fm_get_strings()
         'Video' => 'Vidéo',
         'Audio' => 'Audio',
         'Direct link' => 'Lien direct',
+        'Create archive?' => 'Créer une archive?',
     );
 
     // get additional translations from 'filemanager-l10n.php'
