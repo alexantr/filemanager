@@ -11,7 +11,7 @@ Copy **filemanager.php** to your website and open it on browser
 
 Default username/password: **fm_admin**/**fm_admin**
 
-Please set your own username and password in ```$auth_users``` before use.
+*Warning:* Please set your own username and password in ```$auth_users``` before use.
 
 To enable/disable authentication set ```$use_auth``` to ```true``` or ```false```.
 
@@ -32,13 +32,16 @@ class SomeController
 
 Supports variables `FM_LANG`, `FM_ROOT_PATH`, `FM_ROOT_URL`, `FM_SELF_URL`.
 
-## Languages
+## Localization
 
-To change default language set ```$lang``` to one of supported languages in list below.
+To change default language set ```$lang``` value to one of supported languages in list below.
 
 * English (en)
 * Russian (ru)
 * French (fr) - by [Nicolas Karolak](https://github.com/nikaro)
+
+You can create file `filemanager-l10n.php` in folder with File Manager and put your own translations in it.
+They will be merged with built-in translations.
 
 ## Bug tracker
 

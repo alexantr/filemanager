@@ -4,7 +4,7 @@
  * https://github.com/alexantr/filemanager
  */
 
-// Default language (en, ru, fr)
+// Default language ('en', 'ru', 'fr' and other from 'filemanager-l10n.php')
 $lang = 'ru';
 
 // Auth with login/password (set true/false to enable/disable it)
@@ -43,9 +43,7 @@ $http_host = $_SERVER['HTTP_HOST'];
 // input encoding for iconv
 $iconv_input_encoding = 'CP1251';
 
-//--- EDIT BELOW CAREFULLY
-
-$languages = array('en', 'ru', 'fr');
+//--- EDIT BELOW CAREFULLY OR DO NOT EDIT AT ALL
 
 // if fm included
 if (defined('FM_EMBED')) {
@@ -99,6 +97,7 @@ show_image();
 
 // Auth
 if ($use_auth) {
+    $languages = get_available_langs();
     if (isset($_SESSION['logged'], $auth_users[$_SESSION['logged']])) {
         // Logged
         $lang = (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $languages)) ? $_SESSION['lang'] : $lang;
@@ -166,6 +165,8 @@ define('FM_USE_AUTH', $use_auth);
 define('FM_ICONV_INPUT_ENC', $iconv_input_encoding);
 define('FM_USE_HIGHLIGHTJS', $use_highlightjs);
 define('FM_HIGHLIGHTJS_STYLE', $highlightjs_style);
+
+unset($p, $use_auth, $iconv_input_encoding, $use_highlightjs, $highlightjs_style);
 
 /*************************** ACTIONS ***************************/
 
@@ -531,7 +532,9 @@ if (isset($_POST['chmod']) && !FM_READONLY) {
 
 // get current path
 $path = FM_ROOT_PATH;
-if ($p != '') $path .= '/' . $p;
+if ($p != '') {
+    $path .= '/' . $p;
+}
 
 // check path
 if (!is_dir($path)) {
@@ -556,8 +559,12 @@ if (is_array($objects)) {
     }
 }
 
-if (!empty($files)) natcasesort($files);
-if (!empty($folders)) natcasesort($folders);
+if (!empty($files)) {
+    natcasesort($files);
+}
+if (!empty($folders)) {
+    natcasesort($folders);
+}
 
 // upload form
 if (isset($_GET['upload']) && !FM_READONLY) {
@@ -1280,12 +1287,12 @@ function __($str, $lang = null)
             return $str;
         }
     }
-    $strings = get_strings($lang);
-    if (!$strings) return $str;
-    $strings = (array)$strings;
-
-    if (array_key_exists($str, $strings)) {
-        return $strings[$str];
+    $strings = get_strings();
+    if (!isset($strings[$lang]) || !is_array($strings[$lang])) {
+        return $str;
+    }
+    if (array_key_exists($str, $strings[$lang])) {
+        return $strings[$lang][$str];
     }
     return $str;
 }
@@ -1804,8 +1811,13 @@ RK5CYII=',
     );
 }
 
-function get_strings($lang)
+function get_strings()
 {
+    static $strings;
+    if ($strings !== null) {
+        return $strings;
+    }
+    $strings = array();
     $strings['ru'] = array(
         'Folder <b>%s</b> deleted' => 'Папка <b>%s</b> удалена',
         'Folder <b>%s</b> not deleted' => 'Папка <b>%s</b> не удалена',
@@ -2038,9 +2050,23 @@ function get_strings($lang)
         'Audio' => 'Audio',
         'Direct link' => 'Lien direct',
     );
-    if (isset($strings[$lang])) {
-        return $strings[$lang];
-    } else {
-        return false;
+
+    // get additional translations from 'filemanager-l10n.php'
+    $l10n_path = __DIR__ . '/filemanager-l10n.php';
+    if (is_readable($l10n_path)) {
+        $l10n_strings = include $l10n_path;
+        if (!empty($l10n_strings) && is_array($l10n_strings)) {
+            $strings = array_merge($strings, $l10n_strings);
+        }
     }
+
+    return $strings;
+}
+
+function get_available_langs()
+{
+    $strings = get_strings();
+    $languages = array_keys($strings);
+    $languages[] = 'en';
+    return $languages;
 }
