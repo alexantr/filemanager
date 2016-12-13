@@ -55,8 +55,12 @@ if (defined('FM_EMBED')) {
     date_default_timezone_set($default_timezone);
 
     ini_set('default_charset', 'UTF-8');
-    if (function_exists('mb_internal_encoding')) mb_internal_encoding('UTF-8');
-    if (function_exists('mb_regex_encoding')) mb_regex_encoding('UTF-8');
+    if (function_exists('mb_internal_encoding')) {
+        mb_internal_encoding('UTF-8');
+    }
+    if (function_exists('mb_regex_encoding')) {
+        mb_regex_encoding('UTF-8');
+    }
 
     session_cache_limiter('');
     session_name('filemanager');
@@ -101,7 +105,7 @@ if ($use_auth) {
     if (isset($_SESSION['logged'], $auth_users[$_SESSION['logged']])) {
         // Logged
         $lang = (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $languages)) ? $_SESSION['lang'] : $lang;
-    } elseif (isset($_POST['fm_usr']) && isset($_POST['fm_pwd'])) {
+    } elseif (isset($_POST['fm_usr'], $_POST['fm_pwd'])) {
         // Logging In
         sleep(1);
         if (isset($auth_users[$_POST['fm_usr']]) && $_POST['fm_pwd'] === $auth_users[$_POST['fm_usr']]) {
@@ -134,7 +138,7 @@ if ($use_auth) {
                 <input type="password" name="fm_pwd" value="" placeholder="<?php _e('Password', $lang) ?>" required>
                 <select name="lang" title="Language">
                     <?php foreach ($languages as $l): ?>
-                        <option value="<?php echo $l ?>"<?php if ($l == $lang) echo ' selected'; ?>><?php echo $l ?></option>
+                        <option value="<?php echo $l ?>"<?php echo $l == $lang ? ' selected' : '' ?>><?php echo $l ?></option>
                     <?php endforeach; ?>
                 </select>
                 <input type="submit" value="<?php _e('Login', $lang) ?>">
@@ -151,7 +155,9 @@ define('FM_READONLY', $use_auth && !empty($readonly_users) && isset($_SESSION['l
 define('FM_IS_WIN', DIRECTORY_SEPARATOR == '\\');
 
 // always use ?p=
-if (!isset($_GET['p'])) redirect(FM_SELF_URL . '?p=');
+if (!isset($_GET['p'])) {
+    redirect(FM_SELF_URL . '?p=');
+}
 
 // get path
 $p = isset($_GET['p']) ? $_GET['p'] : (isset($_POST['p']) ? $_POST['p'] : '');
@@ -177,7 +183,9 @@ if (isset($_GET['del']) && !FM_READONLY) {
     $del = str_replace('/', '', $del);
     if ($del != '' && $del != '..' && $del != '.') {
         $path = FM_ROOT_PATH;
-        if ($p != '') $path .= '/' . $p;
+        if ($p != '') {
+            $path .= '/' . $p;
+        }
         $is_dir = is_dir($path . '/' . $del);
         if (rdelete($path . '/' . $del)) {
             $msg = $is_dir ? __('Folder <b>%s</b> deleted') : __('File <b>%s</b> deleted');
@@ -199,7 +207,9 @@ if (isset($_GET['new']) && !FM_READONLY) {
     $new = str_replace('/', '', $new);
     if ($new != '' && $new != '..' && $new != '.') {
         $path = FM_ROOT_PATH;
-        if ($p != '') $path .= '/' . $p;
+        if ($p != '') {
+            $path .= '/' . $p;
+        }
         if (mkdir_safe($path . '/' . $new, false) === true) {
             set_message(sprintf(__('Folder <b>%s</b> created'), $new));
         } elseif (mkdir_safe($path . '/' . $new, false) === $path . '/' . $new) {
@@ -214,7 +224,7 @@ if (isset($_GET['new']) && !FM_READONLY) {
 }
 
 // Copy folder / file
-if (isset($_GET['copy']) && isset($_GET['finish']) && !FM_READONLY) {
+if (isset($_GET['copy'], $_GET['finish']) && !FM_READONLY) {
     // from
     $copy = $_GET['copy'];
     $copy = clean_path($copy);
@@ -227,7 +237,9 @@ if (isset($_GET['copy']) && isset($_GET['finish']) && !FM_READONLY) {
     $from = FM_ROOT_PATH . '/' . $copy;
     // abs path to
     $dest = FM_ROOT_PATH;
-    if ($p != '') $dest .= '/' . $p;
+    if ($p != '') {
+        $dest .= '/' . $p;
+    }
     $dest .= '/' . basename($from);
     // move?
     $move = isset($_GET['move']);
@@ -257,14 +269,18 @@ if (isset($_GET['copy']) && isset($_GET['finish']) && !FM_READONLY) {
 }
 
 // Mass copy files/ folders
-if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish']) && !FM_READONLY) {
+if (isset($_POST['file'], $_POST['copy_to'], $_POST['finish']) && !FM_READONLY) {
     // from
     $path = FM_ROOT_PATH;
-    if ($p != '') $path .= '/' . $p;
+    if ($p != '') {
+        $path .= '/' . $p;
+    }
     // to
     $copy_to_path = FM_ROOT_PATH;
     $copy_to = clean_path($_POST['copy_to']);
-    if ($copy_to != '') $copy_to_path .= '/' . $copy_to;
+    if ($copy_to != '') {
+        $copy_to_path .= '/' . $copy_to;
+    }
     if ($path == $copy_to_path) {
         set_message(__('Paths must be not equal'), 'alert');
         redirect(FM_SELF_URL . '?p=' . urlencode($p));
@@ -314,7 +330,7 @@ if (isset($_POST['file']) && isset($_POST['copy_to']) && isset($_POST['finish'])
 }
 
 // Rename
-if (isset($_GET['ren']) && isset($_GET['to']) && !FM_READONLY) {
+if (isset($_GET['ren'], $_GET['to']) && !FM_READONLY) {
     // old name
     $old = $_GET['ren'];
     $old = clean_path($old);
@@ -325,7 +341,9 @@ if (isset($_GET['ren']) && isset($_GET['to']) && !FM_READONLY) {
     $new = str_replace('/', '', $new);
     // path
     $path = FM_ROOT_PATH;
-    if ($p != '') $path .= '/' . $p;
+    if ($p != '') {
+        $path .= '/' . $p;
+    }
     // rename
     if ($old != '' && $new != '') {
         if (rename_safe($path . '/' . $old, $path . '/' . $new)) {
@@ -345,7 +363,9 @@ if (isset($_GET['dl'])) {
     $dl = clean_path($dl);
     $dl = str_replace('/', '', $dl);
     $path = FM_ROOT_PATH;
-    if ($p != '') $path .= '/' . $p;
+    if ($p != '') {
+        $path .= '/' . $p;
+    }
     if ($dl != '' && is_file($path . '/' . $dl)) {
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
@@ -367,7 +387,9 @@ if (isset($_GET['dl'])) {
 // Upload
 if (isset($_POST['upl']) && !FM_READONLY) {
     $path = FM_ROOT_PATH;
-    if ($p != '') $path .= '/' . $p;
+    if ($p != '') {
+        $path .= '/' . $p;
+    }
 
     $errors = 0;
     $uploads = 0;
@@ -396,9 +418,11 @@ if (isset($_POST['upl']) && !FM_READONLY) {
 }
 
 // Mass deleting
-if (isset($_POST['group']) && isset($_POST['delete']) && !FM_READONLY) {
+if (isset($_POST['group'], $_POST['delete']) && !FM_READONLY) {
     $path = FM_ROOT_PATH;
-    if ($p != '') $path .= '/' . $p;
+    if ($p != '') {
+        $path .= '/' . $p;
+    }
 
     $errors = 0;
     $files = $_POST['file'];
@@ -424,9 +448,11 @@ if (isset($_POST['group']) && isset($_POST['delete']) && !FM_READONLY) {
 }
 
 // Pack files
-if (isset($_POST['group']) && isset($_POST['zip']) && !FM_READONLY) {
+if (isset($_POST['group'], $_POST['zip']) && !FM_READONLY) {
     $path = FM_ROOT_PATH;
-    if ($p != '') $path .= '/' . $p;
+    if ($p != '') {
+        $path .= '/' . $p;
+    }
 
     if (!class_exists('ZipArchive')) {
         set_message(__('Operations with archives are not available'), 'error');
@@ -461,7 +487,9 @@ if (isset($_GET['unzip']) && !FM_READONLY) {
     $unzip = str_replace('/', '', $unzip);
 
     $path = FM_ROOT_PATH;
-    if ($p != '') $path .= '/' . $p;
+    if ($p != '') {
+        $path .= '/' . $p;
+    }
 
     if (!class_exists('ZipArchive')) {
         set_message(__('Operations with archives are not available'), 'error');
@@ -498,7 +526,9 @@ if (isset($_GET['unzip']) && !FM_READONLY) {
 // Change Perms
 if (isset($_POST['chmod']) && !FM_READONLY) {
     $path = FM_ROOT_PATH;
-    if ($p != '') $path .= '/' . $p;
+    if ($p != '') {
+        $path .= '/' . $p;
+    }
 
     $file = $_POST['chmod'];
     $file = clean_path($file);
@@ -509,15 +539,15 @@ if (isset($_POST['chmod']) && !FM_READONLY) {
     }
 
     $mode = 0;
-    if (isset($_POST['ur']) && !empty($_POST['ur'])) $mode |= 0400;
-    if (isset($_POST['uw']) && !empty($_POST['uw'])) $mode |= 0200;
-    if (isset($_POST['ux']) && !empty($_POST['ux'])) $mode |= 0100;
-    if (isset($_POST['gr']) && !empty($_POST['gr'])) $mode |= 0040;
-    if (isset($_POST['gw']) && !empty($_POST['gw'])) $mode |= 0020;
-    if (isset($_POST['gx']) && !empty($_POST['gx'])) $mode |= 0010;
-    if (isset($_POST['or']) && !empty($_POST['or'])) $mode |= 0004;
-    if (isset($_POST['ow']) && !empty($_POST['ow'])) $mode |= 0002;
-    if (isset($_POST['ox']) && !empty($_POST['ox'])) $mode |= 0001;
+    if (!empty($_POST['ur'])) $mode |= 0400;
+    if (!empty($_POST['uw'])) $mode |= 0200;
+    if (!empty($_POST['ux'])) $mode |= 0100;
+    if (!empty($_POST['gr'])) $mode |= 0040;
+    if (!empty($_POST['gw'])) $mode |= 0020;
+    if (!empty($_POST['gx'])) $mode |= 0010;
+    if (!empty($_POST['or'])) $mode |= 0004;
+    if (!empty($_POST['ow'])) $mode |= 0002;
+    if (!empty($_POST['ox'])) $mode |= 0001;
 
     if (@chmod($path . '/' . $file, $mode)) {
         set_message(__('Permissions changed'));
@@ -878,21 +908,21 @@ if (isset($_GET['chmod']) && !FM_READONLY) {
                 </tr>
                 <tr>
                     <td style="text-align: right"><b><?php _e('Read') ?></b></td>
-                    <td><label><input type="checkbox" name="ur" value="1"<?php if ($mode & 00400) echo ' checked="checked"'; ?>></label></td>
-                    <td><label><input type="checkbox" name="gr" value="1"<?php if ($mode & 00040) echo ' checked="checked"'; ?>></label></td>
-                    <td><label><input type="checkbox" name="or" value="1"<?php if ($mode & 00004) echo ' checked="checked"'; ?>></label></td>
+                    <td><label><input type="checkbox" name="ur" value="1"<?php echo ($mode & 00400) ? ' checked' : '' ?>></label></td>
+                    <td><label><input type="checkbox" name="gr" value="1"<?php echo ($mode & 00040) ? ' checked' : '' ?>></label></td>
+                    <td><label><input type="checkbox" name="or" value="1"<?php echo ($mode & 00004) ? ' checked' : '' ?>></label></td>
                 </tr>
                 <tr>
                     <td style="text-align: right"><b><?php _e('Write') ?></b></td>
-                    <td><label><input type="checkbox" name="uw" value="1"<?php if ($mode & 00200) echo ' checked="checked"'; ?>></label></td>
-                    <td><label><input type="checkbox" name="gw" value="1"<?php if ($mode & 00020) echo ' checked="checked"'; ?>></label></td>
-                    <td><label><input type="checkbox" name="ow" value="1"<?php if ($mode & 00002) echo ' checked="checked"'; ?>></label></td>
+                    <td><label><input type="checkbox" name="uw" value="1"<?php echo ($mode & 00200) ? ' checked' : '' ?>></label></td>
+                    <td><label><input type="checkbox" name="gw" value="1"<?php echo ($mode & 00020) ? ' checked' : '' ?>></label></td>
+                    <td><label><input type="checkbox" name="ow" value="1"<?php echo ($mode & 00002) ? ' checked' : '' ?>></label></td>
                 </tr>
                 <tr>
                     <td style="text-align: right"><b><?php _e('Execute') ?></b></td>
-                    <td><label><input type="checkbox" name="ux" value="1"<?php if ($mode & 00100) echo ' checked="checked"'; ?>></label></td>
-                    <td><label><input type="checkbox" name="gx" value="1"<?php if ($mode & 00010) echo ' checked="checked"'; ?>></label></td>
-                    <td><label><input type="checkbox" name="ox" value="1"<?php if ($mode & 00001) echo ' checked="checked"'; ?>></label></td>
+                    <td><label><input type="checkbox" name="ux" value="1"<?php echo ($mode & 00100) ? ' checked' : '' ?>></label></td>
+                    <td><label><input type="checkbox" name="gx" value="1"<?php echo ($mode & 00010) ? ' checked' : '' ?>></label></td>
+                    <td><label><input type="checkbox" name="ox" value="1"<?php echo ($mode & 00001) ? ' checked' : '' ?>></label></td>
                 </tr>
             </table>
 
@@ -1076,7 +1106,9 @@ function rchmod($path, $filemode, $dirmode)
         if (is_array($objects)) {
             foreach ($objects as $file) {
                 if ($file != '.' && $file != '..') {
-                    if (!rchmod($path . '/' . $file, $filemode, $dirmode)) return false;
+                    if (!rchmod($path . '/' . $file, $filemode, $dirmode)) {
+                        return false;
+                    }
                 }
             }
         }
@@ -1130,8 +1162,11 @@ function rcopy($path, $dest, $upd = true, $force = true)
 function mkdir_safe($dir, $force)
 {
     if (file_exists($dir)) {
-        if (is_dir($dir)) return $dir;
-        else if (!$force) return false;
+        if (is_dir($dir)) {
+            return $dir;
+        } elseif (!$force) {
+            return false;
+        }
         unlink($dir);
     }
     return mkdir($dir, 0777, true);
@@ -1145,10 +1180,14 @@ function copy_safe($f1, $f2, $upd)
     $time1 = filemtime($f1);
     if (file_exists($f2)) {
         $time2 = filemtime($f2);
-        if ($time2 >= $time1 && $upd) return false;
+        if ($time2 >= $time1 && $upd) {
+            return false;
+        }
     }
     $ok = copy($f1, $f2);
-    if ($ok) touch($f2, $time1);
+    if ($ok) {
+        touch($f2, $time1);
+    }
     return $ok;
 }
 
@@ -1185,7 +1224,9 @@ function clean_path($path)
     $path = trim($path);
     $path = trim($path, '\\/');
     $path = str_replace(array('../', '..\\'), '', $path);
-    if ($path == '..') $path = '';
+    if ($path == '..') {
+        $path = '';
+    }
     return str_replace('\\', '/', $path);
 }
 
@@ -1205,10 +1246,15 @@ function get_parent_path($path)
 
 function get_filesize($size)
 {
-    if ($size < 1000) return sprintf(__('%s byte'), $size);
-    elseif (($size / 1024) < 1000) return sprintf(__('%s KB'), round(($size / 1024), 1));
-    elseif (($size / 1024 / 1024) < 1000) return sprintf(__('%s MB'), round(($size / 1024 / 1024), 1));
-    else return sprintf(__('%s GB'), round(($size / 1024 / 1024 / 1024), 1));
+    if ($size < 1000) {
+        return sprintf(__('%s byte'), $size);
+    } elseif (($size / 1024) < 1000) {
+        return sprintf(__('%s KB'), round(($size / 1024), 1));
+    } elseif (($size / 1024 / 1024) < 1000) {
+        return sprintf(__('%s MB'), round(($size / 1024 / 1024), 1));
+    } else {
+        return sprintf(__('%s GB'), round(($size / 1024 / 1024 / 1024), 1));
+    }
 }
 
 function get_zif_info($path)
@@ -1440,7 +1486,9 @@ class Zipper
     public function create($filename, $files)
     {
         $res = $this->zip->open($filename, ZipArchive::CREATE);
-        if ($res !== true) return false;
+        if ($res !== true) {
+            return false;
+        }
         if (is_array($files)) {
             foreach ($files as $f) {
                 if (!$this->addFileOrDir($f)) {
@@ -1465,7 +1513,9 @@ class Zipper
     public function unzip($filename, $path)
     {
         $res = $this->zip->open($filename);
-        if ($res !== true) return false;
+        if ($res !== true) {
+            return false;
+        }
         if ($this->zip->extractTo($path)) {
             $this->zip->close();
             return true;
