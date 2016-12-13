@@ -45,8 +45,6 @@ $iconv_input_encoding = 'CP1251';
 
 //--- EDIT BELOW CAREFULLY
 
-// TODO: put all after config in classes
-
 $languages = array('en', 'ru', 'fr');
 
 // if fm included
