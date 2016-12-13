@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP File Manager v1.2-dev
+ * PHP File Manager v1.2
  * https://github.com/alexantr/filemanager
  */
 
