@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP File Manager v1.2
+ * PHP File Manager (2017-03-18)
  * https://github.com/alexantr/filemanager
  */
 
@@ -20,6 +20,9 @@ $auth_users = array(
 $readonly_users = array(
     //'user',
 );
+
+// Show or hide files and folders that starts with a dot
+$show_hidden_files = true;
 
 // Enable highlight.js (https://highlightjs.org/) on view's page
 $use_highlightjs = true;
@@ -86,6 +89,7 @@ if (!@is_dir($root_path)) {
 $root_url = fm_clean_path($root_url);
 
 // abs path for site
+defined('FM_SHOW_HIDDEN') || define('FM_SHOW_HIDDEN', $show_hidden_files);
 defined('FM_ROOT_PATH') || define('FM_ROOT_PATH', $root_path);
 defined('FM_ROOT_URL') || define('FM_ROOT_URL', ($is_https ? 'https' : 'http') . '://' . $http_host . (!empty($root_url) ? '/' . $root_url : ''));
 defined('FM_SELF_URL') || define('FM_SELF_URL', ($is_https ? 'https' : 'http') . '://' . $http_host . $_SERVER['PHP_SELF']);
@@ -547,15 +551,33 @@ if (isset($_POST['chmod']) && !FM_READONLY) {
     }
 
     $mode = 0;
-    if (!empty($_POST['ur'])) $mode |= 0400;
-    if (!empty($_POST['uw'])) $mode |= 0200;
-    if (!empty($_POST['ux'])) $mode |= 0100;
-    if (!empty($_POST['gr'])) $mode |= 0040;
-    if (!empty($_POST['gw'])) $mode |= 0020;
-    if (!empty($_POST['gx'])) $mode |= 0010;
-    if (!empty($_POST['or'])) $mode |= 0004;
-    if (!empty($_POST['ow'])) $mode |= 0002;
-    if (!empty($_POST['ox'])) $mode |= 0001;
+    if (!empty($_POST['ur'])) {
+        $mode |= 0400;
+    }
+    if (!empty($_POST['uw'])) {
+        $mode |= 0200;
+    }
+    if (!empty($_POST['ux'])) {
+        $mode |= 0100;
+    }
+    if (!empty($_POST['gr'])) {
+        $mode |= 0040;
+    }
+    if (!empty($_POST['gw'])) {
+        $mode |= 0020;
+    }
+    if (!empty($_POST['gx'])) {
+        $mode |= 0010;
+    }
+    if (!empty($_POST['or'])) {
+        $mode |= 0004;
+    }
+    if (!empty($_POST['ow'])) {
+        $mode |= 0002;
+    }
+    if (!empty($_POST['ox'])) {
+        $mode |= 0001;
+    }
 
     if (@chmod($path . '/' . $file, $mode)) {
         fm_set_msg(fm_t('Permissions changed'));
@@ -587,7 +609,12 @@ $folders = array();
 $files = array();
 if (is_array($objects)) {
     foreach ($objects as $file) {
-        if ($file == '.' || $file == '..') continue;
+        if ($file == '.' || $file == '..') {
+            continue;
+        }
+        if (!FM_SHOW_HIDDEN && substr($file, 0, 1) === '.') {
+            continue;
+        }
         $new_path = $path . '/' . $file;
         if (is_file($new_path)) {
             $files[] = $file;
@@ -1418,56 +1445,78 @@ function fm_get_file_icon_class($path)
         case 'ico': case 'gif': case 'jpg': case 'jpeg': case 'jpc': case 'jp2':
         case 'jpx': case 'xbm': case 'wbmp': case 'png': case 'bmp': case 'tif':
         case 'tiff':
-            $img = 'icon-file_image'; break;
+            $img = 'icon-file_image';
+            break;
         case 'txt': case 'css': case 'ini': case 'conf': case 'log': case 'htaccess':
         case 'passwd': case 'ftpquota': case 'sql': case 'js': case 'json': case 'sh':
         case 'config': case 'twig': case 'tpl': case 'md': case 'gitignore':
         case 'less': case 'sass': case 'scss': case 'c': case 'cpp': case 'cs': case 'py':
         case 'map': case 'lock': case 'dtd':
-            $img = 'icon-file_text'; break;
+            $img = 'icon-file_text';
+            break;
         case 'zip': case 'rar': case 'gz': case 'tar': case '7z':
-            $img = 'icon-file_zip'; break;
+            $img = 'icon-file_zip';
+            break;
         case 'php': case 'php4': case 'php5': case 'phps': case 'phtml':
-            $img = 'icon-file_php'; break;
+            $img = 'icon-file_php';
+            break;
         case 'htm': case 'html': case 'shtml': case 'xhtml':
-            $img = 'icon-file_html'; break;
+            $img = 'icon-file_html';
+            break;
         case 'xml': case 'xsl': case 'svg':
-            $img = 'icon-file_code'; break;
+            $img = 'icon-file_code';
+            break;
         case 'wav': case 'mp3': case 'mp2': case 'm4a': case 'aac': case 'ogg':
         case 'oga': case 'wma': case 'mka': case 'flac': case 'ac3': case 'tds':
-            $img = 'icon-file_music'; break;
+            $img = 'icon-file_music';
+            break;
         case 'm3u': case 'm3u8': case 'pls': case 'cue':
-            $img = 'icon-file_playlist'; break;
+            $img = 'icon-file_playlist';
+            break;
         case 'avi': case 'mpg': case 'mpeg': case 'mp4': case 'm4v': case 'flv':
         case 'f4v': case 'ogm': case 'ogv': case 'mov': case 'mkv': case '3gp':
         case 'asf': case 'wmv':
-            $img = 'icon-file_film'; break;
+            $img = 'icon-file_film';
+            break;
         case 'eml': case 'msg':
-            $img = 'icon-file_outlook'; break;
+            $img = 'icon-file_outlook';
+            break;
         case 'xls': case 'xlsx':
-            $img = 'icon-file_excel'; break;
+            $img = 'icon-file_excel';
+            break;
         case 'csv':
-            $img = 'icon-file_csv'; break;
+            $img = 'icon-file_csv';
+            break;
         case 'doc': case 'docx':
-            $img = 'icon-file_word'; break;
+            $img = 'icon-file_word';
+            break;
         case 'ppt': case 'pptx':
-            $img = 'icon-file_powerpoint'; break;
+            $img = 'icon-file_powerpoint';
+            break;
         case 'ttf': case 'ttc': case 'otf': case 'woff':case 'woff2': case 'eot': case 'fon':
-            $img = 'icon-file_font'; break;
+            $img = 'icon-file_font';
+            break;
         case 'pdf':
-            $img = 'icon-file_pdf'; break;
+            $img = 'icon-file_pdf';
+            break;
         case 'psd':
-            $img = 'icon-file_photoshop'; break;
+            $img = 'icon-file_photoshop';
+            break;
         case 'ai': case 'eps':
-            $img = 'icon-file_illustrator'; break;
+            $img = 'icon-file_illustrator';
+            break;
         case 'fla':
-            $img = 'icon-file_flash'; break;
+            $img = 'icon-file_flash';
+            break;
         case 'swf':
-            $img = 'icon-file_swf'; break;
+            $img = 'icon-file_swf';
+            break;
         case 'exe': case 'msi':
-            $img = 'icon-file_application'; break;
+            $img = 'icon-file_application';
+            break;
         case 'bat':
-            $img = 'icon-file_terminal'; break;
+            $img = 'icon-file_terminal';
+            break;
         default:
             $img = 'icon-document';
     }
@@ -1481,9 +1530,7 @@ function fm_get_file_icon_class($path)
  */
 function fm_get_image_exts()
 {
-    return array(
-        'ico', 'gif', 'jpg', 'jpeg', 'jpc', 'jp2', 'jpx', 'xbm', 'wbmp', 'png', 'bmp', 'tif', 'tiff', 'psd',
-    );
+    return array('ico', 'gif', 'jpg', 'jpeg', 'jpc', 'jp2', 'jpx', 'xbm', 'wbmp', 'png', 'bmp', 'tif', 'tiff', 'psd');
 }
 
 /**
@@ -1492,9 +1539,7 @@ function fm_get_image_exts()
  */
 function fm_get_video_exts()
 {
-    return array(
-        'webm', 'mp4', 'm4v', 'ogm', 'ogv', 'mov',
-    );
+    return array('webm', 'mp4', 'm4v', 'ogm', 'ogv', 'mov');
 }
 
 /**
@@ -1503,9 +1548,7 @@ function fm_get_video_exts()
  */
 function fm_get_audio_exts()
 {
-    return array(
-        'wav', 'mp3', 'ogg', 'm4a',
-    );
+    return array('wav', 'mp3', 'ogg', 'm4a');
 }
 
 /**

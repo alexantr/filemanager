@@ -25,12 +25,13 @@ class SomeController
         define('FM_EMBED', true);
         define('FM_LANG', 'en');
         define('FM_SELF_URL', UrlHelper::currentUrl());
+        define('FM_SHOW_HIDDEN', false);
         require 'path/to/filemanager.php';
     }
 }
 ```
 
-Supports variables `FM_LANG`, `FM_ROOT_PATH`, `FM_ROOT_URL`, `FM_SELF_URL`.
+Supports variables `FM_LANG`, `FM_ROOT_PATH`, `FM_ROOT_URL`, `FM_SELF_URL`, `FM_SHOW_HIDDEN`.
 
 ## Localization
 
