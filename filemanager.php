@@ -535,8 +535,8 @@ if (isset($_GET['unzip']) && !FM_READONLY) {
     fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
 }
 
-// Change Perms
-if (isset($_POST['chmod']) && !FM_READONLY) {
+// Change Perms (not for Windows)
+if (isset($_POST['chmod']) && !FM_READONLY && !FM_IS_WIN) {
     $path = FM_ROOT_PATH;
     if (FM_PATH != '') {
         $path .= '/' . FM_PATH;
@@ -906,8 +906,8 @@ if (isset($_GET['view'])) {
     exit;
 }
 
-// chmod
-if (isset($_GET['chmod']) && !FM_READONLY) {
+// chmod (not for Windows)
+if (isset($_GET['chmod']) && !FM_READONLY && !FM_IS_WIN) {
     $file = $_GET['chmod'];
     $file = fm_clean_path($file);
     $file = str_replace('/', '', $file);
@@ -991,14 +991,14 @@ $all_files_size = 0;
 <table><tr>
 <?php if (!FM_READONLY): ?><th style="width:3%"><label><input type="checkbox" title="<?php echo fm_t('Invert selection') ?>" onclick="checkbox_toggle()"></label></th><?php endif; ?>
 <th><?php echo fm_t('Name') ?></th><th style="width:10%"><?php echo fm_t('Size') ?></th>
-<th style="width:12%"><?php echo fm_t('Modified') ?></th><th style="width:6%"><?php echo fm_t('Perms') ?></th>
-<th style="width:10%"><?php echo fm_t('Owner') ?></th>
+<th style="width:12%"><?php echo fm_t('Modified') ?></th>
+<?php if (!FM_IS_WIN): ?><th style="width:6%"><?php echo fm_t('Perms') ?></th><th style="width:10%"><?php echo fm_t('Owner') ?></th><?php endif; ?>
 <th style="width:<?php if (!FM_READONLY): ?>13<?php else: ?>6.5<?php endif; ?>%"></th></tr>
 <?php
 // link to parent folder
 if ($parent !== false) {
     ?>
-<tr><?php if (!FM_READONLY): ?><td></td><?php endif; ?><td colspan="6"><a href="?p=<?php echo urlencode($parent) ?>"><i class="icon-arrow_up"></i> ..</a></td></tr>
+<tr><?php if (!FM_READONLY): ?><td></td><?php endif; ?><td colspan="<?php echo !FM_IS_WIN ? '6' : '4' ?>"><a href="?p=<?php echo urlencode($parent) ?>"><i class="icon-arrow_up"></i> ..</a></td></tr>
 <?php
 }
 foreach ($folders as $f) {
@@ -1018,8 +1018,10 @@ foreach ($folders as $f) {
 <?php if (!FM_READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td><?php endif; ?>
 <td><div class="filename"><a href="?p=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo fm_convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
 <td><?php echo fm_t('Folder') ?></td><td><?php echo $modif ?></td>
+<?php if (!FM_IS_WIN): ?>
 <td><?php if (!FM_READONLY): ?><a title="<?php echo fm_t('Change Permissions') ?>" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
 <td><?php echo $owner['name'] . ':' . $group['name'] ?></td>
+<?php endif; ?>
 <td><?php if (!FM_READONLY): ?>
 <a title="<?php echo fm_t('Delete') ?>" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php echo fm_t('Delete folder?') ?>');"><i class="icon-cross"></i></a>
 <a title="<?php echo fm_t('Rename') ?>" href="#" onclick="rename('<?php echo fm_enc(FM_PATH) ?>', '<?php echo fm_enc($f) ?>');return false;"><i class="icon-rename"></i></a>
@@ -1053,8 +1055,10 @@ foreach ($files as $f) {
 <td><div class="filename"><a href="<?php echo $filelink ?>" title="<?php echo fm_t('File info') ?>"><i class="<?php echo $img ?>"></i> <?php echo fm_convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
 <td><span title="<?php printf(fm_t('%s byte'), $filesize_raw) ?>"><?php echo $filesize ?></span></td>
 <td><?php echo $modif ?></td>
+<?php if (!FM_IS_WIN): ?>
 <td><?php if (!FM_READONLY): ?><a title="<?php echo fm_t('Change Permissions') ?>" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
 <td><?php echo $owner['name'] . ':' . $group['name'] ?></td>
+<?php endif; ?>
 <td>
 <?php if (!FM_READONLY): ?>
 <a title="<?php echo fm_t('Delete') ?>" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php echo fm_t('Delete file?') ?>');"><i class="icon-cross"></i></a>
@@ -1070,11 +1074,11 @@ foreach ($files as $f) {
 
 if (empty($folders) && empty($files)) {
     ?>
-<tr><?php if (!FM_READONLY): ?><td></td><?php endif; ?><td colspan="6"><em><?php echo fm_t('Folder is empty') ?></em></td></tr>
+<tr><?php if (!FM_READONLY): ?><td></td><?php endif; ?><td colspan="<?php echo !FM_IS_WIN ? '6' : '4' ?>"><em><?php echo fm_t('Folder is empty') ?></em></td></tr>
 <?php
 } else {
     ?>
-<tr><?php if (!FM_READONLY): ?><td class="gray"></td><?php endif; ?><td class="gray" colspan="6">
+<tr><?php if (!FM_READONLY): ?><td class="gray"></td><?php endif; ?><td class="gray" colspan="<?php echo !FM_IS_WIN ? '6' : '4' ?>">
 <?php echo fm_t('Full size:') ?> <span title="<?php printf(fm_t('%s byte'), $all_files_size) ?>"><?php echo fm_get_filesize($all_files_size) ?></span>,
 <?php echo fm_t('files:') ?> <?php echo $num_files ?>,
 <?php echo fm_t('folders:') ?> <?php echo $num_folders ?>
