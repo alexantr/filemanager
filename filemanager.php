@@ -53,7 +53,7 @@ if (defined('FM_EMBED')) {
     $use_auth = false;
 } else {
     error_reporting(E_ALL);
-    set_time_limit(600);
+    @set_time_limit(600);
 
     date_default_timezone_set($default_timezone);
 
