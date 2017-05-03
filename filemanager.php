@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP File Manager (2017-03-18)
+ * PHP File Manager (2017-05-03)
  * https://github.com/alexantr/filemanager
  */
 
@@ -52,13 +52,12 @@ $iconv_input_encoding = 'CP1251';
 if (defined('FM_EMBED')) {
     $use_auth = false;
 } else {
-    error_reporting(E_ALL);
     @set_time_limit(600);
 
     date_default_timezone_set($default_timezone);
 
     ini_set('default_charset', 'UTF-8');
-    if (function_exists('mb_internal_encoding')) {
+    if (version_compare(PHP_VERSION, '5.6.0', '<') && function_exists('mb_internal_encoding')) {
         mb_internal_encoding('UTF-8');
     }
     if (function_exists('mb_regex_encoding')) {
