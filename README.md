@@ -6,7 +6,9 @@ A good solution for managing files and folders on your site.
 
 ## How to use
 
-Copy **filemanager.php** to your website and open it on browser
+Download ZIP with latest version from master branch.
+
+Copy **filemanager.php** to your website folder and open it with web browser
 (e.g. http://yoursite/any_path/filemanager.php).
 
 Default username/password: **fm_admin**/**fm_admin**
