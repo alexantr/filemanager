@@ -2,27 +2,32 @@
 /**
  * PHP File Manager (2017-05-03)
  * https://github.com/alexantr/filemanager
+ * 
+ * Adapted to security from Humberto R Souza
  */
 
-// Default language ('en', 'ru', 'fr' and other from 'filemanager-l10n.php')
-$lang = 'ru';
+// Default language ('en', 'ru', 'fr', 'pt' and other from 'filemanager-l10n.php')
+$lang = 'en';
 
 // Auth with login/password (set true/false to enable/disable it)
 $use_auth = true;
 
 // Users: array('Username' => 'Password', 'Username2' => 'Password2', ...)
+// TODO: Link to the users table of a ERP or CRM database
 $auth_users = array(
     'fm_admin' => 'fm_admin',
+    'fm_reader' => 'fm_reader'
     //'user' => '12345',
 );
 
 // Readonly users (usernames array)
 $readonly_users = array(
     //'user',
+    'fm_reader',
 );
 
 // Show or hide files and folders that starts with a dot
-$show_hidden_files = true;
+$show_hidden_files = false;
 
 // Enable highlight.js (https://highlightjs.org/) on view's page
 $use_highlightjs = true;
@@ -31,10 +36,17 @@ $use_highlightjs = true;
 $highlightjs_style = 'vs';
 
 // Default timezone for date() and time() - http://php.net/manual/en/timezones.php
-$default_timezone = 'Europe/Minsk'; // UTC+3
+//$default_timezone = 'Europe/Minsk'; // UTC+3 America/Toronto
+$default_timezone = 'America/New_York'; // UTC-4
+
+// Protect itself
+$show_self = false;
 
 // Root path for file manager
 $root_path = $_SERVER['DOCUMENT_ROOT'];
+
+// Self location. Can be set using getcwd() or manually inside basename if wrong
+$fm_direc = basename(dirname(__FILE__)); // Useful in most cases. Adapt to your structure if needed.
 
 // Root url for links in file manager.Relative to $http_host. Variants: '', 'path/to/subfolder'
 // Will not working if $root_path will be outside of server document root
@@ -92,6 +104,12 @@ defined('FM_SHOW_HIDDEN') || define('FM_SHOW_HIDDEN', $show_hidden_files);
 defined('FM_ROOT_PATH') || define('FM_ROOT_PATH', $root_path);
 defined('FM_ROOT_URL') || define('FM_ROOT_URL', ($is_https ? 'https' : 'http') . '://' . $http_host . (!empty($root_url) ? '/' . $root_url : ''));
 defined('FM_SELF_URL') || define('FM_SELF_URL', ($is_https ? 'https' : 'http') . '://' . $http_host . $_SERVER['PHP_SELF']);
+// Protect this Directory
+// FM_SHOW_SELF && FM_SELF_PATH work togheter to:
+//  - Identify if it should be protected - $show_self
+//  - Know the self location - $fm_direc
+defined('FM_SHOW_SELF') || define('FM_SHOW_SELF', $show_self);
+defined('FM_SELF_PATH') || define('FM_SELF_PATH', $fm_direc);
 
 // logout
 if (isset($_GET['logout'])) {
@@ -453,7 +471,7 @@ if (isset($_POST['group'], $_POST['delete']) && !FM_READONLY) {
 }
 
 // Pack files
-if (isset($_POST['group'], $_POST['zip']) && !FM_READONLY) {
+if (isset($_POST['group'], $_POST['zip']) ) {
     $path = FM_ROOT_PATH;
     if (FM_PATH != '') {
         $path .= '/' . FM_PATH;
@@ -595,6 +613,11 @@ if (FM_PATH != '') {
     $path .= '/' . FM_PATH;
 }
 
+//Check the forbidden path self
+if ( (!FM_SHOW_SELF) && (FM_PATH == FM_SELF_PATH)) {
+    fm_redirect(FM_SELF_URL . '?p=');
+}
+
 // check path
 if (!is_dir($path)) {
     fm_redirect(FM_SELF_URL . '?p=');
@@ -612,6 +635,9 @@ if (is_array($objects)) {
             continue;
         }
         if (!FM_SHOW_HIDDEN && substr($file, 0, 1) === '.') {
+            continue;
+        }
+        if (!FM_SHOW_SELF && FM_SELF_PATH == $file) {
             continue;
         }
         $new_path = $path . '/' . $file;
@@ -988,11 +1014,14 @@ $all_files_size = 0;
 <input type="hidden" name="p" value="<?php echo fm_enc(FM_PATH) ?>">
 <input type="hidden" name="group" value="1">
 <table><tr>
-<?php if (!FM_READONLY): ?><th style="width:3%"><label><input type="checkbox" title="<?php echo fm_t('Invert selection') ?>" onclick="checkbox_toggle()"></label></th><?php endif; ?>
+<!--<?php if (!FM_READONLY): ?><th style="width:3%"><label><input type="checkbox" title="<?php echo fm_t('Invert selection') ?>" onclick="checkbox_toggle()"></label></th><?php endif; ?> -->
+<th style="width:3%"><label><input type="checkbox" title="<?php echo fm_t('Invert selection') ?>" onclick="checkbox_toggle()"></label></th>
+
 <th><?php echo fm_t('Name') ?></th><th style="width:10%"><?php echo fm_t('Size') ?></th>
 <th style="width:12%"><?php echo fm_t('Modified') ?></th>
 <?php if (!FM_IS_WIN): ?><th style="width:6%"><?php echo fm_t('Perms') ?></th><th style="width:10%"><?php echo fm_t('Owner') ?></th><?php endif; ?>
-<th style="width:<?php if (!FM_READONLY): ?>13<?php else: ?>6.5<?php endif; ?>%"></th></tr>
+<!--<th style="width:<?php if (!FM_READONLY): ?>13<?php else: ?>6.5<?php endif; ?>%"></th></tr>-->
+<th style="width:6.5%"></th></tr>
 <?php
 // link to parent folder
 if ($parent !== false) {
@@ -1014,7 +1043,8 @@ foreach ($folders as $f) {
     }
     ?>
 <tr>
-<?php if (!FM_READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td><?php endif; ?>
+<!--<?php if (!FM_READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td><?php endif; ?>-->
+<td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td>
 <td><div class="filename"><a href="?p=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo fm_convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
 <td><?php echo fm_t('Folder') ?></td><td><?php echo $modif ?></td>
 <?php if (!FM_IS_WIN): ?>
@@ -1050,7 +1080,8 @@ foreach ($files as $f) {
     }
     ?>
 <tr>
-<?php if (!FM_READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td><?php endif; ?>
+<!--<?php if (!FM_READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td><?php endif; ?>-->
+<td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td>
 <td><div class="filename"><a href="<?php echo $filelink ?>" title="<?php echo fm_t('File info') ?>"><i class="<?php echo $img ?>"></i> <?php echo fm_convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
 <td><span title="<?php printf(fm_t('%s byte'), $filesize_raw) ?>"><?php echo $filesize ?></span></td>
 <td><?php echo $modif ?></td>
@@ -1090,10 +1121,10 @@ if (empty($folders) && empty($files)) {
 <p class="path"><a href="#" onclick="select_all();return false;"><i class="icon-checkbox"></i> <?php echo fm_t('Select all') ?></a> &nbsp;
 <a href="#" onclick="unselect_all();return false;"><i class="icon-checkbox_uncheck"></i> <?php echo fm_t('Unselect all') ?></a> &nbsp;
 <a href="#" onclick="invert_all();return false;"><i class="icon-checkbox_invert"></i> <?php echo fm_t('Invert selection') ?></a></p>
-<p><input type="submit" name="delete" value="<?php echo fm_t('Delete') ?>" onclick="return confirm('<?php echo fm_t('Delete selected files and folders?') ?>')">
-<input type="submit" name="zip" value="<?php echo fm_t('Pack') ?>" onclick="return confirm('<?php echo fm_t('Create archive?') ?>')">
-<input type="submit" name="copy" value="<?php echo fm_t('Copy') ?>"></p>
+<input type="submit" name="delete" value="<?php echo fm_t('Delete') ?>" onclick="return confirm('<?php echo fm_t('Delete selected files and folders?') ?>')">
+<input type="submit" name="copy" value="<?php echo fm_t('Copy') ?>">
 <?php endif; ?>
+<input type="submit" name="zip" value="<?php echo fm_t('Pack') ?>" onclick="return confirm('<?php echo fm_t('Create archive?') ?>')">
 </form>
 
 <?php
@@ -1619,8 +1650,12 @@ class FM_Zipper
     public function create($filename, $files)
     {
         $res = $this->zip->open($filename, ZipArchive::CREATE);
-        if ($res !== true) {
+        if ($res !== true) { // original
+        //if (!is_resource($res)) {
+            echo 'error: ';
+            //print_r( $this->zip->errors); //
             return false;
+           // exit(); //
         }
         if (is_array($files)) {
             foreach ($files as $f) {
@@ -2251,7 +2286,124 @@ function fm_get_strings()
         'Direct link' => 'Lien direct',
         'Create archive?' => 'Créer une archive?',
     );
-
+    $strings['pt'] = array(
+    		'Folder <b>%s</b> deleted' => 'Pasta <b>%s</b> apagada',
+    		'Folder <b>%s</b> not deleted' => 'Pasta <b>%s</b> não apagada',
+    		'File <b>%s</b> deleted' => 'Arquivo <b>%s</b> deletado',
+    		'File <b>%s</b> not deleted' => 'Arquivo <b>%s</b> não deletado',
+    		'Wrong file or folder name' => 'Nome de arquivo ou pasta incorreto',
+    		'Folder <b>%s</b> created' => 'Pasta <b>%s</b> criada',
+    		'Folder <b>%s</b> already exists' => 'Pasta <b>%s</b> já existe',
+    		'Folder <b>%s</b> not created' => 'Pasta <b>%s</b> Não criada',
+    		'Wrong folder name' => 'Nome de pasta incorreto',
+    		'Source path not defined' => 'Caminho raiz não definido',
+    		'Moved from <b>%s</b> to <b>%s</b>' => 'Movido de <b>%s</b> à <b>%s</b>',
+    		'File or folder with this path already exists' => 'Arquivo ou pasta já existente no caminho',
+    		'Error while moving from <b>%s</b> to <b>%s</b>' => 'Erro movendo arquivo de <b>%s</b> à <b>%s</b>',
+    		'Copyied from <b>%s</b> to <b>%s</b>' => 'Copiado de <b>%s</b> à <b>%s</b>',
+    		'Error while copying from <b>%s</b> to <b>%s</b>' => 'Erro ao copiar arquivo de <b>%s</b> à <b>%s</b>',
+    		'Paths must be not equal' => 'Os caminhos tem que ser diferentes',
+    		'Unable to create destination folder' => 'Impossível criar a pasta de destino',
+    		'Selected files and folders moved' => 'Arquivos e pastas selecionados foram movidos',
+    		'Selected files and folders copied' => 'Fichiers et dossiers sélectionnés copiés',
+    		'Error while moving items' => 'Erro movendo itens',
+    		'Error while copying items' => 'Erro enquanto copiava itens',
+    		'Nothing selected' => 'Seleção vazia',
+    		'Renamed from <b>%s</b> to <b>%s</b>' => 'Renomeado de <b>%s</b> para <b>%s</b>',
+    		'Error while renaming from <b>%s</b> to <b>%s</b>' => 'Erro ao renomear arquivo <b>%s</b> para <b>%s</b>',
+    		'Names not set' => 'Nomes indefinidos',
+    		'File not found' => 'Arquivo não encontrado',
+    		'All files uploaded to <b>%s</b>' => 'Todos os arquivos foram carregados em <b>%s</b>',
+    		'Nothing uploaded' => 'Nada foi enviado',
+    		'Error while uploading files. Uploaded files: %s' => 'Erro enquanto enviava arquivos. Arquivos enviados: %s',
+    		'Selected files and folder deleted' => 'Arquivos e pastas selecionados foram deletados',
+    		'Error while deleting items' => 'Erro enquanto deletava itens',
+    		'Archive <b>%s</b> created' => 'Arquivo <b>%s</b> criado',
+    		'Archive not created' => 'Arquivo não criado',
+    		'Archive unpacked' => 'Arquivo descomprimido',
+    		'Archive not unpacked' => 'Arquivo não descomprimido',
+    		'Uploading files' => 'Enviando arquivos',
+    		'Destination folder:' => 'Pasta de destino :',
+    		'Upload' => 'Upload',
+    		'Cancel' => 'Cancelar',
+    		'Copying' => 'Copiando',
+    		'Files:' => 'Arquivos :',
+    		'Source folder:' => 'Pasta de origem:',
+    		'Move' => 'Mover',
+    		'Select folder:' => 'Pasta selecionada :',
+    		'Source path:' => 'Caminho de origem :',
+    		'Archive' => 'Arquivo',
+    		'Full path:' => 'Caminho completo :',
+    		'File size:' => 'Tamanho do arquivo :',
+    		'Files in archive:' => 'Itens no arquivo :',
+    		'Total size:' => 'Tamanho total :',
+    		'Size in archive:' => 'Tamanho no arquiovo :',
+    		'Compression:' => 'Compressão :',
+    		'Open' => 'Abrir',
+    		'Unpack' => 'Descompactar',
+    		'Unpack to' => 'Decompactar em',
+    		'Unpack to folder' => 'Descompactar na pasta',
+    		'Back' => 'Retornar',
+    		'Error while fetching archive info' => 'Erro enquanto carregavao info de arquivo',
+    		'Image' => 'Imagem',
+    		'MIME-type:' => 'MIME-Type :',
+    		'Image sizes:' => 'Tamanho da imagem :',
+    		'File' => 'Arquivo',
+    		'Charset:' => 'Charset :',
+    		'Name' => 'Nome',
+    		'Size' => 'Tamanho',
+    		'Modified' => 'Modificado',
+    		'Folder' => 'Pasta',
+    		'Delete' => 'Apagar',
+    		'Delete folder?' => 'Apagar pasta?',
+    		'Delete file?' => 'Apagar arquivo?',
+    		'Rename' => 'Renomear',
+    		'Copy to...' => 'Copiar para...',
+    		'File info' => 'Informações',
+    		'%s byte' => '%s byte',
+    		'%s KB' => '%s Кb',
+    		'%s MB' => '%s Мb',
+    		'%s GB' => '%s Gb',
+    		'Download' => 'Download',
+    		'Folder is empty' => 'Pasta vazia',
+    		'Select all' => 'Selecionar tudo',
+    		'Unselect all' => 'Desselecionar tudo',
+    		'Invert selection' => 'Inverter a seleção',
+    		'Delete selected files and folders?' => 'Apagar arquivos e pastas selecionados?',
+    		'Pack' => 'Compactar',
+    		'Copy' => 'Copiar',
+    		'Upload files' => 'Envio de arquivos',
+    		'New folder' => 'Nova pasta',
+    		'New folder name' => 'Novo nome de pasta',
+    		'New name' => 'Novo nome',
+    		'Operations with archives are not available' => 'Operação com arquivos não disponíveis',
+    		'Full size:' => 'Tamanho total:',
+    		'files:' => 'Arquivos:',
+    		'folders:' => 'Pastas:',
+    		'Perms' => 'Permissões',
+    		'Username' => 'Nome de usuário',
+    		'Password' => 'Senha',
+    		'Login' => 'Entrar',
+    		'Logout' => 'Sair',
+    		'Wrong password' => 'Senha incorreta',
+    		'You are logged in' => 'Você está conectado',
+    		'Change Permissions' => 'Modificar permissoes',
+    		'Permissions:' => 'Permissões:',
+    		'Change' => 'Modificar',
+    		'Owner' => 'Proprietário',
+    		'Group' => 'Grupo',
+    		'Other' => 'Outro',
+    		'Read' => 'Ler',
+    		'Write' => 'Escrever',
+    		'Execute' => 'Executar',
+    		'Permissions changed' => 'Permissões modificadas',
+    		'Permissions not changed' => 'Permissões não modificadas',
+    		'Video' => 'Video',
+    		'Audio' => 'Audio',
+    		'Direct link' => 'Link direto',
+    		'Create archive?' => 'Criar arquivo?',
+    );
+    
     // get additional translations from 'filemanager-l10n.php'
     $l10n_path = __DIR__ . '/filemanager-l10n.php';
     if (is_readable($l10n_path)) {
