@@ -10,11 +10,7 @@ $use_auth = true;
 // Users: array('Username' => 'Password', 'Username2' => 'Password2', ...)
 $auth_users = array(
     'fm_admin' => 'fm_admin',
-    //'user' => '12345',
 );
-
-// Show or hide files and folders that starts with a dot
-$show_hidden_files = true;
 
 // Enable highlight.js (https://highlightjs.org/) on view's page
 $use_highlightjs = true;
@@ -80,7 +76,6 @@ if (!@is_dir($root_path)) {
 $root_url = fm_clean_path($root_url);
 
 // abs path for site
-defined('FM_SHOW_HIDDEN') || define('FM_SHOW_HIDDEN', $show_hidden_files);
 defined('FM_ROOT_PATH') || define('FM_ROOT_PATH', $root_path);
 defined('FM_ROOT_URL') || define('FM_ROOT_URL', ($is_https ? 'https' : 'http') . '://' . $http_host . (!empty($root_url) ? '/' . $root_url : ''));
 defined('FM_SELF_URL') || define('FM_SELF_URL', ($is_https ? 'https' : 'http') . '://' . $http_host . $_SERVER['PHP_SELF']);
@@ -583,9 +578,6 @@ $files = array();
 if (is_array($objects)) {
     foreach ($objects as $file) {
         if ($file == '.' || $file == '..') {
-            continue;
-        }
-        if (!FM_SHOW_HIDDEN && substr($file, 0, 1) === '.') {
             continue;
         }
         $new_path = $path . '/' . $file;
