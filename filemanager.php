@@ -9,7 +9,7 @@ $use_auth = true;
 
 // Users: array('Username' => 'Password', 'Username2' => 'Password2', ...)
 $auth_users = array(
-    'fm_admin' => 'fm_admin',
+    'fm_admin' => '5b27e40e720afeecc829cbf4b3d1195f',
 );
 
 // Enable highlight.js (https://highlightjs.org/) on view's page
@@ -33,6 +33,9 @@ $http_host = $_SERVER['HTTP_HOST'];
 
 // input encoding for iconv
 $iconv_input_encoding = 'CP1251';
+
+// date() format for file modification date
+$datetime_format = 'd.m.y H:i';
 
 //--- EDIT BELOW CAREFULLY OR DO NOT EDIT AT ALL
 
@@ -98,7 +101,7 @@ if ($use_auth) {
     } elseif (isset($_POST['fm_usr'], $_POST['fm_pwd'])) {
         // Logging In
         sleep(1);
-        if (isset($auth_users[$_POST['fm_usr']]) && $_POST['fm_pwd'] === $auth_users[$_POST['fm_usr']]) {
+        if (isset($auth_users[$_POST['fm_usr']]) && md5($_POST['fm_pwd']) === $auth_users[$_POST['fm_usr']]) {
             $_SESSION['logged'] = $_POST['fm_usr'];
             fm_set_msg('You are logged in');
             fm_redirect(FM_SELF_URL . '?p=');
@@ -142,9 +145,11 @@ $p = fm_clean_path($p);
 // instead globals vars
 define('FM_PATH', $p);
 define('FM_USE_AUTH', $use_auth);
-define('FM_ICONV_INPUT_ENC', $iconv_input_encoding);
-define('FM_USE_HIGHLIGHTJS', $use_highlightjs);
-define('FM_HIGHLIGHTJS_STYLE', $highlightjs_style);
+
+defined('FM_ICONV_INPUT_ENC') || define('FM_ICONV_INPUT_ENC', $iconv_input_encoding);
+defined('FM_USE_HIGHLIGHTJS') || define('FM_USE_HIGHLIGHTJS', $use_highlightjs);
+defined('FM_HIGHLIGHTJS_STYLE') || define('FM_HIGHLIGHTJS_STYLE', $highlightjs_style);
+defined('FM_DATETIME_FORMAT') || define('FM_DATETIME_FORMAT', $datetime_format);
 
 unset($p, $use_auth, $iconv_input_encoding, $use_highlightjs, $highlightjs_style);
 
@@ -969,7 +974,7 @@ if ($parent !== false) {
 foreach ($folders as $f) {
     $is_link = is_link($path . '/' . $f);
     $img = $is_link ? 'icon-link_folder' : 'icon-folder';
-    $modif = date("d.m.y H:i", filemtime($path . '/' . $f));
+    $modif = date(FM_DATETIME_FORMAT, filemtime($path . '/' . $f));
     $perms = substr(decoct(fileperms($path . '/' . $f)), -4);
     if (function_exists('posix_getpwuid') && function_exists('posix_getgrgid')) {
         $owner = posix_getpwuid(fileowner($path . '/' . $f));
@@ -1000,7 +1005,7 @@ foreach ($folders as $f) {
 foreach ($files as $f) {
     $is_link = is_link($path . '/' . $f);
     $img = $is_link ? 'icon-link_file' : fm_get_file_icon_class($path . '/' . $f);
-    $modif = date("d.m.y H:i", filemtime($path . '/' . $f));
+    $modif = date(FM_DATETIME_FORMAT, filemtime($path . '/' . $f));
     $filesize_raw = filesize($path . '/' . $f);
     $filesize = fm_get_filesize($filesize_raw);
     $filelink = '?p=' . urlencode(FM_PATH) . '&amp;view=' . urlencode($f);

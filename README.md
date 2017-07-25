@@ -13,11 +13,11 @@ Copy **filemanager.php** to your website folder and open it with web browser
 
 Default username/password: **fm_admin**/**fm_admin**
 
-*Warning:* Please set your own username and password in ```$auth_users``` before use.
+*Warning:* Please set your own username and password in `$auth_users` before use. Password must be encripted with MD5.
 
-To enable/disable authentication set ```$use_auth``` to ```true``` or ```false```.
+To enable or disable authentication set `$use_auth` to `true` or `false`.
 
-You can include file manager in another scripts. Just define `FM_EMBED` and other necessary variables. Example:
+You can include file manager in another scripts. Just define `FM_EMBED` and other necessary constants. Example:
 
 ```php
 class SomeController
@@ -25,14 +25,21 @@ class SomeController
     public function actionIndex()
     {
         define('FM_EMBED', true);
-        define('FM_SELF_URL', UrlHelper::currentUrl());
-        define('FM_SHOW_HIDDEN', false);
+        define('FM_SELF_URL', UrlHelper::currentUrl()); // must be set if URL to manager not equal PHP_SELF
         require 'path/to/filemanager.php';
     }
 }
 ```
 
-Supports variables `FM_ROOT_PATH`, `FM_ROOT_URL`, `FM_SELF_URL`, `FM_SHOW_HIDDEN`.
+Supported constants:
+
+- `FM_ROOT_PATH` - default is `$_SERVER['DOCUMENT_ROOT']`
+- `FM_ROOT_URL` - default is `'http(s)://site.domain/'`
+- `FM_SELF_URL` - default is `'http(s)://site.domain/' . $_SERVER['PHP_SELF']`
+- `FM_ICONV_INPUT_ENC` - default is `'CP1251'`
+- `FM_USE_HIGHLIGHTJS` - default is `true`
+- `FM_HIGHLIGHTJS_STYLE` - default is `'vs'`
+- `FM_DATETIME_FORMAT` - default is `'d.m.y H:i'`
 
 ## Bug tracker
 
