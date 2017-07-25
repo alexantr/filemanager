@@ -41,6 +41,11 @@ Supported constants:
 - `FM_HIGHLIGHTJS_STYLE` - default is `'vs'`
 - `FM_DATETIME_FORMAT` - default is `'d.m.y H:i'`
 
+## Alternatives
+
+- [Tiny PHP File Manager](https://github.com/prasathmani/tinyfilemanager) with search and file editor
+- [simple php filemanager](https://github.com/jcampbell1/simple-file-manager)
+
 ## Bug tracker
 
 If you have any issues with file manager, you may report them on
