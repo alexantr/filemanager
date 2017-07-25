@@ -71,7 +71,7 @@ $is_https = isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on' || $_SERVER['
 $root_path = rtrim($root_path, '\\/');
 $root_path = str_replace('\\', '/', $root_path);
 if (!@is_dir($root_path)) {
-    echo "<h1>Root path &quot;{$root_path}&quot; not found!</h1>";
+    echo "<h1>Root path \"{$root_path}\" not found!</h1>";
     exit;
 }
 
@@ -761,10 +761,10 @@ if (isset($_GET['view'])) {
 
     ?>
     <div class="path">
-        <p class="break-word"><b><?php echo $view_title ?> <?php echo fm_convert_win($file) ?></b></p>
+        <p class="break-word"><b><?php echo $view_title ?> "<?php echo fm_convert_win($file) ?>"</b></p>
         <p class="break-word">
             Full path: <?php echo fm_convert_win($file_path) ?><br>
-            File size: <?php echo fm_get_filesize($filesize) ?> (<?php echo sprintf('%s byte', $filesize) ?>)<br>
+            File size: <?php echo fm_get_filesize($filesize) ?><?php if ($filesize >= 1000): ?> (<?php echo sprintf('%s bytes', $filesize) ?>)<?php endif; ?><br>
             MIME-type: <?php echo $mime_type ?><br>
             <?php
             // ZIP info
@@ -987,7 +987,7 @@ foreach ($folders as $f) {
 <tr>
 <td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td>
 <td><div class="filename"><a href="?p=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo fm_convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
-<td>Folder</td><td><?php echo $modif ?></td>
+<td><span class="gray">Folder</span></td><td><?php echo $modif ?></td>
 <?php if (!FM_IS_WIN): ?>
 <td><a title="Change Permissions" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a></td>
 <td><?php echo $owner['name'] . ':' . $group['name'] ?></td>
@@ -1022,7 +1022,7 @@ foreach ($files as $f) {
 <tr>
 <td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td>
 <td><div class="filename"><a href="<?php echo $filelink ?>" title="File info"><i class="<?php echo $img ?>"></i> <?php echo fm_convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
-<td><span title="<?php printf('%s byte', $filesize_raw) ?>"><?php echo $filesize ?></span></td>
+<td><span title="<?php printf('%s bytes', $filesize_raw) ?>"><?php echo $filesize ?></span></td>
 <td><?php echo $modif ?></td>
 <?php if (!FM_IS_WIN): ?>
 <td><a title="Change Permissions" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a></td>
@@ -1046,7 +1046,7 @@ if (empty($folders) && empty($files)) {
 } else {
     ?>
 <tr><td class="gray"></td><td class="gray" colspan="<?php echo !FM_IS_WIN ? '6' : '4' ?>">
-Full size: <span title="<?php printf('%s byte', $all_files_size) ?>"><?php echo fm_get_filesize($all_files_size) ?></span>,
+Full size: <span title="<?php printf('%s bytes', $all_files_size) ?>"><?php echo fm_get_filesize($all_files_size) ?></span>,
 files: <?php echo $num_files ?>,
 folders: <?php echo $num_folders ?>
 </td></tr>
@@ -1713,13 +1713,13 @@ function fm_show_header()
 <html>
 <head>
 <meta charset="utf-8">
-<title>File Manager</title>
+<title>PHP File Manager</title>
 <style>
 html,body,div,span,p,pre,a,code,em,img,small,strong,ol,ul,li,form,label,table,tr,th,td{margin:0;padding:0;vertical-align:baseline;outline:none;font-size:100%;background:transparent;border:none;text-decoration:none}
 html{overflow-y:scroll}body{padding:0;font:13px/16px Tahoma,Arial,sans-serif;color:#222;background:#efefef}
 input,select,textarea,button{font-size:inherit;font-family:inherit}
 a{color:#296ea3;text-decoration:none}a:hover{color:#b00}img{vertical-align:middle;border:none}
-a img{border:none}span{color:#777}small{font-size:11px;color:#999}p{margin-bottom:10px}
+a img{border:none}span.gray{color:#777}small{font-size:11px;color:#999}p{margin-bottom:10px}
 ul{margin-left:2em;margin-bottom:10px}ul{list-style-type:none;margin-left:0}ul li{padding:3px 0}
 table{border-collapse:collapse;border-spacing:0;margin-bottom:10px;width:100%}
 th,td{padding:4px 7px;text-align:left;vertical-align:top;border:1px solid #ddd;background:#fff;white-space:nowrap}
