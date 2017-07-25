@@ -1287,13 +1287,15 @@ function fm_get_parent_path($path)
 function fm_get_filesize($size)
 {
     if ($size < 1000) {
-        return sprintf('%s byte', $size);
+        return sprintf('%s B', $size);
     } elseif (($size / 1024) < 1000) {
-        return sprintf('%s KB', round(($size / 1024), 1));
+        return sprintf('%s KiB', round(($size / 1024), 2));
     } elseif (($size / 1024 / 1024) < 1000) {
-        return sprintf('%s MB', round(($size / 1024 / 1024), 1));
+        return sprintf('%s MiB', round(($size / 1024 / 1024), 2));
+    } elseif (($size / 1024 / 1024 / 1024) < 1000) {
+        return sprintf('%s GiB', round(($size / 1024 / 1024 / 1024), 2));
     } else {
-        return sprintf('%s GB', round(($size / 1024 / 1024 / 1024), 1));
+        return sprintf('%s TiB', round(($size / 1024 / 1024 / 1024 / 1024), 2));
     }
 }
 
