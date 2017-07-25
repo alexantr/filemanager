@@ -1,11 +1,8 @@
 <?php
 /**
- * PHP File Manager (2017-05-03)
+ * PHP File Manager (2017-07-25)
  * https://github.com/alexantr/filemanager
  */
-
-// Default language ('en', 'ru', 'fr' and other from 'filemanager-l10n.php')
-$lang = 'ru';
 
 // Auth with login/password (set true/false to enable/disable it)
 $use_auth = true;
@@ -106,47 +103,31 @@ if (isset($_GET['img'])) {
 
 // Auth
 if ($use_auth) {
-    $languages = fm_get_available_langs();
     if (isset($_SESSION['logged'], $auth_users[$_SESSION['logged']])) {
         // Logged
-        $lang = (isset($_SESSION['lang']) && in_array($_SESSION['lang'], $languages)) ? $_SESSION['lang'] : $lang;
     } elseif (isset($_POST['fm_usr'], $_POST['fm_pwd'])) {
         // Logging In
         sleep(1);
         if (isset($auth_users[$_POST['fm_usr']]) && $_POST['fm_pwd'] === $auth_users[$_POST['fm_usr']]) {
             $_SESSION['logged'] = $_POST['fm_usr'];
-            if (isset($_POST['lang']) && in_array($_POST['lang'], $languages)) {
-                $_SESSION['lang'] = $_POST['lang'];
-                $lang = $_POST['lang'];
-            } elseif (defined('FM_LANG')) {
-                $lang = FM_LANG;
-            }
-            fm_set_msg(fm_t('You are logged in', $lang));
+            fm_set_msg('You are logged in');
             fm_redirect(FM_SELF_URL . '?p=');
         } else {
             unset($_SESSION['logged']);
-            fm_set_msg(fm_t('Wrong password', $lang), 'error');
+            fm_set_msg('Wrong password', 'error');
             fm_redirect(FM_SELF_URL);
         }
     } else {
         // Form
-        if (defined('FM_LANG')) {
-            $lang = FM_LANG;
-        }
         unset($_SESSION['logged']);
         fm_show_header();
         fm_show_message();
         ?>
         <div class="path">
             <form action="" method="post" style="margin:10px;text-align:center">
-                <input type="text" name="fm_usr" value="" placeholder="<?php echo fm_t('Username', $lang) ?>" required>
-                <input type="password" name="fm_pwd" value="" placeholder="<?php echo fm_t('Password', $lang) ?>" required>
-                <select name="lang" title="Language">
-                    <?php foreach ($languages as $l): ?>
-                        <option value="<?php echo $l ?>"<?php echo $l == $lang ? ' selected' : '' ?>><?php echo $l ?></option>
-                    <?php endforeach; ?>
-                </select>
-                <input type="submit" value="<?php echo fm_t('Login', $lang) ?>">
+                <input name="fm_usr" value="" placeholder="Username" required>
+                <input type="password" name="fm_pwd" value="" placeholder="Password" required>
+                <input type="submit" value="Login">
             </form>
         </div>
         <?php
@@ -155,7 +136,6 @@ if ($use_auth) {
     }
 }
 
-defined('FM_LANG') || define('FM_LANG', $lang);
 define('FM_READONLY', $use_auth && !empty($readonly_users) && isset($_SESSION['logged']) && in_array($_SESSION['logged'], $readonly_users));
 define('FM_IS_WIN', DIRECTORY_SEPARATOR == '\\');
 
@@ -193,14 +173,14 @@ if (isset($_GET['del']) && !FM_READONLY) {
         }
         $is_dir = is_dir($path . '/' . $del);
         if (fm_rdelete($path . '/' . $del)) {
-            $msg = $is_dir ? fm_t('Folder <b>%s</b> deleted') : fm_t('File <b>%s</b> deleted');
+            $msg = $is_dir ? 'Folder <b>%s</b> deleted' : 'File <b>%s</b> deleted';
             fm_set_msg(sprintf($msg, $del));
         } else {
-            $msg = $is_dir ? fm_t('Folder <b>%s</b> not deleted') : fm_t('File <b>%s</b> not deleted');
+            $msg = $is_dir ? 'Folder <b>%s</b> not deleted' : 'File <b>%s</b> not deleted';
             fm_set_msg(sprintf($msg, $del), 'error');
         }
     } else {
-        fm_set_msg(fm_t('Wrong file or folder name'), 'error');
+        fm_set_msg('Wrong file or folder name', 'error');
     }
     fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
 }
@@ -216,14 +196,14 @@ if (isset($_GET['new']) && !FM_READONLY) {
             $path .= '/' . FM_PATH;
         }
         if (fm_mkdir($path . '/' . $new, false) === true) {
-            fm_set_msg(sprintf(fm_t('Folder <b>%s</b> created'), $new));
+            fm_set_msg(sprintf('Folder <b>%s</b> created', $new));
         } elseif (fm_mkdir($path . '/' . $new, false) === $path . '/' . $new) {
-            fm_set_msg(sprintf(fm_t('Folder <b>%s</b> already exists'), $new), 'alert');
+            fm_set_msg(sprintf('Folder <b>%s</b> already exists', $new), 'alert');
         } else {
-            fm_set_msg(sprintf(fm_t('Folder <b>%s</b> not created'), $new), 'error');
+            fm_set_msg(sprintf('Folder <b>%s</b> not created', $new), 'error');
         }
     } else {
-        fm_set_msg(fm_t('Wrong folder name'), 'error');
+        fm_set_msg('Wrong folder name', 'error');
     }
     fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
 }
@@ -235,7 +215,7 @@ if (isset($_GET['copy'], $_GET['finish']) && !FM_READONLY) {
     $copy = fm_clean_path($copy);
     // empty path
     if ($copy == '') {
-        fm_set_msg(fm_t('Source path not defined'), 'error');
+        fm_set_msg('Source path not defined', 'error');
         fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
     }
     // abs path from
@@ -254,21 +234,21 @@ if (isset($_GET['copy'], $_GET['finish']) && !FM_READONLY) {
         if ($move) {
             $rename = fm_rename($from, $dest);
             if ($rename) {
-                fm_set_msg(sprintf(fm_t('Moved from <b>%s</b> to <b>%s</b>'), $copy, $msg_from));
+                fm_set_msg(sprintf('Moved from <b>%s</b> to <b>%s</b>', $copy, $msg_from));
             } elseif ($rename === null) {
-                fm_set_msg(fm_t('File or folder with this path already exists'), 'alert');
+                fm_set_msg('File or folder with this path already exists', 'alert');
             } else {
-                fm_set_msg(sprintf(fm_t('Error while moving from <b>%s</b> to <b>%s</b>'), $copy, $msg_from), 'error');
+                fm_set_msg(sprintf('Error while moving from <b>%s</b> to <b>%s</b>', $copy, $msg_from), 'error');
             }
         } else {
             if (fm_rcopy($from, $dest)) {
-                fm_set_msg(sprintf(fm_t('Copyied from <b>%s</b> to <b>%s</b>'), $copy, $msg_from));
+                fm_set_msg(sprintf('Copyied from <b>%s</b> to <b>%s</b>', $copy, $msg_from));
             } else {
-                fm_set_msg(sprintf(fm_t('Error while copying from <b>%s</b> to <b>%s</b>'), $copy, $msg_from), 'error');
+                fm_set_msg(sprintf('Error while copying from <b>%s</b> to <b>%s</b>', $copy, $msg_from), 'error');
             }
         }
     } else {
-        fm_set_msg(fm_t('Paths must be not equal'), 'alert');
+        fm_set_msg('Paths must be not equal', 'alert');
     }
     fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
 }
@@ -287,12 +267,12 @@ if (isset($_POST['file'], $_POST['copy_to'], $_POST['finish']) && !FM_READONLY) 
         $copy_to_path .= '/' . $copy_to;
     }
     if ($path == $copy_to_path) {
-        fm_set_msg(fm_t('Paths must be not equal'), 'alert');
+        fm_set_msg('Paths must be not equal', 'alert');
         fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
     }
     if (!is_dir($copy_to_path)) {
         if (!fm_mkdir($copy_to_path, true)) {
-            fm_set_msg(fm_t('Unable to create destination folder'), 'error');
+            fm_set_msg('Unable to create destination folder', 'error');
             fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
         }
     }
@@ -322,14 +302,14 @@ if (isset($_POST['file'], $_POST['copy_to'], $_POST['finish']) && !FM_READONLY) 
             }
         }
         if ($errors == 0) {
-            $msg = $move ? fm_t('Selected files and folders moved') : fm_t('Selected files and folders copied');
+            $msg = $move ? 'Selected files and folders moved' : 'Selected files and folders copied';
             fm_set_msg($msg);
         } else {
-            $msg = $move ? fm_t('Error while moving items') : fm_t('Error while copying items');
+            $msg = $move ? 'Error while moving items' : 'Error while copying items';
             fm_set_msg($msg, 'error');
         }
     } else {
-        fm_set_msg(fm_t('Nothing selected'), 'alert');
+        fm_set_msg('Nothing selected', 'alert');
     }
     fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
 }
@@ -352,12 +332,12 @@ if (isset($_GET['ren'], $_GET['to']) && !FM_READONLY) {
     // rename
     if ($old != '' && $new != '') {
         if (fm_rename($path . '/' . $old, $path . '/' . $new)) {
-            fm_set_msg(sprintf(fm_t('Renamed from <b>%s</b> to <b>%s</b>'), $old, $new));
+            fm_set_msg(sprintf('Renamed from <b>%s</b> to <b>%s</b>', $old, $new));
         } else {
-            fm_set_msg(sprintf(fm_t('Error while renaming from <b>%s</b> to <b>%s</b>'), $old, $new), 'error');
+            fm_set_msg(sprintf('Error while renaming from <b>%s</b> to <b>%s</b>', $old, $new), 'error');
         }
     } else {
-        fm_set_msg(fm_t('Names not set'), 'error');
+        fm_set_msg('Names not set', 'error');
     }
     fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
 }
@@ -384,7 +364,7 @@ if (isset($_GET['dl'])) {
         readfile($path . '/' . $dl);
         exit;
     } else {
-        fm_set_msg(fm_t('File not found'), 'error');
+        fm_set_msg('File not found', 'error');
         fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
     }
 }
@@ -412,11 +392,11 @@ if (isset($_POST['upl']) && !FM_READONLY) {
     }
 
     if ($errors == 0 && $uploads > 0) {
-        fm_set_msg(sprintf(fm_t('All files uploaded to <b>%s</b>'), $path));
+        fm_set_msg(sprintf('All files uploaded to <b>%s</b>', $path));
     } elseif ($errors == 0 && $uploads == 0) {
-        fm_set_msg(fm_t('Nothing uploaded'), 'alert');
+        fm_set_msg('Nothing uploaded', 'alert');
     } else {
-        fm_set_msg(sprintf(fm_t('Error while uploading files. Uploaded files: %s'), $uploads), 'error');
+        fm_set_msg(sprintf('Error while uploading files. Uploaded files: %s', $uploads), 'error');
     }
 
     fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
@@ -441,12 +421,12 @@ if (isset($_POST['group'], $_POST['delete']) && !FM_READONLY) {
             }
         }
         if ($errors == 0) {
-            fm_set_msg(fm_t('Selected files and folder deleted'));
+            fm_set_msg('Selected files and folder deleted');
         } else {
-            fm_set_msg(fm_t('Error while deleting items'), 'error');
+            fm_set_msg('Error while deleting items', 'error');
         }
     } else {
-        fm_set_msg(fm_t('Nothing selected'), 'alert');
+        fm_set_msg('Nothing selected', 'alert');
     }
 
     fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
@@ -460,7 +440,7 @@ if (isset($_POST['group'], $_POST['zip']) && !FM_READONLY) {
     }
 
     if (!class_exists('ZipArchive')) {
-        fm_set_msg(fm_t('Operations with archives are not available'), 'error');
+        fm_set_msg('Operations with archives are not available', 'error');
         fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
     }
 
@@ -480,12 +460,12 @@ if (isset($_POST['group'], $_POST['zip']) && !FM_READONLY) {
         $res = $zipper->create($zipname, $files);
 
         if ($res) {
-            fm_set_msg(sprintf(fm_t('Archive <b>%s</b> created'), $zipname));
+            fm_set_msg(sprintf('Archive <b>%s</b> created', $zipname));
         } else {
-            fm_set_msg(fm_t('Archive not created'), 'error');
+            fm_set_msg('Archive not created', 'error');
         }
     } else {
-        fm_set_msg(fm_t('Nothing selected'), 'alert');
+        fm_set_msg('Nothing selected', 'alert');
     }
 
     fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
@@ -503,7 +483,7 @@ if (isset($_GET['unzip']) && !FM_READONLY) {
     }
 
     if (!class_exists('ZipArchive')) {
-        fm_set_msg(fm_t('Operations with archives are not available'), 'error');
+        fm_set_msg('Operations with archives are not available', 'error');
         fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
     }
 
@@ -523,13 +503,13 @@ if (isset($_GET['unzip']) && !FM_READONLY) {
         $res = $zipper->unzip($zip_path, $path);
 
         if ($res) {
-            fm_set_msg(fm_t('Archive unpacked'));
+            fm_set_msg('Archive unpacked');
         } else {
-            fm_set_msg(fm_t('Archive not unpacked'), 'error');
+            fm_set_msg('Archive not unpacked', 'error');
         }
 
     } else {
-        fm_set_msg(fm_t('File not found'), 'error');
+        fm_set_msg('File not found', 'error');
     }
     fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
 }
@@ -545,7 +525,7 @@ if (isset($_POST['chmod']) && !FM_READONLY && !FM_IS_WIN) {
     $file = fm_clean_path($file);
     $file = str_replace('/', '', $file);
     if ($file == '' || (!is_file($path . '/' . $file) && !is_dir($path . '/' . $file))) {
-        fm_set_msg(fm_t('File not found'), 'error');
+        fm_set_msg('File not found', 'error');
         fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
     }
 
@@ -579,9 +559,9 @@ if (isset($_POST['chmod']) && !FM_READONLY && !FM_IS_WIN) {
     }
 
     if (@chmod($path . '/' . $file, $mode)) {
-        fm_set_msg(fm_t('Permissions changed'));
+        fm_set_msg('Permissions changed');
     } else {
-        fm_set_msg(fm_t('Permissions not changed'), 'error');
+        fm_set_msg('Permissions not changed', 'error');
     }
 
     fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
@@ -636,8 +616,8 @@ if (isset($_GET['upload']) && !FM_READONLY) {
     fm_show_nav_path(FM_PATH); // current path
     ?>
     <div class="path">
-        <p><b><?php echo fm_t('Uploading files') ?></b></p>
-        <p class="break-word"><?php echo fm_t('Destination folder:') ?> <?php echo fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH) ?></p>
+        <p><b>Uploading files</b></p>
+        <p class="break-word">Destination folder: <?php echo fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH) ?></p>
         <form action="" method="post" enctype="multipart/form-data">
             <input type="hidden" name="p" value="<?php echo fm_enc(FM_PATH) ?>">
             <input type="hidden" name="upl" value="1">
@@ -648,8 +628,8 @@ if (isset($_GET['upload']) && !FM_READONLY) {
             <input type="file" name="upload[]"><br>
             <br>
             <p>
-                <button type="submit" class="btn"><i class="icon-apply"></i> <?php echo fm_t('Upload') ?></button> &nbsp;
-                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-cancel"></i> <?php echo fm_t('Cancel') ?></a></b>
+                <button class="btn"><i class="icon-apply"></i> Upload</button> &nbsp;
+                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-cancel"></i> Cancel</a></b>
             </p>
         </form>
     </div>
@@ -662,7 +642,7 @@ if (isset($_GET['upload']) && !FM_READONLY) {
 if (isset($_POST['copy']) && !FM_READONLY) {
     $copy_files = $_POST['file'];
     if (!is_array($copy_files) || empty($copy_files)) {
-        fm_set_msg(fm_t('Nothing selected'), 'alert');
+        fm_set_msg('Nothing selected', 'alert');
         fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
     }
 
@@ -670,7 +650,7 @@ if (isset($_POST['copy']) && !FM_READONLY) {
     fm_show_nav_path(FM_PATH); // current path
     ?>
     <div class="path">
-        <p><b><?php echo fm_t('Copying') ?></b></p>
+        <p><b>Copying</b></p>
         <form action="" method="post">
             <input type="hidden" name="p" value="<?php echo fm_enc(FM_PATH) ?>">
             <input type="hidden" name="finish" value="1">
@@ -679,15 +659,15 @@ if (isset($_POST['copy']) && !FM_READONLY) {
                 echo '<input type="hidden" name="file[]" value="' . fm_enc($cf) . '">' . PHP_EOL;
             }
             ?>
-            <p class="break-word"><?php echo fm_t('Files:') ?> <b><?php echo implode('</b>, <b>', $copy_files) ?></b></p>
-            <p class="break-word"><?php echo fm_t('Source folder:') ?> <?php echo fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH) ?><br>
-                <label for="inp_copy_to"><?php echo fm_t('Destination folder:') ?></label>
-                <?php echo FM_ROOT_PATH ?>/<input type="text" name="copy_to" id="inp_copy_to" value="<?php echo fm_enc(FM_PATH) ?>">
+            <p class="break-word">Files: <b><?php echo implode('</b>, <b>', $copy_files) ?></b></p>
+            <p class="break-word">Source folder: <?php echo fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH) ?><br>
+                <label for="inp_copy_to">Destination folder:</label>
+                <?php echo FM_ROOT_PATH ?>/<input name="copy_to" id="inp_copy_to" value="<?php echo fm_enc(FM_PATH) ?>">
             </p>
-            <p><label><input type="checkbox" name="move" value="1"> <?php echo fm_t('Move') ?></label></p>
+            <p><label><input type="checkbox" name="move" value="1"> Move</label></p>
             <p>
-                <button type="submit" class="btn"><i class="icon-apply"></i> <?php echo fm_t('Copy') ?></button> &nbsp;
-                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-cancel"></i> <?php echo fm_t('Cancel') ?></a></b>
+                <button class="btn"><i class="icon-apply"></i> Copy</button> &nbsp;
+                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-cancel"></i> Cancel</a></b>
             </p>
         </form>
     </div>
@@ -701,7 +681,7 @@ if (isset($_GET['copy']) && !isset($_GET['finish']) && !FM_READONLY) {
     $copy = $_GET['copy'];
     $copy = fm_clean_path($copy);
     if ($copy == '' || !file_exists(FM_ROOT_PATH . '/' . $copy)) {
-        fm_set_msg(fm_t('File not found'), 'error');
+        fm_set_msg('File not found', 'error');
         fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
     }
 
@@ -709,17 +689,17 @@ if (isset($_GET['copy']) && !isset($_GET['finish']) && !FM_READONLY) {
     fm_show_nav_path(FM_PATH); // current path
     ?>
     <div class="path">
-        <p><b><?php echo fm_t('Copying') ?></b></p>
+        <p><b>Copying</b></p>
         <p class="break-word">
-            <?php echo fm_t('Source path:') ?> <?php echo fm_convert_win(FM_ROOT_PATH . '/' . $copy) ?><br>
-            <?php echo fm_t('Destination folder:') ?> <?php echo fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH) ?>
+            Source path: <?php echo fm_convert_win(FM_ROOT_PATH . '/' . $copy) ?><br>
+            Destination folder: <?php echo fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH) ?>
         </p>
         <p>
-            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1"><i class="icon-apply"></i> <?php echo fm_t('Copy') ?></a></b> &nbsp;
-            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1&amp;move=1"><i class="icon-apply"></i> <?php echo fm_t('Move') ?></a></b> &nbsp;
-            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-cancel"></i> <?php echo fm_t('Cancel') ?></a></b>
+            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1"><i class="icon-apply"></i> Copy</a></b> &nbsp;
+            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1&amp;move=1"><i class="icon-apply"></i> Move</a></b> &nbsp;
+            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-cancel"></i> Cancel</a></b>
         </p>
-        <p><i><?php echo fm_t('Select folder:') ?></i></p>
+        <p><i>Select folder:</i></p>
         <ul class="folders break-word">
             <?php
             if ($parent !== false) {
@@ -746,7 +726,7 @@ if (isset($_GET['view'])) {
     $file = fm_clean_path($file);
     $file = str_replace('/', '', $file);
     if ($file == '' || !is_file($path . '/' . $file)) {
-        fm_set_msg(fm_t('File not found'), 'error');
+        fm_set_msg('File not found', 'error');
         fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
     }
 
@@ -790,11 +770,11 @@ if (isset($_GET['view'])) {
 
     ?>
     <div class="path">
-        <p class="break-word"><b><?php echo fm_t($view_title) ?> <?php echo fm_convert_win($file) ?></b></p>
+        <p class="break-word"><b><?php echo $view_title ?> <?php echo fm_convert_win($file) ?></b></p>
         <p class="break-word">
-            <?php echo fm_t('Full path:') ?> <?php echo fm_convert_win($file_path) ?><br>
-            <?php echo fm_t('File size:') ?> <?php echo fm_get_filesize($filesize) ?> (<?php echo sprintf(fm_t('%s byte'), $filesize) ?>)<br>
-            <?php echo fm_t('MIME-type:') ?> <?php echo $mime_type ?><br>
+            Full path: <?php echo fm_convert_win($file_path) ?><br>
+            File size: <?php echo fm_get_filesize($filesize) ?> (<?php echo sprintf('%s byte', $filesize) ?>)<br>
+            MIME-type: <?php echo $mime_type ?><br>
             <?php
             // ZIP info
             if ($is_zip && $filenames !== false) {
@@ -809,16 +789,16 @@ if (isset($_GET['view'])) {
                     $total_uncomp += $fn['filesize'];
                 }
                 ?>
-                <?php echo fm_t('Files in archive:') ?> <?php echo $total_files ?><br>
-                <?php echo fm_t('Total size:') ?> <?php echo fm_get_filesize($total_uncomp) ?><br>
-                <?php echo fm_t('Size in archive:') ?> <?php echo fm_get_filesize($total_comp) ?><br>
-                <?php echo fm_t('Compression:') ?> <?php echo round(($total_comp / $total_uncomp) * 100) ?>%<br>
+                Files in archive: <?php echo $total_files ?><br>
+                Total size: <?php echo fm_get_filesize($total_uncomp) ?><br>
+                Size in archive: <?php echo fm_get_filesize($total_comp) ?><br>
+                Compression: <?php echo round(($total_comp / $total_uncomp) * 100) ?>%<br>
                 <?php
             }
             // Image info
             if ($is_image) {
                 $image_size = getimagesize($file_path);
-                echo fm_t('Image sizes:') . ' ' . (isset($image_size[0]) ? $image_size[0] : '0') . ' x ' . (isset($image_size[1]) ? $image_size[1] : '0') . '<br>';
+                echo 'Image sizes: ' . (isset($image_size[0]) ? $image_size[0] : '0') . ' x ' . (isset($image_size[1]) ? $image_size[1] : '0') . '<br>';
             }
             // Text info
             if ($is_text) {
@@ -828,25 +808,25 @@ if (isset($_GET['view'])) {
                         $content = iconv(FM_ICONV_INPUT_ENC, 'UTF-8//IGNORE', $content);
                     }
                 }
-                echo fm_t('Charset:') . ' ' . ($is_utf8 ? 'utf-8' : '8 bit') . '<br>';
+                echo 'Charset: ' . ($is_utf8 ? 'utf-8' : '8 bit') . '<br>';
             }
             ?>
         </p>
         <p>
-            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;dl=<?php echo urlencode($file) ?>"><i class="icon-download"></i> <?php echo fm_t('Download') ?></a></b> &nbsp;
-            <b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-chain"></i> <?php echo fm_t('Open') ?></a></b> &nbsp;
+            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;dl=<?php echo urlencode($file) ?>"><i class="icon-download"></i> Download</a></b> &nbsp;
+            <b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-chain"></i> Open</a></b> &nbsp;
             <?php
             // ZIP actions
             if (!FM_READONLY && $is_zip && $filenames !== false) {
                 $zip_name = pathinfo($file_path, PATHINFO_FILENAME);
                 ?>
-                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;unzip=<?php echo urlencode($file) ?>"><i class="icon-apply"></i> <?php echo fm_t('Unpack') ?></a></b> &nbsp;
-                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;unzip=<?php echo urlencode($file) ?>&amp;tofolder=1" title="<?php echo fm_t('Unpack to') ?> <?php echo fm_enc($zip_name) ?>"><i class="icon-apply"></i>
-                    <?php echo fm_t('Unpack to folder') ?></a></b> &nbsp;
+                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;unzip=<?php echo urlencode($file) ?>"><i class="icon-apply"></i> Unpack</a></b> &nbsp;
+                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;unzip=<?php echo urlencode($file) ?>&amp;tofolder=1" title="Unpack to <?php echo fm_enc($zip_name) ?>"><i class="icon-apply"></i>
+                    Unpack to folder</a></b> &nbsp;
                 <?php
             }
             ?>
-            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-goback"></i> <?php echo fm_t('Back') ?></a></b>
+            <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-goback"></i> Back</a></b>
         </p>
         <?php
         if ($is_zip) {
@@ -862,7 +842,7 @@ if (isset($_GET['view'])) {
                 }
                 echo '</code>';
             } else {
-                echo '<p>' . fm_t('Error while fetching archive info') . '</p>';
+                echo '<p>Error while fetching archive info</p>';
             }
         } elseif ($is_image) {
             // Image content
@@ -911,7 +891,7 @@ if (isset($_GET['chmod']) && !FM_READONLY && !FM_IS_WIN) {
     $file = fm_clean_path($file);
     $file = str_replace('/', '', $file);
     if ($file == '' || (!is_file($path . '/' . $file) && !is_dir($path . '/' . $file))) {
-        fm_set_msg(fm_t('File not found'), 'error');
+        fm_set_msg('File not found', 'error');
         fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
     }
 
@@ -925,9 +905,9 @@ if (isset($_GET['chmod']) && !FM_READONLY && !FM_IS_WIN) {
 
     ?>
     <div class="path">
-        <p><b><?php echo fm_t('Change Permissions') ?></b></p>
+        <p><b>Change Permissions</b></p>
         <p>
-            <?php echo fm_t('Full path:') ?> <?php echo $file_path ?><br>
+            Full path: <?php echo $file_path ?><br>
         </p>
         <form action="" method="post">
             <input type="hidden" name="p" value="<?php echo fm_enc(FM_PATH) ?>">
@@ -936,24 +916,24 @@ if (isset($_GET['chmod']) && !FM_READONLY && !FM_IS_WIN) {
             <table class="compact-table">
                 <tr>
                     <td></td>
-                    <td><b><?php echo fm_t('Owner') ?></b></td>
-                    <td><b><?php echo fm_t('Group') ?></b></td>
-                    <td><b><?php echo fm_t('Other') ?></b></td>
+                    <td><b>Owner</b></td>
+                    <td><b>Group</b></td>
+                    <td><b>Other</b></td>
                 </tr>
                 <tr>
-                    <td style="text-align: right"><b><?php echo fm_t('Read') ?></b></td>
+                    <td style="text-align: right"><b>Read</b></td>
                     <td><label><input type="checkbox" name="ur" value="1"<?php echo ($mode & 00400) ? ' checked' : '' ?>></label></td>
                     <td><label><input type="checkbox" name="gr" value="1"<?php echo ($mode & 00040) ? ' checked' : '' ?>></label></td>
                     <td><label><input type="checkbox" name="or" value="1"<?php echo ($mode & 00004) ? ' checked' : '' ?>></label></td>
                 </tr>
                 <tr>
-                    <td style="text-align: right"><b><?php echo fm_t('Write') ?></b></td>
+                    <td style="text-align: right"><b>Write</b></td>
                     <td><label><input type="checkbox" name="uw" value="1"<?php echo ($mode & 00200) ? ' checked' : '' ?>></label></td>
                     <td><label><input type="checkbox" name="gw" value="1"<?php echo ($mode & 00020) ? ' checked' : '' ?>></label></td>
                     <td><label><input type="checkbox" name="ow" value="1"<?php echo ($mode & 00002) ? ' checked' : '' ?>></label></td>
                 </tr>
                 <tr>
-                    <td style="text-align: right"><b><?php echo fm_t('Execute') ?></b></td>
+                    <td style="text-align: right"><b>Execute</b></td>
                     <td><label><input type="checkbox" name="ux" value="1"<?php echo ($mode & 00100) ? ' checked' : '' ?>></label></td>
                     <td><label><input type="checkbox" name="gx" value="1"<?php echo ($mode & 00010) ? ' checked' : '' ?>></label></td>
                     <td><label><input type="checkbox" name="ox" value="1"<?php echo ($mode & 00001) ? ' checked' : '' ?>></label></td>
@@ -961,8 +941,8 @@ if (isset($_GET['chmod']) && !FM_READONLY && !FM_IS_WIN) {
             </table>
 
             <p>
-                <button type="submit" class="btn"><i class="icon-apply"></i> <?php echo fm_t('Change') ?></button> &nbsp;
-                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-cancel"></i> <?php echo fm_t('Cancel') ?></a></b>
+                <button class="btn"><i class="icon-apply"></i> Change</button> &nbsp;
+                <b><a href="?p=<?php echo urlencode(FM_PATH) ?>"><i class="icon-cancel"></i> Cancel</a></b>
             </p>
 
         </form>
@@ -988,10 +968,10 @@ $all_files_size = 0;
 <input type="hidden" name="p" value="<?php echo fm_enc(FM_PATH) ?>">
 <input type="hidden" name="group" value="1">
 <table><tr>
-<?php if (!FM_READONLY): ?><th style="width:3%"><label><input type="checkbox" title="<?php echo fm_t('Invert selection') ?>" onclick="checkbox_toggle()"></label></th><?php endif; ?>
-<th><?php echo fm_t('Name') ?></th><th style="width:10%"><?php echo fm_t('Size') ?></th>
-<th style="width:12%"><?php echo fm_t('Modified') ?></th>
-<?php if (!FM_IS_WIN): ?><th style="width:6%"><?php echo fm_t('Perms') ?></th><th style="width:10%"><?php echo fm_t('Owner') ?></th><?php endif; ?>
+<?php if (!FM_READONLY): ?><th style="width:3%"><label><input type="checkbox" title="Invert selection" onclick="checkbox_toggle()"></label></th><?php endif; ?>
+<th>Name</th><th style="width:10%">Size</th>
+<th style="width:12%">Modified</th>
+<?php if (!FM_IS_WIN): ?><th style="width:6%">Perms</th><th style="width:10%">Owner</th><?php endif; ?>
 <th style="width:<?php if (!FM_READONLY): ?>13<?php else: ?>6.5<?php endif; ?>%"></th></tr>
 <?php
 // link to parent folder
@@ -1016,17 +996,17 @@ foreach ($folders as $f) {
 <tr>
 <?php if (!FM_READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td><?php endif; ?>
 <td><div class="filename"><a href="?p=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo fm_convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
-<td><?php echo fm_t('Folder') ?></td><td><?php echo $modif ?></td>
+<td>Folder</td><td><?php echo $modif ?></td>
 <?php if (!FM_IS_WIN): ?>
-<td><?php if (!FM_READONLY): ?><a title="<?php echo fm_t('Change Permissions') ?>" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
+<td><?php if (!FM_READONLY): ?><a title="Change Permissions" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
 <td><?php echo $owner['name'] . ':' . $group['name'] ?></td>
 <?php endif; ?>
 <td><?php if (!FM_READONLY): ?>
-<a title="<?php echo fm_t('Delete') ?>" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php echo fm_t('Delete folder?') ?>');"><i class="icon-cross"></i></a>
-<a title="<?php echo fm_t('Rename') ?>" href="#" onclick="rename('<?php echo fm_enc(FM_PATH) ?>', '<?php echo fm_enc($f) ?>');return false;"><i class="icon-rename"></i></a>
-<a title="<?php echo fm_t('Copy to...') ?>" href="?p=&amp;copy=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="icon-copy"></i></a>
+<a title="Delete" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('Delete folder?');"><i class="icon-cross"></i></a>
+<a title="Rename" href="#" onclick="rename('<?php echo fm_enc(FM_PATH) ?>', '<?php echo fm_enc($f) ?>');return false;"><i class="icon-rename"></i></a>
+<a title="Copy to..." href="?p=&amp;copy=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="icon-copy"></i></a>
 <?php endif; ?>
-<a title="<?php echo fm_t('Direct link') ?>" href="<?php echo FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f . '/' ?>" target="_blank"><i class="icon-chain"></i></a>
+<a title="Direct link" href="<?php echo FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f . '/' ?>" target="_blank"><i class="icon-chain"></i></a>
 </td></tr>
     <?php
     flush();
@@ -1051,21 +1031,21 @@ foreach ($files as $f) {
     ?>
 <tr>
 <?php if (!FM_READONLY): ?><td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td><?php endif; ?>
-<td><div class="filename"><a href="<?php echo $filelink ?>" title="<?php echo fm_t('File info') ?>"><i class="<?php echo $img ?>"></i> <?php echo fm_convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
-<td><span title="<?php printf(fm_t('%s byte'), $filesize_raw) ?>"><?php echo $filesize ?></span></td>
+<td><div class="filename"><a href="<?php echo $filelink ?>" title="File info"><i class="<?php echo $img ?>"></i> <?php echo fm_convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
+<td><span title="<?php printf('%s byte', $filesize_raw) ?>"><?php echo $filesize ?></span></td>
 <td><?php echo $modif ?></td>
 <?php if (!FM_IS_WIN): ?>
-<td><?php if (!FM_READONLY): ?><a title="<?php echo fm_t('Change Permissions') ?>" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
+<td><?php if (!FM_READONLY): ?><a title="Change Permissions" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a><?php else: ?><?php echo $perms ?><?php endif; ?></td>
 <td><?php echo $owner['name'] . ':' . $group['name'] ?></td>
 <?php endif; ?>
 <td>
 <?php if (!FM_READONLY): ?>
-<a title="<?php echo fm_t('Delete') ?>" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('<?php echo fm_t('Delete file?') ?>');"><i class="icon-cross"></i></a>
-<a title="<?php echo fm_t('Rename') ?>" href="#" onclick="rename('<?php echo fm_enc(FM_PATH) ?>', '<?php echo fm_enc($f) ?>');return false;"><i class="icon-rename"></i></a>
-<a title="<?php echo fm_t('Copy to...') ?>" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="icon-copy"></i></a>
+<a title="Delete" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('Delete file?');"><i class="icon-cross"></i></a>
+<a title="Rename" href="#" onclick="rename('<?php echo fm_enc(FM_PATH) ?>', '<?php echo fm_enc($f) ?>');return false;"><i class="icon-rename"></i></a>
+<a title="Copy to..." href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="icon-copy"></i></a>
 <?php endif; ?>
-<a title="<?php echo fm_t('Direct link') ?>" href="<?php echo FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f ?>" target="_blank"><i class="icon-chain"></i></a>
-<a title="<?php echo fm_t('Download') ?>" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;dl=<?php echo urlencode($f) ?>"><i class="icon-download"></i></a>
+<a title="Direct link" href="<?php echo FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f ?>" target="_blank"><i class="icon-chain"></i></a>
+<a title="Download" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;dl=<?php echo urlencode($f) ?>"><i class="icon-download"></i></a>
 </td></tr>
     <?php
     flush();
@@ -1073,26 +1053,26 @@ foreach ($files as $f) {
 
 if (empty($folders) && empty($files)) {
     ?>
-<tr><?php if (!FM_READONLY): ?><td></td><?php endif; ?><td colspan="<?php echo !FM_IS_WIN ? '6' : '4' ?>"><em><?php echo fm_t('Folder is empty') ?></em></td></tr>
+<tr><?php if (!FM_READONLY): ?><td></td><?php endif; ?><td colspan="<?php echo !FM_IS_WIN ? '6' : '4' ?>"><em>Folder is empty</em></td></tr>
 <?php
 } else {
     ?>
 <tr><?php if (!FM_READONLY): ?><td class="gray"></td><?php endif; ?><td class="gray" colspan="<?php echo !FM_IS_WIN ? '6' : '4' ?>">
-<?php echo fm_t('Full size:') ?> <span title="<?php printf(fm_t('%s byte'), $all_files_size) ?>"><?php echo fm_get_filesize($all_files_size) ?></span>,
-<?php echo fm_t('files:') ?> <?php echo $num_files ?>,
-<?php echo fm_t('folders:') ?> <?php echo $num_folders ?>
+Full size: <span title="<?php printf('%s byte', $all_files_size) ?>"><?php echo fm_get_filesize($all_files_size) ?></span>,
+files: <?php echo $num_files ?>,
+folders: <?php echo $num_folders ?>
 </td></tr>
 <?php
 }
 ?>
 </table>
 <?php if (!FM_READONLY): ?>
-<p class="path"><a href="#" onclick="select_all();return false;"><i class="icon-checkbox"></i> <?php echo fm_t('Select all') ?></a> &nbsp;
-<a href="#" onclick="unselect_all();return false;"><i class="icon-checkbox_uncheck"></i> <?php echo fm_t('Unselect all') ?></a> &nbsp;
-<a href="#" onclick="invert_all();return false;"><i class="icon-checkbox_invert"></i> <?php echo fm_t('Invert selection') ?></a></p>
-<p><input type="submit" name="delete" value="<?php echo fm_t('Delete') ?>" onclick="return confirm('<?php echo fm_t('Delete selected files and folders?') ?>')">
-<input type="submit" name="zip" value="<?php echo fm_t('Pack') ?>" onclick="return confirm('<?php echo fm_t('Create archive?') ?>')">
-<input type="submit" name="copy" value="<?php echo fm_t('Copy') ?>"></p>
+<p class="path"><a href="#" onclick="select_all();return false;"><i class="icon-checkbox"></i> Select all</a> &nbsp;
+<a href="#" onclick="unselect_all();return false;"><i class="icon-checkbox_uncheck"></i> Unselect all</a> &nbsp;
+<a href="#" onclick="invert_all();return false;"><i class="icon-checkbox_invert"></i> Invert selection</a></p>
+<p><input type="submit" name="delete" value="Delete" onclick="return confirm('Delete selected files and folders?')">
+<input type="submit" name="zip" value="Pack" onclick="return confirm('Create archive?')">
+<input type="submit" name="copy" value="Copy"></p>
 <?php endif; ?>
 </form>
 
@@ -1326,13 +1306,13 @@ function fm_get_parent_path($path)
 function fm_get_filesize($size)
 {
     if ($size < 1000) {
-        return sprintf(fm_t('%s byte'), $size);
+        return sprintf('%s byte', $size);
     } elseif (($size / 1024) < 1000) {
-        return sprintf(fm_t('%s KB'), round(($size / 1024), 1));
+        return sprintf('%s KB', round(($size / 1024), 1));
     } elseif (($size / 1024 / 1024) < 1000) {
-        return sprintf(fm_t('%s MB'), round(($size / 1024 / 1024), 1));
+        return sprintf('%s MB', round(($size / 1024 / 1024), 1));
     } else {
-        return sprintf(fm_t('%s GB'), round(($size / 1024 / 1024 / 1024), 1));
+        return sprintf('%s GB', round(($size / 1024 / 1024 / 1024), 1));
     }
 }
 
@@ -1407,31 +1387,6 @@ function fm_convert_win($filename)
         $filename = iconv(FM_ICONV_INPUT_ENC, 'UTF-8//IGNORE', $filename);
     }
     return $filename;
-}
-
-/**
- * Get translated string
- * @param string $str
- * @param string|null $lang
- * @return string
- */
-function fm_t($str, $lang = null)
-{
-    if ($lang === null) {
-        if (defined('FM_LANG')) {
-            $lang = FM_LANG;
-        } else {
-            return $str;
-        }
-    }
-    $strings = fm_get_strings();
-    if (!isset($strings[$lang]) || !is_array($strings[$lang])) {
-        return $str;
-    }
-    if (array_key_exists($str, $strings[$lang])) {
-        return $strings[$lang][$str];
-    }
-    return $str;
 }
 
 /**
@@ -1717,10 +1672,10 @@ function fm_show_nav_path($path)
 <div class="path">
 <div class="float-right">
 <?php if (!FM_READONLY): ?>
-<a title="<?php echo fm_t('Upload files') ?>" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;upload"><i class="icon-upload"></i></a>
-<a title="<?php echo fm_t('New folder') ?>" href="#" onclick="newfolder('<?php echo fm_enc(FM_PATH) ?>');return false;"><i class="icon-folder_add"></i></a>
+<a title="Upload files" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;upload"><i class="icon-upload"></i></a>
+<a title="New folder" href="#" onclick="newfolder('<?php echo fm_enc(FM_PATH) ?>');return false;"><i class="icon-folder_add"></i></a>
 <?php endif; ?>
-<?php if (FM_USE_AUTH): ?><a title="<?php echo fm_t('Logout') ?>" href="?logout=1"><i class="icon-logout"></i></a><?php endif; ?>
+<?php if (FM_USE_AUTH): ?><a title="Logout" href="?logout=1"><i class="icon-logout"></i></a><?php endif; ?>
 </div>
         <?php
         $path = fm_clean_path($path);
@@ -1845,8 +1800,8 @@ function fm_show_footer()
 <p class="center"><small><a href="https://github.com/alexantr/filemanager" target="_blank">PHP File Manager</a></small></p>
 </div>
 <script>
-function newfolder(p){var n=prompt('<?php echo fm_t('New folder name') ?>','folder');if(n!==null&&n!==''){window.location.search='p='+encodeURIComponent(p)+'&new='+encodeURIComponent(n);}}
-function rename(p,f){var n=prompt('<?php echo fm_t('New name') ?>',f);if(n!==null&&n!==''&&n!=f){window.location.search='p='+encodeURIComponent(p)+'&ren='+encodeURIComponent(f)+'&to='+encodeURIComponent(n);}}
+function newfolder(p){var n=prompt('New folder name','folder');if(n!==null&&n!==''){window.location.search='p='+encodeURIComponent(p)+'&new='+encodeURIComponent(n);}}
+function rename(p,f){var n=prompt('New name',f);if(n!==null&&n!==''&&n!=f){window.location.search='p='+encodeURIComponent(p)+'&ren='+encodeURIComponent(f)+'&to='+encodeURIComponent(n);}}
 function change_checkboxes(l,v){for(var i=l.length-1;i>=0;i--){l[i].checked=(typeof v==='boolean')?v:!l[i].checked;}}
 function get_checkboxes(){var i=document.getElementsByName('file[]'),a=[];for(var j=i.length-1;j>=0;j--){if(i[j].type='checkbox'){a.push(i[j]);}}return a;}
 function select_all(){var l=get_checkboxes();change_checkboxes(l,true);}
@@ -1855,7 +1810,7 @@ function invert_all(){var l=get_checkboxes();change_checkboxes(l);}
 function checkbox_toggle(){var l=get_checkboxes();l.push(this);change_checkboxes(l);}
 </script>
 <?php if (isset($_GET['view']) && FM_USE_HIGHLIGHTJS): ?>
-<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.2.0/highlight.min.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
 <?php endif; ?>
 </body>
@@ -2004,274 +1959,4 @@ yfg3wNf+r99KxafOibNu5IQvKKsv2x9lTtEFvmGlXq9/rFeL/gnWD2kB6KcwcpB+wP/IyeP2svqp
 9oeiCT9Fr1cL/gmp125aUc4P+B85iX+qJ/la0k/Ze0D0T0j93jXTpv0BYUGhQhdSooYAAAAASUVO
 RK5CYII=',
     );
-}
-
-/**
- * Get all translations
- * @return array
- */
-function fm_get_strings()
-{
-    static $strings;
-    if ($strings !== null) {
-        return $strings;
-    }
-    $strings = array();
-    $strings['ru'] = array(
-        'Folder <b>%s</b> deleted' => 'Папка <b>%s</b> удалена',
-        'Folder <b>%s</b> not deleted' => 'Папка <b>%s</b> не удалена',
-        'File <b>%s</b> deleted' => 'Файл <b>%s</b> удален',
-        'File <b>%s</b> not deleted' => 'Файл <b>%s</b> не удален',
-        'Wrong file or folder name' => 'Имя папки или файла задано не верно',
-        'Folder <b>%s</b> created' => 'Папка <b>%s</b> создана',
-        'Folder <b>%s</b> already exists' => 'Папка <b>%s</b> уже существует',
-        'Folder <b>%s</b> not created' => 'Папка <b>%s</b> не создана',
-        'Wrong folder name' => 'Имя папки задано не верно',
-        'Source path not defined' => 'Не задан исходный путь',
-        'Moved from <b>%s</b> to <b>%s</b>' => 'Перемещено из <b>%s</b> в <b>%s</b>',
-        'File or folder with this path already exists' => 'Файл или папка уже есть по указанному пути',
-        'Error while moving from <b>%s</b> to <b>%s</b>' => 'Произошла ошибка при перемещении из <b>%s</b> в <b>%s</b>',
-        'Copyied from <b>%s</b> to <b>%s</b>' => 'Скопировано из <b>%s</b> в <b>%s</b>',
-        'Error while copying from <b>%s</b> to <b>%s</b>' => 'Произошла ошибка при копировании из <b>%s</b> в <b>%s</b>',
-        'Paths must be not equal' => 'Пути не должны совпадать',
-        'Unable to create destination folder' => 'Невозможно создать папку назначения',
-        'Selected files and folders moved' => 'Все отмеченные файлы и папки перемещены',
-        'Selected files and folders copied' => 'Все отмеченные файлы и папки сопированы',
-        'Error while moving items' => 'При перемещении возникли ошибки',
-        'Error while copying items' => 'При копировании возникли ошибки',
-        'Nothing selected' => 'Ничего не выбрано',
-        'Renamed from <b>%s</b> to <b>%s</b>' => 'Переименовано из <b>%s</b> в <b>%s</b>',
-        'Error while renaming from <b>%s</b> to <b>%s</b>' => 'Произошла ошибка при переименовании из <b>%s</b> в <b>%s</b>',
-        'Names not set' => 'Не заданы имена',
-        'File not found' => 'Файл не найден',
-        'All files uploaded to <b>%s</b>' => 'Все файлы загружены в папку <b>%s</b>',
-        'Nothing uploaded' => 'Ничего не загружено',
-        'Error while uploading files. Uploaded files: %s' => 'При загрузке файлов возникли ошибки. Загружено файлов: %s',
-        'Selected files and folder deleted' => 'Все отмеченные файлы и папки удалены',
-        'Error while deleting items' => 'При удалении возникли ошибки',
-        'Archive <b>%s</b> created' => 'Архив <b>%s</b> успешно создан',
-        'Archive not created' => 'Ошибка. Архив не создан',
-        'Archive unpacked' => 'Архив распакован',
-        'Archive not unpacked' => 'Архив не распакован',
-        'Uploading files' => 'Загрузка файлов',
-        'Destination folder:' => 'Папка назначения:',
-        'Upload' => 'Загрузить',
-        'Cancel' => 'Отмена',
-        'Copying' => 'Копирование',
-        'Files:' => 'Файлы:',
-        'Source folder:' => 'Исходная папка:',
-        'Move' => 'Переместить',
-        'Select folder:' => 'Выбрать папку:',
-        'Source path:' => 'Исходный путь:',
-        'Archive' => 'Архив',
-        'Full path:' => 'Полный путь:',
-        'File size:' => 'Размер файла:',
-        'Files in archive:' => 'Файлов в архиве:',
-        'Total size:' => 'Общий размер:',
-        'Size in archive:' => 'Размер в архиве:',
-        'Compression:' => 'Степень сжатия:',
-        'Open' => 'Открыть',
-        'Unpack' => 'Распаковать',
-        'Unpack to' => 'Распаковать в',
-        'Unpack to folder' => 'Распаковать в папку',
-        'Back' => 'Назад',
-        'Error while fetching archive info' => 'Ошибка получения информации об архиве',
-        'Image' => 'Изображение',
-        'MIME-type:' => 'MIME-тип:',
-        'Image sizes:' => 'Размеры изображения:',
-        'File' => 'Файл',
-        'Charset:' => 'Кодировка:',
-        'Name' => 'Имя',
-        'Size' => 'Размер',
-        'Modified' => 'Изменен',
-        'Folder' => 'Папка',
-        'Delete' => 'Удалить',
-        'Delete folder?' => 'Удалить папку?',
-        'Delete file?' => 'Удалить файл?',
-        'Rename' => 'Переименовать',
-        'Copy to...' => 'Копировать в...',
-        'File info' => 'Информация о файле',
-        '%s byte' => '%s байт',
-        '%s KB' => '%s КБ',
-        '%s MB' => '%s МБ',
-        '%s GB' => '%s ГБ',
-        'Download' => 'Скачать',
-        'Folder is empty' => 'Папка пуста',
-        'Select all' => 'Выделить все',
-        'Unselect all' => 'Снять выделение',
-        'Invert selection' => 'Инвертировать выделение',
-        'Delete selected files and folders?' => 'Удалить выбранные файлы и папки?',
-        'Pack' => 'Упаковать',
-        'Copy' => 'Копировать',
-        'Upload files' => 'Загрузить файлы',
-        'New folder' => 'Новая папка',
-        'New folder name' => 'Имя новой папки',
-        'New name' => 'Новое имя',
-        'Operations with archives are not available' => 'Операции с архивами недоступны',
-        'Full size:' => 'Общий размер:',
-        'files:' => 'файлов:',
-        'folders:' => 'папок:',
-        'Perms' => 'Права',
-        'Username' => 'Имя пользователя',
-        'Password' => 'Пароль',
-        'Login' => 'Войти',
-        'Logout' => 'Выход',
-        'Wrong password' => 'Неверный пароль',
-        'You are logged in' => 'Вы успешно вошли',
-        'Change Permissions' => 'Изменение прав доступа',
-        'Permissions:' => 'Права доступа:',
-        'Change' => 'Изменить',
-        'Owner' => 'Владелец',
-        'Group' => 'Группа',
-        'Other' => 'Прочие',
-        'Read' => 'Чтение',
-        'Write' => 'Запись',
-        'Execute' => 'Выполнение',
-        'Permissions changed' => 'Права изменены',
-        'Permissions not changed' => 'Права не изменены',
-        'Video' => 'Видео',
-        'Audio' => 'Аудио',
-        'Direct link' => 'Прямая ссылка',
-        'Create archive?' => 'Создать архив?',
-    );
-    $strings['fr'] = array(
-        'Folder <b>%s</b> deleted' => 'Dossier <b>%s</b> supprimé',
-        'Folder <b>%s</b> not deleted' => 'Dossier <b>%s</b> non supprimé',
-        'File <b>%s</b> deleted' => 'Fichier <b>%s</b> supprimé',
-        'File <b>%s</b> not deleted' => 'Fichier <b>%s</b> non supprimé',
-        'Wrong file or folder name' => 'Nom de fichier ou dossier incorrect',
-        'Folder <b>%s</b> created' => 'Dossier <b>%s</b> créé',
-        'Folder <b>%s</b> already exists' => 'Dossier <b>%s</b> déjà existant',
-        'Folder <b>%s</b> not created' => 'Dossier <b>%s</b> non créé',
-        'Wrong folder name' => 'Nom de dossier inccorect',
-        'Source path not defined' => 'Chemin source non défini',
-        'Moved from <b>%s</b> to <b>%s</b>' => 'Déplacé de <b>%s</b> à <b>%s</b>',
-        'File or folder with this path already exists' => 'Fichier ou dossier avec ce chemin déjà existant',
-        'Error while moving from <b>%s</b> to <b>%s</b>' => 'Erreur lors du déplacement de <b>%s</b> à <b>%s</b>',
-        'Copyied from <b>%s</b> to <b>%s</b>' => 'Copié de <b>%s</b> à <b>%s</b>',
-        'Error while copying from <b>%s</b> to <b>%s</b>' => 'Erreur lors de la copie de <b>%s</b> à <b>%s</b>',
-        'Paths must be not equal' => 'Les chemins doivent être différents',
-        'Unable to create destination folder' => 'Impossible de créer le dossier de destination',
-        'Selected files and folders moved' => 'Fichiers et dossiers sélectionnés déplacés',
-        'Selected files and folders copied' => 'Fichiers et dossiers sélectionnés copiés',
-        'Error while moving items' => 'Erreur lors du déplacement des éléments',
-        'Error while copying items' => 'Erreur lors de la copie des éléments',
-        'Nothing selected' => 'Sélection vide',
-        'Renamed from <b>%s</b> to <b>%s</b>' => 'Renommé de <b>%s</b> à <b>%s</b>',
-        'Error while renaming from <b>%s</b> to <b>%s</b>' => 'Erreur lors du renommage de <b>%s</b> en <b>%s</b>',
-        'Names not set' => 'Noms indéfinis',
-        'File not found' => 'Fichier non trouvé',
-        'All files uploaded to <b>%s</b>' => 'Tous les fichiers ont été envoyé dans <b>%s</b>',
-        'Nothing uploaded' => 'Rien a été envoyé',
-        'Error while uploading files. Uploaded files: %s' => 'Erreur lors de l\'envoi des fichiers. Fichiers envoyés : %s',
-        'Selected files and folder deleted' => 'Fichiers et dossier sélectionnés supprimés',
-        'Error while deleting items' => 'Erreur lors de la suppression des éléments',
-        'Archive <b>%s</b> created' => 'Archive <b>%s</b> créée',
-        'Archive not created' => 'Archive non créée',
-        'Archive unpacked' => 'Archive décompressée',
-        'Archive not unpacked' => 'Archive non décompressée',
-        'Uploading files' => 'Envoie des fichiers',
-        'Destination folder:' => 'Dossier de destination :',
-        'Upload' => 'Envoi',
-        'Cancel' => 'Annuler',
-        'Copying' => 'Copie en cours',
-        'Files:' => 'Fichiers :',
-        'Source folder:' => 'Dossier source :',
-        'Move' => 'Déplacer',
-        'Select folder:' => 'Dossier sélectionné :',
-        'Source path:' => 'Chemin source :',
-        'Archive' => 'Archive',
-        'Full path:' => 'Chemin complet :',
-        'File size:' => 'Taille du fichier :',
-        'Files in archive:' => 'Fichiers dans l\'archive :',
-        'Total size:' => 'Taille totale :',
-        'Size in archive:' => 'Taille dans l\'archive :',
-        'Compression:' => 'Compression :',
-        'Open' => 'Ouvrir',
-        'Unpack' => 'Décompresser',
-        'Unpack to' => 'Décompresser vers',
-        'Unpack to folder' => 'Décompresser vers le dossier',
-        'Back' => 'Retour',
-        'Error while fetching archive info' => 'Erreur lors de la récupération des informations de l\'archive',
-        'Image' => 'Image',
-        'MIME-type:' => 'MIME-Type :',
-        'Image sizes:' => 'Taille de l\'image :',
-        'File' => 'Fichier',
-        'Charset:' => 'Charset :',
-        'Name' => 'Nom',
-        'Size' => 'Taille',
-        'Modified' => 'Modifié',
-        'Folder' => 'Dossier',
-        'Delete' => 'Supprimer',
-        'Delete folder?' => 'Supprimer le dossier ?',
-        'Delete file?' => 'Supprimer le fichier ?',
-        'Rename' => 'Renommer',
-        'Copy to...' => 'Copier vers...',
-        'File info' => 'Informations',
-        '%s byte' => '%s octet',
-        '%s KB' => '%s Кb',
-        '%s MB' => '%s Мb',
-        '%s GB' => '%s Gb',
-        'Download' => 'Télécharger',
-        'Folder is empty' => 'Dossier vide',
-        'Select all' => 'Tout sélectionner',
-        'Unselect all' => 'Tout désélectionner',
-        'Invert selection' => 'Inverser la sélection',
-        'Delete selected files and folders?' => 'Supprimer les fichiers et dossiers sélectionnés ?',
-        'Pack' => 'Archiver',
-        'Copy' => 'Copier',
-        'Upload files' => 'Envoyer des fichiers',
-        'New folder' => 'Nouveau dossier',
-        'New folder name' => 'Nouveau nom de dossier',
-        'New name' => 'Nouveau nom',
-        'Operations with archives are not available' => 'Opérations d\archivage non disponibles',
-        'Full size:' => 'Taille totale :',
-        'files:' => 'fichiers :',
-        'folders:' => 'dossiers :',
-        'Perms' => 'Permissions',
-        'Username' => 'Nom d\'utilisateur',
-        'Password' => 'Mot de passe',
-        'Login' => 'Identifiant',
-        'Logout' => 'Déconnexion',
-        'Wrong password' => 'Mauvais mot de passe',
-        'You are logged in' => 'Vous êtes connecté',
-        'Change Permissions' => 'Modifier les permissions',
-        'Permissions:' => 'Permissions:',
-        'Change' => 'Modifier',
-        'Owner' => 'Propriétaire',
-        'Group' => 'Groupe',
-        'Other' => 'Autre',
-        'Read' => 'Lire',
-        'Write' => 'Écrire',
-        'Execute' => 'Exécuter',
-        'Permissions changed' => 'Permissions modifiées',
-        'Permissions not changed' => 'Permission non modifiées',
-        'Video' => 'Vidéo',
-        'Audio' => 'Audio',
-        'Direct link' => 'Lien direct',
-        'Create archive?' => 'Créer une archive?',
-    );
-
-    // get additional translations from 'filemanager-l10n.php'
-    $l10n_path = __DIR__ . '/filemanager-l10n.php';
-    if (is_readable($l10n_path)) {
-        $l10n_strings = include $l10n_path;
-        if (!empty($l10n_strings) && is_array($l10n_strings)) {
-            $strings = array_merge($strings, $l10n_strings);
-        }
-    }
-
-    return $strings;
-}
-
-/**
- * Get all available languages
- * @return array
- */
-function fm_get_available_langs()
-{
-    $strings = fm_get_strings();
-    $languages = array_keys($strings);
-    $languages[] = 'en';
-    return $languages;
 }

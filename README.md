@@ -25,7 +25,6 @@ class SomeController
     public function actionIndex()
     {
         define('FM_EMBED', true);
-        define('FM_LANG', 'en');
         define('FM_SELF_URL', UrlHelper::currentUrl());
         define('FM_SHOW_HIDDEN', false);
         require 'path/to/filemanager.php';
@@ -33,18 +32,7 @@ class SomeController
 }
 ```
 
-Supports variables `FM_LANG`, `FM_ROOT_PATH`, `FM_ROOT_URL`, `FM_SELF_URL`, `FM_SHOW_HIDDEN`.
-
-## Localization
-
-To change default language set ```$lang``` value to one of supported languages in list below.
-
-* English (en)
-* Russian (ru)
-* French (fr) - by [Nicolas Karolak](https://github.com/nikaro)
-
-You can create file `filemanager-l10n.php` in folder with File Manager and put your own translations in it.
-They will be merged with built-in translations.
+Supports variables `FM_ROOT_PATH`, `FM_ROOT_URL`, `FM_SELF_URL`, `FM_SHOW_HIDDEN`.
 
 ## Bug tracker
 
