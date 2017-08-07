@@ -1,10 +1,17 @@
 # PHP File Manager
 
-A good solution for managing files and folders on your site for developer who can't access site over SSH or FTP.
+A good solution for managing files and folders for developers who can't access site over SSH or FTP.
 
 ![PHP File Manager](https://raw.github.com/alexantr/filemanager/master/phpfm.png)
 
-**WARNING! Do not use this script as regular file manager on production.**
+**WARNING! Do not use this script as regular file manager in public area.
+After all actions you must delete thid script from server.**
+
+## Requirements
+
+- PHP 5.2 or higher.
+- [Zip extension](http://php.net/manual/en/book.zip.php) for zip and unzip actions.
+- Fileinfo, iconv and mbstring extensions are strongly recommended.
 
 ## How to use
 
@@ -13,13 +20,17 @@ Download ZIP with latest version from master branch.
 Copy **filemanager.php** to your website folder and open it with web browser
 (e.g. http://yoursite/any_path/filemanager.php).
 
+## Security
+
 Default username/password: **fm_admin**/**fm_admin**
 
-**Warning!** Please set your own username and password in `$auth_users` before use.
+**Warning! Please set your own username and password in `$auth_users` before use.**
 
 To enable or disable authentication set `$use_auth` to `true` or `false`.
 
-*Note:* For better security enable HTTP Authentication in your web server.
+*For better security enable HTTP Authentication in your web server.*
+
+## Embedding
 
 You can include file manager in another scripts. Just define `FM_EMBED` and other necessary constants. Example:
 
