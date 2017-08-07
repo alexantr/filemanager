@@ -1,8 +1,10 @@
 # PHP File Manager
 
-A good solution for managing files and folders on your site.
+A good solution for managing files and folders on your site for developer who can't access site over SSH or FTP.
 
 ![PHP File Manager](https://raw.github.com/alexantr/filemanager/master/phpfm.png)
+
+**WARNING! Do not use this script as regular file manager on production.**
 
 ## How to use
 
@@ -13,9 +15,11 @@ Copy **filemanager.php** to your website folder and open it with web browser
 
 Default username/password: **fm_admin**/**fm_admin**
 
-*Warning:* Please set your own username and password in `$auth_users` before use. Password must be encripted with MD5.
+**Warning!** Please set your own username and password in `$auth_users` before use.
 
 To enable or disable authentication set `$use_auth` to `true` or `false`.
+
+*Note:* For better security enable HTTP Authentication in your web server.
 
 You can include file manager in another scripts. Just define `FM_EMBED` and other necessary constants. Example:
 

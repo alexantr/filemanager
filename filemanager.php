@@ -1,6 +1,6 @@
 <?php
 /**
- * PHP File Manager (2017-07-25)
+ * PHP File Manager (2017-08-07)
  * https://github.com/alexantr/filemanager
  */
 
@@ -9,7 +9,7 @@ $use_auth = true;
 
 // Users: array('Username' => 'Password', 'Username2' => 'Password2', ...)
 $auth_users = array(
-    'fm_admin' => '5b27e40e720afeecc829cbf4b3d1195f',
+    'fm_admin' => 'fm_admin',
 );
 
 // Enable highlight.js (https://highlightjs.org/) on view's page
@@ -101,7 +101,7 @@ if ($use_auth) {
     } elseif (isset($_POST['fm_usr'], $_POST['fm_pwd'])) {
         // Logging In
         sleep(1);
-        if (isset($auth_users[$_POST['fm_usr']]) && md5($_POST['fm_pwd']) === $auth_users[$_POST['fm_usr']]) {
+        if (isset($auth_users[$_POST['fm_usr']]) && $_POST['fm_pwd'] === $auth_users[$_POST['fm_usr']]) {
             $_SESSION['logged'] = $_POST['fm_usr'];
             fm_set_msg('You are logged in');
             fm_redirect(FM_SELF_URL . '?p=');
