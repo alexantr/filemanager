@@ -363,6 +363,52 @@ if (isset($_GET['dl'])) {
     }
 }
 
+// Download
+if (isset($_GET['dlz'])) {
+	$dl = $_GET['dlz'];
+	$dl = fm_clean_path($dl);
+	$dl = str_replace('/', '', $dl);
+	$path = FM_ROOT_PATH;
+	if (FM_PATH != '') {
+		$path .= '/' . FM_PATH;
+	}
+
+	if (!class_exists('ZipArchive')) {
+		fm_set_msg('Operations with archives are not available', 'error');
+		fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
+	}
+
+	if ($dl != '' && file_exists($path . '/' . $dl)) {
+		chdir($path);
+		$fileName = basename($dl);
+		$zipname = $fileName . '.zip';
+
+		$zipper = new FM_Zipper();
+		$res = $zipper->create($zipname, [$dl]);
+
+		if (!$res) {
+			fm_set_msg('Archive not created', 'error');
+		}else {
+			header('Content-Description: File Transfer');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename="' . basename($zipname) . '"');
+			header('Content-Transfer-Encoding: binary');
+			header('Connection: Keep-Alive');
+			header('Expires: 0');
+			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+			header('Pragma: public');
+			header('Content-Length: ' . filesize($zipname));
+			readfile($zipname);
+			unlink($zipname);
+			exit;
+		}
+	} else {
+		fm_set_msg('File not found', 'error');
+		fm_redirect(FM_SELF_URL . '?p=' . urlencode(FM_PATH));
+	}
+}
+
+
 // Upload
 if (isset($_POST['upl'])) {
     $path = FM_ROOT_PATH;
@@ -997,6 +1043,7 @@ foreach ($folders as $f) {
 <a title="Rename" href="#" onclick="rename('<?php echo fm_enc(FM_PATH) ?>', '<?php echo fm_enc($f) ?>');return false;"><i class="icon-rename"></i></a>
 <a title="Copy to..." href="?p=&amp;copy=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="icon-copy"></i></a>
 <a title="Direct link" href="<?php echo FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f . '/' ?>" target="_blank"><i class="icon-chain"></i></a>
+<a title="Download as ZIP" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;dlz=<?php echo urlencode($f) ?>"><i class="icon-download"></i></a>
 </td></tr>
     <?php
     flush();
