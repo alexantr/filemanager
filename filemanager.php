@@ -71,7 +71,7 @@ $is_https = isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on' || $_SERVER['
 $root_path = rtrim($root_path, '\\/');
 $root_path = str_replace('\\', '/', $root_path);
 if (!@is_dir($root_path)) {
-    echo "<h1>Root path \"{$root_path}\" not found!</h1>";
+    echo sprintf('<h1>Root path "%s" not found!</h1>', fm_enc($root_path));
     exit;
 }
 
@@ -168,10 +168,10 @@ if (isset($_GET['del'])) {
         $is_dir = is_dir($path . '/' . $del);
         if (fm_rdelete($path . '/' . $del)) {
             $msg = $is_dir ? 'Folder <b>%s</b> deleted' : 'File <b>%s</b> deleted';
-            fm_set_msg(sprintf($msg, $del));
+            fm_set_msg(sprintf($msg, fm_enc($del)));
         } else {
             $msg = $is_dir ? 'Folder <b>%s</b> not deleted' : 'File <b>%s</b> not deleted';
-            fm_set_msg(sprintf($msg, $del), 'error');
+            fm_set_msg(sprintf($msg, fm_enc($del)), 'error');
         }
     } else {
         fm_set_msg('Wrong file or folder name', 'error');
@@ -190,11 +190,11 @@ if (isset($_GET['new'])) {
             $path .= '/' . FM_PATH;
         }
         if (fm_mkdir($path . '/' . $new, false) === true) {
-            fm_set_msg(sprintf('Folder <b>%s</b> created', $new));
+            fm_set_msg(sprintf('Folder <b>%s</b> created', fm_enc($new)));
         } elseif (fm_mkdir($path . '/' . $new, false) === $path . '/' . $new) {
-            fm_set_msg(sprintf('Folder <b>%s</b> already exists', $new), 'alert');
+            fm_set_msg(sprintf('Folder <b>%s</b> already exists', fm_enc($new)), 'alert');
         } else {
-            fm_set_msg(sprintf('Folder <b>%s</b> not created', $new), 'error');
+            fm_set_msg(sprintf('Folder <b>%s</b> not created', fm_enc($new)), 'error');
         }
     } else {
         fm_set_msg('Wrong folder name', 'error');
@@ -228,17 +228,17 @@ if (isset($_GET['copy'], $_GET['finish'])) {
         if ($move) {
             $rename = fm_rename($from, $dest);
             if ($rename) {
-                fm_set_msg(sprintf('Moved from <b>%s</b> to <b>%s</b>', $copy, $msg_from));
+                fm_set_msg(sprintf('Moved from <b>%s</b> to <b>%s</b>', fm_enc($copy), fm_enc($msg_from)));
             } elseif ($rename === null) {
                 fm_set_msg('File or folder with this path already exists', 'alert');
             } else {
-                fm_set_msg(sprintf('Error while moving from <b>%s</b> to <b>%s</b>', $copy, $msg_from), 'error');
+                fm_set_msg(sprintf('Error while moving from <b>%s</b> to <b>%s</b>', fm_enc($copy), fm_enc($msg_from)), 'error');
             }
         } else {
             if (fm_rcopy($from, $dest)) {
-                fm_set_msg(sprintf('Copyied from <b>%s</b> to <b>%s</b>', $copy, $msg_from));
+                fm_set_msg(sprintf('Copyied from <b>%s</b> to <b>%s</b>', fm_enc($copy), fm_enc($msg_from)));
             } else {
-                fm_set_msg(sprintf('Error while copying from <b>%s</b> to <b>%s</b>', $copy, $msg_from), 'error');
+                fm_set_msg(sprintf('Error while copying from <b>%s</b> to <b>%s</b>', fm_enc($copy), fm_enc($msg_from)), 'error');
             }
         }
     } else {
@@ -326,9 +326,9 @@ if (isset($_GET['ren'], $_GET['to'])) {
     // rename
     if ($old != '' && $new != '') {
         if (fm_rename($path . '/' . $old, $path . '/' . $new)) {
-            fm_set_msg(sprintf('Renamed from <b>%s</b> to <b>%s</b>', $old, $new));
+            fm_set_msg(sprintf('Renamed from <b>%s</b> to <b>%s</b>', fm_enc($old), fm_enc($new)));
         } else {
-            fm_set_msg(sprintf('Error while renaming from <b>%s</b> to <b>%s</b>', $old, $new), 'error');
+            fm_set_msg(sprintf('Error while renaming from <b>%s</b> to <b>%s</b>', fm_enc($old), fm_enc($new)), 'error');
         }
     } else {
         fm_set_msg('Names not set', 'error');
@@ -386,7 +386,7 @@ if (isset($_POST['upl'])) {
     }
 
     if ($errors == 0 && $uploads > 0) {
-        fm_set_msg(sprintf('All files uploaded to <b>%s</b>', $path));
+        fm_set_msg(sprintf('All files uploaded to <b>%s</b>', fm_enc($path)));
     } elseif ($errors == 0 && $uploads == 0) {
         fm_set_msg('Nothing uploaded', 'alert');
     } else {
@@ -454,7 +454,7 @@ if (isset($_POST['group'], $_POST['zip'])) {
         $res = $zipper->create($zipname, $files);
 
         if ($res) {
-            fm_set_msg(sprintf('Archive <b>%s</b> created', $zipname));
+            fm_set_msg(sprintf('Archive <b>%s</b> created', fm_enc($zipname)));
         } else {
             fm_set_msg('Archive not created', 'error');
         }
@@ -608,7 +608,7 @@ if (isset($_GET['upload'])) {
     ?>
     <div class="path">
         <p><b>Uploading files</b></p>
-        <p class="break-word">Destination folder: <?php echo fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH) ?></p>
+        <p class="break-word">Destination folder: <?php echo fm_enc(fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH)) ?></p>
         <form action="" method="post" enctype="multipart/form-data">
             <input type="hidden" name="p" value="<?php echo fm_enc(FM_PATH) ?>">
             <input type="hidden" name="upl" value="1">
@@ -649,9 +649,10 @@ if (isset($_POST['copy'])) {
             foreach ($copy_files as $cf) {
                 echo '<input type="hidden" name="file[]" value="' . fm_enc($cf) . '">' . PHP_EOL;
             }
+            $copy_files_enc = array_map('fm_enc', $copy_files);
             ?>
-            <p class="break-word">Files: <b><?php echo implode('</b>, <b>', $copy_files) ?></b></p>
-            <p class="break-word">Source folder: <?php echo fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH) ?><br>
+            <p class="break-word">Files: <b><?php echo implode('</b>, <b>', $copy_files_enc) ?></b></p>
+            <p class="break-word">Source folder: <?php echo fm_enc(fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH)) ?><br>
                 <label for="inp_copy_to">Destination folder:</label>
                 <?php echo FM_ROOT_PATH ?>/<input name="copy_to" id="inp_copy_to" value="<?php echo fm_enc(FM_PATH) ?>">
             </p>
@@ -682,8 +683,8 @@ if (isset($_GET['copy']) && !isset($_GET['finish'])) {
     <div class="path">
         <p><b>Copying</b></p>
         <p class="break-word">
-            Source path: <?php echo fm_convert_win(FM_ROOT_PATH . '/' . $copy) ?><br>
-            Destination folder: <?php echo fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH) ?>
+            Source path: <?php echo fm_enc(fm_convert_win(FM_ROOT_PATH . '/' . $copy)) ?><br>
+            Destination folder: <?php echo fm_enc(fm_convert_win(FM_ROOT_PATH . '/' . FM_PATH)) ?>
         </p>
         <p>
             <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode($copy) ?>&amp;finish=1"><i class="icon-apply"></i> Copy</a></b> &nbsp;
@@ -700,7 +701,7 @@ if (isset($_GET['copy']) && !isset($_GET['finish'])) {
             }
             foreach ($folders as $f) {
                 ?>
-                <li><a href="?p=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>&amp;copy=<?php echo urlencode($copy) ?>"><i class="icon-folder"></i> <?php echo fm_convert_win($f) ?></a></li>
+                <li><a href="?p=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>&amp;copy=<?php echo urlencode($copy) ?>"><i class="icon-folder"></i> <?php echo fm_enc(fm_convert_win($f)) ?></a></li>
             <?php
             }
             ?>
@@ -761,9 +762,9 @@ if (isset($_GET['view'])) {
 
     ?>
     <div class="path">
-        <p class="break-word"><b><?php echo $view_title ?> "<?php echo fm_convert_win($file) ?>"</b></p>
+        <p class="break-word"><b><?php echo $view_title ?> "<?php echo fm_enc(fm_convert_win($file)) ?>"</b></p>
         <p class="break-word">
-            Full path: <?php echo fm_convert_win($file_path) ?><br>
+            Full path: <?php echo fm_enc(fm_convert_win($file_path)) ?><br>
             File size: <?php echo fm_get_filesize($filesize) ?><?php if ($filesize >= 1000): ?> (<?php echo sprintf('%s bytes', $filesize) ?>)<?php endif; ?><br>
             MIME-type: <?php echo $mime_type ?><br>
             <?php
@@ -805,7 +806,7 @@ if (isset($_GET['view'])) {
         </p>
         <p>
             <b><a href="?p=<?php echo urlencode(FM_PATH) ?>&amp;dl=<?php echo urlencode($file) ?>"><i class="icon-download"></i> Download</a></b> &nbsp;
-            <b><a href="<?php echo $file_url ?>" target="_blank"><i class="icon-chain"></i> Open</a></b> &nbsp;
+            <b><a href="<?php echo fm_enc($file_url) ?>" target="_blank"><i class="icon-chain"></i> Open</a></b> &nbsp;
             <?php
             // ZIP actions
             if ($is_zip && $filenames !== false) {
@@ -826,7 +827,7 @@ if (isset($_GET['view'])) {
                 echo '<code class="maxheight">';
                 foreach ($filenames as $fn) {
                     if ($fn['folder']) {
-                        echo '<b>' . $fn['name'] . '</b><br>';
+                        echo '<b>' . fm_enc($fn['name']) . '</b><br>';
                     } else {
                         echo $fn['name'] . ' (' . fm_get_filesize($fn['filesize']) . ')<br>';
                     }
@@ -838,14 +839,14 @@ if (isset($_GET['view'])) {
         } elseif ($is_image) {
             // Image content
             if (in_array($ext, array('gif', 'jpg', 'jpeg', 'png', 'bmp', 'ico'))) {
-                echo '<p><img src="' . $file_url . '" alt="" class="preview-img"></p>';
+                echo '<p><img src="' . fm_enc($file_url) . '" alt="" class="preview-img"></p>';
             }
         } elseif ($is_audio) {
             // Audio content
-            echo '<p><audio src="' . $file_url . '" controls preload="metadata"></audio></p>';
+            echo '<p><audio src="' . fm_enc($file_url) . '" controls preload="metadata"></audio></p>';
         } elseif ($is_video) {
             // Video content
-            echo '<div class="preview-video"><video src="' . $file_url . '" width="640" height="360" controls preload="metadata"></video></div>';
+            echo '<div class="preview-video"><video src="' . fm_enc($file_url) . '" width="640" height="360" controls preload="metadata"></video></div>';
         } elseif ($is_text) {
             if (FM_USE_HIGHLIGHTJS) {
                 // highlight
@@ -898,7 +899,7 @@ if (isset($_GET['chmod']) && !FM_IS_WIN) {
     <div class="path">
         <p><b>Change Permissions</b></p>
         <p>
-            Full path: <?php echo $file_path ?><br>
+            Full path: <?php echo fm_enc($file_path) ?><br>
         </p>
         <form action="" method="post">
             <input type="hidden" name="p" value="<?php echo fm_enc(FM_PATH) ?>">
@@ -986,17 +987,17 @@ foreach ($folders as $f) {
     ?>
 <tr>
 <td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td>
-<td><div class="filename"><a href="?p=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo fm_convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
+<td><div class="filename"><a href="?p=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="<?php echo $img ?>"></i> <?php echo fm_enc(fm_convert_win($f)) ?></a><?php echo ($is_link ? ' &rarr; <i>' . fm_enc(readlink($path . '/' . $f)) . '</i>' : '') ?></div></td>
 <td>Folder</td><td><?php echo $modif ?></td>
 <?php if (!FM_IS_WIN): ?>
 <td><a title="Change Permissions" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a></td>
-<td><?php echo $owner['name'] . ':' . $group['name'] ?></td>
+<td><?php echo fm_enc($owner['name'] . ':' . $group['name']) ?></td>
 <?php endif; ?>
 <td>
 <a title="Delete" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('Delete folder?');"><i class="icon-cross"></i></a>
 <a title="Rename" href="#" onclick="rename('<?php echo fm_enc(FM_PATH) ?>', '<?php echo fm_enc($f) ?>');return false;"><i class="icon-rename"></i></a>
 <a title="Copy to..." href="?p=&amp;copy=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="icon-copy"></i></a>
-<a title="Direct link" href="<?php echo FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f . '/' ?>" target="_blank"><i class="icon-chain"></i></a>
+<a title="Direct link" href="<?php echo fm_enc(FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f . '/') ?>" target="_blank"><i class="icon-chain"></i></a>
 </td></tr>
     <?php
     flush();
@@ -1021,18 +1022,18 @@ foreach ($files as $f) {
     ?>
 <tr>
 <td><label><input type="checkbox" name="file[]" value="<?php echo fm_enc($f) ?>"></label></td>
-<td><div class="filename"><a href="<?php echo $filelink ?>" title="File info"><i class="<?php echo $img ?>"></i> <?php echo fm_convert_win($f) ?></a><?php echo ($is_link ? ' &rarr; <i>' . readlink($path . '/' . $f) . '</i>' : '') ?></div></td>
+<td><div class="filename"><a href="<?php echo fm_enc($filelink) ?>" title="File info"><i class="<?php echo $img ?>"></i> <?php echo fm_enc(fm_convert_win($f)) ?></a><?php echo ($is_link ? ' &rarr; <i>' . fm_enc(readlink($path . '/' . $f)) . '</i>' : '') ?></div></td>
 <td><span class="gray" title="<?php printf('%s bytes', $filesize_raw) ?>"><?php echo $filesize ?></span></td>
 <td><?php echo $modif ?></td>
 <?php if (!FM_IS_WIN): ?>
 <td><a title="Change Permissions" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;chmod=<?php echo urlencode($f) ?>"><?php echo $perms ?></a></td>
-<td><?php echo $owner['name'] . ':' . $group['name'] ?></td>
+<td><?php echo fm_enc($owner['name'] . ':' . $group['name']) ?></td>
 <?php endif; ?>
 <td>
 <a title="Delete" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;del=<?php echo urlencode($f) ?>" onclick="return confirm('Delete file?');"><i class="icon-cross"></i></a>
 <a title="Rename" href="#" onclick="rename('<?php echo fm_enc(FM_PATH) ?>', '<?php echo fm_enc($f) ?>');return false;"><i class="icon-rename"></i></a>
 <a title="Copy to..." href="?p=<?php echo urlencode(FM_PATH) ?>&amp;copy=<?php echo urlencode(trim(FM_PATH . '/' . $f, '/')) ?>"><i class="icon-copy"></i></a>
-<a title="Direct link" href="<?php echo FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f ?>" target="_blank"><i class="icon-chain"></i></a>
+<a title="Direct link" href="<?php echo fm_enc(FM_ROOT_URL . (FM_PATH != '' ? '/' . FM_PATH : '') . '/' . $f) ?>" target="_blank"><i class="icon-chain"></i></a>
 <a title="Download" href="?p=<?php echo urlencode(FM_PATH) ?>&amp;dl=<?php echo urlencode($f) ?>"><i class="icon-download"></i></a>
 </td></tr>
     <?php
@@ -1675,7 +1676,7 @@ function fm_show_nav_path($path)
             for ($i = 0; $i < $count; $i++) {
                 $parent = trim($parent . '/' . $exploded[$i], '/');
                 $parent_enc = urlencode($parent);
-                $array[] = "<a href='?p={$parent_enc}'>" . fm_convert_win($exploded[$i]) . "</a>";
+                $array[] = "<a href='?p={$parent_enc}'>" . fm_enc(fm_convert_win($exploded[$i])) . "</a>";
             }
             $root_url .= $sep . implode($sep, $array);
         }
