@@ -181,7 +181,7 @@ if (isset($_GET['del'])) {
 
 // Create folder
 if (isset($_GET['new'])) {
-    $new = $_GET['new'];
+    $new = strip_tags($_GET['new']); // remove unwanted characters from folder name
     $new = fm_clean_path($new);
     $new = str_replace('/', '', $new);
     if ($new != '' && $new != '..' && $new != '.') {
