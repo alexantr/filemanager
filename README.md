@@ -1,11 +1,11 @@
 # PHP File Manager
 
-A good solution for managing files and folders for developers who can't access site over SSH or FTP.
+A good solution for managing files and folders for developers who can't access their site over SSH or FTP.
 
 ![PHP File Manager](https://raw.github.com/alexantr/filemanager/master/phpfm.png)
 
-**WARNING! Do not use this script as regular file manager in public area.
-After all actions you must delete thid script from server.**
+**WARNING! Do not use this script as a regular file manager in public area.
+After all actions you must delete this script from the server.**
 
 ## Requirements
 
@@ -15,9 +15,9 @@ After all actions you must delete thid script from server.**
 
 ## How to use
 
-Download ZIP with latest version from master branch.
+Download ZIP with the latest version from the master branch.
 
-Copy **filemanager.php** to your website folder and open it with web browser
+Copy **filemanager.php** to your website folder and open it in a web browser
 (e.g. http://yoursite/any_path/filemanager.php).
 
 ## Security
@@ -32,7 +32,7 @@ To enable or disable authentication set `$use_auth` to `true` or `false`.
 
 ## Embedding
 
-You can include file manager in another scripts. Just define `FM_EMBED` and other necessary constants. Example:
+You can include file manager in another script. Just define `FM_EMBED` and other necessary constants. Example:
 
 ```php
 class SomeController
