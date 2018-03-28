@@ -1009,7 +1009,7 @@ foreach ($files as $f) {
     $modif = date(FM_DATETIME_FORMAT, filemtime($path . '/' . $f));
     $filesize_raw = filesize($path . '/' . $f);
     $filesize = fm_get_filesize($filesize_raw);
-    $filelink = '?p=' . urlencode(FM_PATH) . '&amp;view=' . urlencode($f);
+    $filelink = '?p=' . urlencode(FM_PATH) . '&view=' . urlencode($f);
     $all_files_size += $filesize_raw;
     $perms = substr(decoct(fileperms($path . '/' . $f)), -4);
     if (function_exists('posix_getpwuid') && function_exists('posix_getgrgid')) {
