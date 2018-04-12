@@ -11,7 +11,10 @@ $use_auth = true;
 $auth_users = array(
     'fm_admin' => 'fm_admin',
 );
-
+// Folders to not map
+$restricted_folders = array(
+        'filemanager',
+);
 // Enable highlight.js (https://highlightjs.org/) on view's page
 $use_highlightjs = true;
 
@@ -582,13 +585,13 @@ $folders = array();
 $files = array();
 if (is_array($objects)) {
     foreach ($objects as $file) {
-        if ($file == '.' || $file == '..') {
+        if ($file == '.' || $file == '..' && in_array($file,$restricted_folders)) {
             continue;
         }
         $new_path = $path . '/' . $file;
         if (is_file($new_path)) {
             $files[] = $file;
-        } elseif (is_dir($new_path) && $file != '.' && $file != '..') {
+        } elseif (is_dir($new_path) && $file != '.' && $file != '..' && !in_array($file,$restricted_folders)) {
             $folders[] = $file;
         }
     }
