@@ -38,6 +38,12 @@ $iconv_input_encoding = 'CP1251';
 // date() format for file modification date
 $datetime_format = 'd.m.y H:i';
 
+// private key and session name to store to the session
+if ( !defined( 'FM_SESSION_ID')) {
+    define('FM_SESSION_ID', 'filemanager');
+}
+
+//echo session_name();
 //--- EDIT BELOW CAREFULLY OR DO NOT EDIT AT ALL
 
 // if fm included
@@ -57,7 +63,7 @@ if ( defined( 'FM_EMBED' ) ) {
     }
 
     session_cache_limiter( '' );
-    session_name( 'filemanager' );
+    session_name( FM_SESSION_ID );
     session_start();
 }
 
@@ -103,7 +109,7 @@ if ( defined( 'FM_SELF_URL' ) && preg_match( '/(\?)/', FM_SELF_URL ) ) {
 
 // logout
 if ( isset( $_GET['logout'] ) ) {
-    unset( $_SESSION['logged'] );
+    unset( $_SESSION[ FM_SESSION_ID ]['logged'] );
     fm_redirect( _FM_SELF_URL );
 }
 
@@ -114,23 +120,23 @@ if ( isset( $_GET['img'] ) ) {
 
 // Auth
 if ( $use_auth ) {
-    if ( isset( $_SESSION['logged'], $auth_users[$_SESSION['logged']] ) ) {
+    if ( isset( $_SESSION[ FM_SESSION_ID ]['logged'], $auth_users[$_SESSION[ FM_SESSION_ID ]['logged']] ) ) {
         // Logged
     } elseif ( isset( $_POST['fm_usr'], $_POST['fm_pwd'] ) ) {
         // Logging In
         sleep( 1 );
         if ( isset( $auth_users[$_POST['fm_usr']] ) && $_POST['fm_pwd'] === $auth_users[$_POST['fm_usr']] ) {
-            $_SESSION['logged'] = $_POST['fm_usr'];
+            $_SESSION[ FM_SESSION_ID ]['logged'] = $_POST['fm_usr'];
             fm_set_msg( 'You are logged in' );
             fm_redirect( _FM_SELF_URL . 'p=' );
         } else {
-            unset( $_SESSION['logged'] );
+            unset( $_SESSION[ FM_SESSION_ID ]['logged'] );
             fm_set_msg( 'Wrong password', 'error' );
             fm_redirect( _FM_SELF_URL );
         }
     } else {
         // Form
-        unset( $_SESSION['logged'] );
+        unset( $_SESSION[ FM_SESSION_ID ]['logged'] );
         fm_show_header();
         fm_show_message();
 ?>
@@ -1438,8 +1444,8 @@ function fm_enc( $text )
  */
 function fm_set_msg( $msg, $status = 'ok' )
 {
-    $_SESSION['message'] = $msg;
-    $_SESSION['status'] = $status;
+    $_SESSION[ FM_SESSION_ID ]['message'] = $msg;
+    $_SESSION[ FM_SESSION_ID ]['status'] = $status;
 }
 
 
@@ -1817,11 +1823,11 @@ function fm_show_nav_path( $path )
  */
 function fm_show_message()
 {
-    if ( isset( $_SESSION['message'] ) ) {
-        $class = isset( $_SESSION['status'] ) ? $_SESSION['status'] : 'ok';
-        echo '<p class="message ' . $class . '">' . $_SESSION['message'] . '</p>';
-        unset( $_SESSION['message'] );
-        unset( $_SESSION['status'] );
+    if ( isset( $_SESSION[ FM_SESSION_ID ]['message'] ) ) {
+        $class = isset( $_SESSION[ FM_SESSION_ID ]['status'] ) ? $_SESSION[ FM_SESSION_ID ]['status'] : 'ok';
+        echo '<p class="message ' . $class . '">' . $_SESSION[ FM_SESSION_ID ]['message'] . '</p>';
+        unset( $_SESSION[ FM_SESSION_ID ]['message'] );
+        unset( $_SESSION[ FM_SESSION_ID ]['status'] );
     }
 }
 

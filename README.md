@@ -62,6 +62,7 @@ Supported constants:
 - `FM_USE_HIGHLIGHTJS` - default is `true`
 - `FM_HIGHLIGHTJS_STYLE` - default is `'vs'`
 - `FM_DATETIME_FORMAT` - default is `'d.m.y H:i'`
+- `FM_SESSION_ID` - Session name and session key (default 'filemanager') to prevent conflicts
 
 
 Public parameters/ actions in use (when using embedded you may need this info):
