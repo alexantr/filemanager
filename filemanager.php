@@ -423,7 +423,7 @@ if ( isset( $_POST['upl'] ) ) {
         if ( empty( $_FILES['upload']['error'][$i] ) && !empty( $tmp_name )
             && $tmp_name != 'none'
         ) {
-            if ( move_uploaded_file( $tmp_name, $path . '/' . $_FILES['upload']['name'][$i] ) ) {
+            if ( is_writable( $path . '/' ) && move_uploaded_file( $tmp_name, $path . '/' . $_FILES['upload']['name'][$i] ) ) {
                 $uploads++;
             } else {
                 $errors++;
