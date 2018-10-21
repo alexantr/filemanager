@@ -6,6 +6,7 @@
  * @license https://opensource.org/licenses/MIT MIT
  * @author Alex Yashkin https://yashkin.by/
  */
+
 // Auth with login/password (set true/false to enable/disable it)
 $use_auth = true;
 
@@ -22,6 +23,7 @@ $highlightjs_style = 'vs';
 
 // Default timezone for date() and time() - http://php.net/manual/en/timezones.php
 $default_timezone = 'Europe/Minsk'; // UTC+3
+
 // Root path for file manager
 $root_path = $_SERVER['DOCUMENT_ROOT'];
 
@@ -43,7 +45,6 @@ if ( !defined( 'FM_SESSION_ID')) {
     define('FM_SESSION_ID', 'filemanager');
 }
 
-//echo session_name();
 //--- EDIT BELOW CAREFULLY OR DO NOT EDIT AT ALL
 
 // if fm included
@@ -137,8 +138,9 @@ if ( $use_auth ) {
     } else {
         // Form
         unset( $_SESSION[ FM_SESSION_ID ]['logged'] );
+        $flashmessage = fm_show_message();
         fm_show_header();
-        fm_show_message();
+        echo $flashmessage;
 ?>
         <div class="path">
             <form action="" method="post" style="margin:10px;text-align:center">
@@ -1014,11 +1016,12 @@ if ( isset( $_GET['chmod'] ) && !FM_IS_WIN ) {
 }
 
 //--- FILEMANAGER MAIN
+$flashmessage = fm_show_message();
 fm_show_header(); // HEADER
 fm_show_nav_path( FM_PATH ); // current path
 
 // messages
-fm_show_message();
+echo $flashmessage;
 
 $num_files = count( $files );
 $num_folders = count( $folders );
@@ -1438,18 +1441,6 @@ function fm_enc( $text )
 
 
 /**
- * Save message in session
- * @param string $msg
- * @param string $status
- */
-function fm_set_msg( $msg, $status = 'ok' )
-{
-    $_SESSION[ FM_SESSION_ID ]['message'] = $msg;
-    $_SESSION[ FM_SESSION_ID ]['status'] = $status;
-}
-
-
-/**
  * Check if string is in UTF-8
  * @param string $string
  * @return int
@@ -1817,18 +1808,30 @@ function fm_show_nav_path( $path )
 <?php
 }
 
+/**
+ * Save message in cookie
+ * @param string $msg
+ * @param string $status
+ */
+function fm_set_msg( $msg, $status = 'ok' )
+{
+    $value = base64_encode( json_encode( array('message' => $msg, 'status' => $status) ) );
+    setcookie( FM_SESSION_ID . 'data', ($value) );
+}
+
 
 /**
- * Show message from session
+ * returns message from session/ cookie
  */
 function fm_show_message()
 {
-    if ( isset( $_SESSION[ FM_SESSION_ID ]['message'] ) ) {
-        $class = isset( $_SESSION[ FM_SESSION_ID ]['status'] ) ? $_SESSION[ FM_SESSION_ID ]['status'] : 'ok';
-        echo '<p class="message ' . $class . '">' . $_SESSION[ FM_SESSION_ID ]['message'] . '</p>';
-        unset( $_SESSION[ FM_SESSION_ID ]['message'] );
-        unset( $_SESSION[ FM_SESSION_ID ]['status'] );
+    if ( isset( $_COOKIE[FM_SESSION_ID . 'data'] ) ) {
+        $cookieData = json_decode( base64_decode( $_COOKIE[FM_SESSION_ID . 'data'], true ), true );
+        setcookie( FM_SESSION_ID . 'data', '' );
+        $class = isset( $cookieData['status'] ) ? $cookieData['status'] : 'ok';
+        return '<p class="message ' . $class . '">' . $cookieData['message'] . '</p>';
     }
+    return '';
 }
 
 
